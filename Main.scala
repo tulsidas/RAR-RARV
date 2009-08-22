@@ -2,7 +2,7 @@ object Main {
 	def main(args: Array[String]) {
 		val inst = Solomon.load(args(0))
 		val solver = new NearestNeighbour(inst)
-		val nn = solver.nearestNeighbour()
+		val nn = solver.solve
 
 		println("sol = " + nn.map(_.map(_.num)))
 		inst.initTau(nn)

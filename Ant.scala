@@ -1,4 +1,4 @@
-class Ant(source: Customer, inst: Instance) /* extends Actor */ {
+class Ant(source: Customer, inst: Instance) {
 }
 
 object Params {

@@ -1,6 +1,6 @@
 import scala.collection.mutable.Map
 
-case class Instance(vehiculos: Int, capacidad: Int, customers: List[Customer]) {
+case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[Customer]) {
 	val source = customers(0)
 
 	// cache de distancias
