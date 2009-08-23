@@ -1,23 +1,12 @@
 import scala.util.Random
 import scala.collection.immutable.TreeMap
+import Params._
 
 class Ant(val inst: Instance) extends Solver {
 	val rnd = new Random()
 
-	// params
-	val α = 1
-	val β = 2 // .. 5
-	val q0 = 0.9
-	val p = 0.1
-
 	def proximo(nodo: Customer, vecinos: List[Customer], 
 					hora: Double, capacidad: Int): Customer = {
-		/*implicit def orderedCustomer(c: Customer): Ordered[Customer] = new Ordered[Customer] {
-			def compare(that: Customer): Int = {
-			}
-		}*/
-		println("proximo de "+nodo.num)
-
 		// filtro los que llego a tiempo y me alcanza la capacidad
 		val factibles = vecinos.filter(vecino => factible(nodo, vecino, hora, capacidad))
 
@@ -34,20 +23,15 @@ class Ant(val inst: Instance) extends Solver {
 
 			if (q < q0) {
 				// exploitation
-				println("exploitation")
-			
-				println("factibles = " + factibles.map(n => n.num + "|" + mapη(n)))
 
 				// obtengo el mayor η
 				val bestη = mapη.values.toList.sort(_ > _).head
-				//println("best = " + best.num + "(" + mapη(best) + ")")
-				//best
 
 				// si hay varios con el mismo η, obtengo uno al azar de esos
 				val bests = factibles.filter(mapη(_) == bestη)
-				println("bests = " + bests.map(_.num))
+
 				if (bests.length > 1) {
-					weightedCases(bests.map((_, bests.length)))
+					weightedCases(bests.map((_, 1/bests.length)))
 				}
 				else {
 					bests.head
@@ -55,7 +39,6 @@ class Ant(val inst: Instance) extends Solver {
 			}
 			else {
 				// exploration
-				println("exploration")
 
 				// el denominador
 				val Σ = mapη.values.reduceLeft(_+_)
@@ -70,8 +53,11 @@ class Ant(val inst: Instance) extends Solver {
 
 	def weightedCases[A](inp: List[(A, Double)]): A = {
 		def coinFlip[A](p: Double)(a1: A, a2: A) = {
-			if (p < 0.0 || p > 1.0) error("invalid probability")
-
+			//if (p < 0.0 || p > 1.0) error("invalid probability: " + p)
+			var prob = p
+			if (p < 0) prob = 0
+			if (p > 1) prob = 1
+			
 			if (rnd.nextDouble() < p) a1 else a2
 		}
 

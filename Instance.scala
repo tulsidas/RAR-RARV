@@ -1,4 +1,5 @@
 import scala.collection.mutable.Map
+import Params._
 
 case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[Customer]) {
 	val source = customers(0)
@@ -8,6 +9,7 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 	private[this] val tauMap = Map.empty[(Customer, Customer), Double]
 
 	def tau(a: Customer, b: Customer): Double = {
+		//println("tau("+a+","+b+")")
 		val par = (a, b)
 		if (tauMap.contains(par)) {
 			tauMap(par)
@@ -17,30 +19,24 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 		}
 	}
 
-	def updateTau(a: Customer, b: Customer, ŧ: Double) = {
+	def updateTau(a: Customer, b: Customer, τ: Double) = {
+		//println("updateTau("+a.num+","+b.num+")")
 		val par = (a, b)
-		tauMap + ((par, ŧ))
+		tauMap + ((par, τ))
 	}
 
-	def initTau(sol: List[List[Customer]]) = {
+	def globalTau(solucion: List[List[Customer]]) = {
 		def sumd(l: List[Customer]): Double = {
 			l.zip(l.tail).foldLeft(0.0)((x, y) => x + distancia(y._1, y._2))
 		}
 
-		val pares = List.flatten(sol.map(c => c.zip(c.tail ::: List(c.head))))
-		// (0 :: c).zip(c ::: List(0))
+		val Δτ = solucion.foldLeft(0.0)(_ + sumd(_))
 
-		// cantidad de hormigas
-		val m = 1
-
-		// largo de la solucion inicial
-		val Cnn = sol.foldLeft(0.0)(_ + sumd(_))
-
-		//m / Cnn		
-		val init = m / Cnn
-		pares.foreach(par => updateTau(par._1, par._2, init))
-
-		println("tau = " + tauMap.map(p => "(" + p._1._1.num + "," + p._1._2.num + ")=" + p._2))
+		// τij = (1-p)τij + Δτ
+		val pares = List.flatten(solucion.map(c => c.zip(c.tail ::: List(c.head))))
+		pares.foreach(par => updateTau(par._1, par._2, 
+			(1 - p) * tau(par._1, par._2) + p*Δτ )
+		)
 	}
 
 	def distancia(a: Customer, b:Customer): Double = {

@@ -1,3 +1,5 @@
+import Params._
+
 trait Solver {
 	val inst: Instance
 	val source = inst.source
@@ -40,7 +42,11 @@ trait Solver {
 
 			prox = proximo(actual, vecinos, hora, capacidad)
 
-			// TODO actualizar tau local
+			// actualizar tau local
+			if (prox != null) {
+				val τ = (1-ξ)*inst.tau(actual, prox) + ξ * τ0
+				inst.updateTau(actual, prox, τ)
+			}
 		}
 
 		nn
