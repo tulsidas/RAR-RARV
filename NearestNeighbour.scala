@@ -7,7 +7,7 @@ class NearestNeighbour(val inst: Instance) extends Solver {
 
 		// filtro los que llego a tiempo y me alcanza la capacidad
 		val factibles = vecinos.filter(vecino => factible(nodo, vecino, hora, capacidad)).sort(
-			(v1, v2) => tiempo(nodo, v1, hora) < tiempo(nodo, v2, hora))
+			(v1, v2) => inst.tiempo(nodo, v1, hora) < inst.tiempo(nodo, v2, hora))
 
 		// el mas cercano dentro de los factibles
 		if (factibles.isEmpty) {

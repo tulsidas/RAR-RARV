@@ -8,9 +8,9 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 	private[this] val tauMap = Map.empty[(Customer, Customer), Double]
 
 	def tau(a: Customer, b: Customer): Double = {
-		val par = _par(a, b)
-		if (tauMap.contains(par)) {  
-			tauMap(par)  
+		val par = (a, b)
+		if (tauMap.contains(par)) {
+			tauMap(par)
 		}  
 		else {  
 			0
@@ -18,24 +18,17 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 	}
 
 	def updateTau(a: Customer, b: Customer, ŧ: Double) = {
-		val par = _par(a, b)
+		val par = (a, b)
 		tauMap + ((par, ŧ))
 	}
 
 	def initTau(sol: List[List[Customer]]) = {
-		def flatten[A](l: List[List[A]]): List[A] = {
-			l match {
-				case Nil => Nil
-				case x :: Nil => x
-				case x :: xs => x ::: flatten(xs)
-			}
-		}
-
 		def sumd(l: List[Customer]): Double = {
 			l.zip(l.tail).foldLeft(0.0)((x, y) => x + distancia(y._1, y._2))
 		}
 
-		val pares = flatten(sol.map(c => c.zip(c.tail ::: List(c.head))))
+		val pares = List.flatten(sol.map(c => c.zip(c.tail ::: List(c.head))))
+		// (0 :: c).zip(c ::: List(0))
 
 		// cantidad de hormigas
 		val m = 1
@@ -45,8 +38,9 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 
 		//m / Cnn		
 		val init = m / Cnn
-		println("initTau = " + init)
 		pares.foreach(par => updateTau(par._1, par._2, init))
+
+		println("tau = " + tauMap.map(p => "(" + p._1._1.num + "," + p._1._2.num + ")=" + p._2))
 	}
 
 	def distancia(a: Customer, b:Customer): Double = {
@@ -59,6 +53,13 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 			distancias + ((par, y))
 			y  
 		}
+	}
+
+	def tiempo(actual: Customer, prox: Customer, hora: Double): Double = {
+		val d = distancia(actual, prox)
+		val tiempo = Math.max(0, prox.ready - (hora + d))
+
+		tiempo + d
 	}
 
 	private def _par(a: Customer, b: Customer): (Customer, Customer) = {

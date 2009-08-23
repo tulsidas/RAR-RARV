@@ -4,8 +4,15 @@ object Main {
 		val solver = new NearestNeighbour(inst)
 		val nn = solver.solve
 
-		println("sol = " + nn.map(_.map(_.num)))
+		println("NN = " + nn.map(_.map(_.num)))
 		inst.initTau(nn)
+
+		val ant = new Ant(inst)
+
+		//for (i <- 1 to 50) {
+			val sol_ant = ant.solve
+			println("Ant = " + sol_ant.map(_.map(_.num)))
+		//}
 
 		//val customers = inst.customers.length
 

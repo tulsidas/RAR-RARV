@@ -20,11 +20,11 @@ trait Solver {
 	}
 
 	private def camion(nodos: List[Customer]): List[Customer] = {
-		var nn = List[Customer]()
 		var hora:Double = 0
 		var vecinos = nodos
 		var actual = inst.source
 		var capacidad = inst.capacidad
+		var nn = actual :: Nil // List[Customer]()
 
 		var prox:Customer = proximo(actual, vecinos, hora, capacidad)
 
@@ -39,15 +39,11 @@ trait Solver {
 			actual = prox
 
 			prox = proximo(actual, vecinos, hora, capacidad)
+
+			// TODO actualizar tau local
 		}
 
 		nn
-	}
-
-	def tiempo(actual: Customer, prox: Customer, hora: Double): Double = {
-		val tiempoEspera = Math.max(0, prox.ready - (hora + inst.distancia(actual, prox)))
-
-		tiempoEspera + inst.distancia(actual, prox)
 	}
 
 	def factible(nodo: Customer, vecino: Customer, hora: Double, capacidad: Int): Boolean = {
