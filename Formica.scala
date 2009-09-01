@@ -5,16 +5,28 @@ import scala.actors.remote.RemoteActor._
 
 object FormicaMain {
 	def main(args: Array[String]) {
-		val formica = new Formica("localhost", 9010, 'ACS)
-		formica.start()
+		val host = args(0)
+		val cores = Runtime.getRuntime().availableProcessors()
+
+		println(cores + " nucleos")
+
+		//for (i <- 1 to cores) {
+			new Formica(host, 9010, 'ACS).start()
+		//}
 	}
 }
 
 class Formica(host: String, port: Int, name: Symbol) extends Actor {
+	RemoteActor.classLoader = getClass().getClassLoader()
+
 	def act {
 		val reina = select(Node(host, port), name)
 
 		// hola		
-		reina ! this
+		reina ! Hello(this)
+
+		reina ! "hola pianola"
+
+		reina ! 1+2+3+4
 	}
 }
