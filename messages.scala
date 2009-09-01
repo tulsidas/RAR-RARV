@@ -1,1 +1,2 @@
-case class Hello(v: Formica) extends java.io.Serializable
+case object Hello
+case class Start(inst: Instance)

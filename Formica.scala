@@ -10,9 +10,9 @@ object FormicaMain {
 
 		println(cores + " nucleos")
 
-		//for (i <- 1 to cores) {
+		for (i <- 1 to cores) {
 			new Formica(host, 9010, 'ACS).start()
-		//}
+		}
 	}
 }
 
@@ -21,12 +21,19 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 	def act {
 		val reina = select(Node(host, port), name)
+		var ant: Ant = null
 
 		// hola		
-		reina ! Hello(this)
+		reina ! Hello
 
-		reina ! "hola pianola"
-
-		reina ! 1+2+3+4
+		var running = true
+		while(running) {
+			receive {
+				case Start(inst) => {
+					ant = new Ant(inst)
+					println(ant.solve)
+				}
+			}
+		}
 	}
 }

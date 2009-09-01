@@ -1,4 +1,4 @@
-import scala.actors.Actor
+import scala.actors.{Actor, OutputChannel}
 import scala.actors.Actor._
 import scala.actors.remote.RemoteActor
 import scala.actors.remote.RemoteActor._
@@ -24,7 +24,8 @@ object ReinaMain {
 class Reina(port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
-	var hormigas: List[Formica] = Nil
+	var hormigas: List[OutputChannel[Any]] = Nil
+	val inst = Solomon.load("r101.txt")
 
 	def act {
 		alive(port)
@@ -32,10 +33,10 @@ class Reina(port: Int, name: Symbol) extends Actor {
 
 		loop {
 			receive {
-				case Hello(f) => println("hola pianola! " + f)
-				case str: String => println("string: " + str)
-				case x: Int => println("int: " + x)
-				case msg => println(msg + "|" + msg.asInstanceOf[AnyRef].getClass())
+				case Hello => { 
+					hormigas = sender :: hormigas
+					sender ! Start(inst)
+				}
 			}
 		}
 	}
