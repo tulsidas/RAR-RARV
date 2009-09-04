@@ -1,2 +1,4 @@
 case object Hello
-case class Start(inst: Instance)
+case object Stop
+case class Start(inst: Instance, mejorLargo: Double)
+case class MejorLargo(largo: Double)
