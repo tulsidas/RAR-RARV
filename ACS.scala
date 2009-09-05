@@ -21,13 +21,17 @@ object ACS {
 
 		τ0 = m / mejorLargo
 
+		// val nf = new java.text.DecimalFormat("000")
 		val ant = new Ant(inst)
 
-		for (i <- 1 to 10000) {
+		for (i <- 1 to 100) {
 			val sa = ant.solve
+			
 			//println("Ant = " + sa.map(_.map(_.num)))
 			//println("length = " + sa.foldLeft(0.0)(_ + sumd(_)))
 			//println("vehiculos = " + sa.length)
+			//println("factible = " + inst.factible(sa))
+
 			val sal = sa.foldLeft(0.0)(_ + sumd(_))
 			val sav = sa.length		
 
@@ -37,12 +41,10 @@ object ACS {
 				println("mejor largo: " + mejorLargo)
 			}
 
-			if (i % 1000 == 0) {
-				println(" * " + i)
-			}
-
 			// actualizacion de feromonas globales
 			inst.globalTau(sa)
+			
+			// Imaginario.writeImage(nf.format(i)+".jpg", inst)
 		}
 
 		println("Mejor solucion = " + mejor.map(_.map(_.num)))

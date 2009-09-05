@@ -9,7 +9,7 @@ trait Solver {
 		var disponibles = inst.customers - source
 		var nn = List[List[Customer]]()
 
-		while (!disponibles.isEmpty) {
+		while (!disponibles.isEmpty /*&& nn.length < inst.vehiculos*/) {
 			// mando un camion
 			val visitas = camion(disponibles)
 			nn = nn ::: List(visitas)
@@ -45,6 +45,7 @@ trait Solver {
 			// actualizar tau local
 			if (prox != null) {
 				val τ = (1-ξ)*inst.tau(actual, prox) + ξ * τ0
+				//println("τ = " + inst.tau(actual, prox) + " -> " + τ)
 				inst.updateTau(actual, prox, τ)
 			}
 		}

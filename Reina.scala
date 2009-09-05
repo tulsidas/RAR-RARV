@@ -36,6 +36,10 @@ class Reina(port: Int, name: Symbol) extends Actor {
 
 	var mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
 	var mejorVehiculos = mejor.length
+	
+	// actualizo el maximo de vehiculos permitidos a lo que me dio NN
+	inst.vehiculos = mejorVehiculos
+	
 	println("NN length = " + mejorLargo)
 	println("NN vehiculos = " + mejorVehiculos)
 	Debug.level = 1
@@ -44,7 +48,7 @@ class Reina(port: Int, name: Symbol) extends Actor {
 
 	// helper para cortar el main loop
 	actor {
-		Thread.sleep(15 * 60 * 1000)
+		Thread.sleep(2 * 60 * 1000)
 		queenActress ! TIMEOUT
 	}
 
@@ -62,22 +66,26 @@ class Reina(port: Int, name: Symbol) extends Actor {
 				}
 				case MejorSolucion(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
-					//val newLargo = newMejor.foldLeft(0.0)(_ + sumd(_))
-					//if (newLargo < mejorLargo) {
-					//	mejor = newMejor
-					//	mejorLargo = newLargo
+					val newLargo = newMejor.foldLeft(0.0)(_ + sumd(_))
+					if (newLargo < mejorLargo) {
+						mejor = newMejor
+						mejorLargo = newLargo
 
 					// chequeo que efectivamente sea mejor
-					val newV = newMejor.length
-					if (newV < mejorVehiculos) {
-						mejor = newMejor
-						mejorVehiculos = newV
+					//val newV = newMejor.length
+					//if (newV < mejorVehiculos) {
+					//	mejor = newMejor
+					//	mejorVehiculos = newV
 					
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						inst overwriteTau(mejor)
 
 						// actualizo al resto de las hormigas
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorSolucion(mejor, ""))
+						
+						//println("mejor solucion = " + mejor.map(_.map(_.num)))
+						//println("largo = " + mejor.foldLeft(0.0)(_ + sumd(_)))
+						//println("vehiculos = " + mejor.length)
 					}
 				}
 				case TIMEOUT => {

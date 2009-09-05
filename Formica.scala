@@ -68,30 +68,36 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			}
 			else {
 				val sa = ant.solve
-				//println("Ant = " + sa.map(_.map(_.num)))
-				//println("length = " + sa.foldLeft(0.0)(_ + sumd(_)))
-				//val sal = sa.foldLeft(0.0)(_ + sumd(_))
+				val sal = sa.foldLeft(0.0)(_ + sumd(_))
 				val vehiculos = sa.length
 				val cust = sa.foldLeft(0)(_ + _.size - 1)
-				//println("vehiculos = " + vehiculos + " | cust = " + cust)
+				
+				//println("largo = " + sal)
+				//println("vehiculos = " + vehiculos)
 
-				/*
-				if (sal < mejorLargo) {
-					mejorLargo = sal
-					mejor = sa
-					println("encontre mejor largo: " + mejorLargo)
-					reina ! MejorSolucion(mejor, id)
+				if (inst.factible(sa)) {
+						if (sal < mejorLargo) {
+							mejorLargo = sal
+							mejor = sa
+							println("encontre mejor largo: " + mejorLargo)
+							reina ! MejorSolucion(mejor, id)
+							
+							// actualizacion de feromonas globales
+							inst.globalTau(sa)
+						}
 				}
-				*/
+				else {
+					println("sol no factible")
+				}
+				//println("")
+				/*
 				if (vehiculos < mejorVehiculos) {
 					mejorVehiculos = vehiculos
 					mejor = sa
 					println(System.currentTimeMillis + "\t|encontre mejor #vehiculos: " + mejorVehiculos)
 					reina ! MejorSolucion(mejor, id)
 				}
-
-				// actualizacion de feromonas globales
-				inst.globalTau(sa)
+				*/
 			}
 		}
 	}

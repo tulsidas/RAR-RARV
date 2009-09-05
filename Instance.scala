@@ -1,12 +1,18 @@
 import scala.collection.mutable.Map
 import Params._
 
-case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[Customer]) {
+case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[Customer]) {
 	val source = customers(0)
 
 	// cache de distancias
 	private[this] val distancias = Map.empty[(Customer, Customer), Double]
 	private[this] val tauMap = Map.empty[(Customer, Customer), Double]
+	
+	def factible(sol: List[List[Customer]]): Boolean = {
+		sol.foldLeft(0)(_ + _.size - 1) == customers.length-1 && sol.length <= vehiculos
+	}
+
+	def maxTau: Double = tauMap.values.toList.sort(_>_).head
 
 	def tau(a: Customer, b: Customer): Double = {
 		//println("tau("+a+","+b+")")
@@ -14,13 +20,13 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 		if (tauMap.contains(par)) {
 			tauMap(par)
 		}  
-		else {  
+		else {
 			0
 		}
 	}
 
 	def updateTau(a: Customer, b: Customer, τ: Double) = {
-		//println("updateTau("+a.num+","+b.num+")")
+		//println("updateTau("+a.num+","+b.num+") -> " + τ)
 		val par = (a, b)
 		tauMap + ((par, τ))
 	}
@@ -42,7 +48,7 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 		// τij = (1-p)τij + Δτ
 		val pares = List.flatten(solucion.map(c => c.zip(c.tail ::: List(c.head))))
 		pares.foreach(par => updateTau(par._1, par._2, 
-			(1 - p) * tau(par._1, par._2) + p*Δτ )
+			(1-p) * tau(par._1, par._2) + p*Δτ )
 		)
 	}
 
