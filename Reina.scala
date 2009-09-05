@@ -84,8 +84,8 @@ class Reina(port: Int, name: Symbol) extends Actor {
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorSolucion(mejor, ""))
 						
 						//println("mejor solucion = " + mejor.map(_.map(_.num)))
-						//println("largo = " + mejor.foldLeft(0.0)(_ + sumd(_)))
-						//println("vehiculos = " + mejor.length)
+						println("mejor largo = " + mejor.foldLeft(0.0)(_ + sumd(_)))
+						println("mejor vehiculos = " + mejor.length)
 					}
 				}
 				case TIMEOUT => {

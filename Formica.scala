@@ -79,7 +79,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						if (sal < mejorLargo) {
 							mejorLargo = sal
 							mejor = sa
-							//println("encontre mejor largo: " + mejorLargo)
+							println("encontre mejor largo: " + mejorLargo)
 							reina ! MejorSolucion(mejor, id)
 							
 							// actualizacion de feromonas globales
