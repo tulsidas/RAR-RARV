@@ -25,7 +25,7 @@ class Reina(port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val hormigas = Map.empty[String, OutputChannel[Any]]
-	val inst = Solomon.load("r103.txt")
+	val inst = Solomon.load("r101.txt")
 	val solver = new NearestNeighbour(inst)
 	var mejor = solver.solve
 	inst.globalTau(mejor)
@@ -44,7 +44,7 @@ class Reina(port: Int, name: Symbol) extends Actor {
 
 	// helper para cortar el main loop
 	actor {
-		Thread.sleep(5 * 60 * 1000)
+		Thread.sleep(15 * 60 * 1000)
 		queenActress ! TIMEOUT
 	}
 
