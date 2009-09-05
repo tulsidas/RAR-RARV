@@ -20,6 +20,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	var mejorLargo: Double = Math.MAX_DOUBLE
+	var mejorVehiculos: Double = Math.MAX_DOUBLE
 	var mejor: List[List[Customer]] = Nil
 	val id = UUID.randomUUID.toString
 	Debug.level = 1
@@ -34,11 +35,12 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 		// espero Start
 		receive {
-			case Start(_inst, _mejorLargo) => {
+			case Start(_inst, _mejorLargo, _mejorVehiculos) => {
 				inst = _inst
-				println("Start!")
 				ant = new Ant(inst)
 				mejorLargo = _mejorLargo
+				mejorVehiculos = _mejorVehiculos
+				println(System.currentTimeMillis + "\t|Start! ("+mejorLargo+" | " + mejorVehiculos + ")")
 			}
 		}
 
@@ -55,8 +57,9 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						// guardo el nuevo mejor
 						mejor = newMejor
 						mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
+						mejorVehiculos = mejor.length
 
-						println("recibo mejor solucion: " + mejorLargo)
+						println(System.currentTimeMillis + "\t|recibo mejor solucion: " + mejorLargo + " | " + mejorVehiculos)
 
 						// sobreescribo feromonas
 						inst overwriteTau(mejor)
@@ -67,14 +70,23 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 				val sa = ant.solve
 				//println("Ant = " + sa.map(_.map(_.num)))
 				//println("length = " + sa.foldLeft(0.0)(_ + sumd(_)))
-				//println("vehiculos = " + sa.length)
-				val sal = sa.foldLeft(0.0)(_ + sumd(_))
-				val sav = sa.length		
+				//val sal = sa.foldLeft(0.0)(_ + sumd(_))
+				val vehiculos = sa.length
+				val cust = sa.foldLeft(0)(_ + _.size - 1)
+				//println("vehiculos = " + vehiculos + " | cust = " + cust)
 
+				/*
 				if (sal < mejorLargo) {
 					mejorLargo = sal
 					mejor = sa
 					println("encontre mejor largo: " + mejorLargo)
+					reina ! MejorSolucion(mejor, id)
+				}
+				*/
+				if (vehiculos < mejorVehiculos) {
+					mejorVehiculos = vehiculos
+					mejor = sa
+					println(System.currentTimeMillis + "\t|encontre mejor #vehiculos: " + mejorVehiculos)
 					reina ! MejorSolucion(mejor, id)
 				}
 
