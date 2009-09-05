@@ -59,7 +59,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
 						mejorVehiculos = mejor.length
 
-						println(System.currentTimeMillis + "\t|recibo mejor solucion: " + mejorLargo + " | " + mejorVehiculos)
+						//println(System.currentTimeMillis + "\t|recibo mejor solucion: " + mejorLargo + " | " + mejorVehiculos)
 
 						// sobreescribo feromonas
 						inst overwriteTau(mejor)
@@ -79,16 +79,16 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						if (sal < mejorLargo) {
 							mejorLargo = sal
 							mejor = sa
-							println("encontre mejor largo: " + mejorLargo)
+							//println("encontre mejor largo: " + mejorLargo)
 							reina ! MejorSolucion(mejor, id)
 							
 							// actualizacion de feromonas globales
 							inst.globalTau(sa)
 						}
 				}
-				else {
-					println("sol no factible")
-				}
+				//else {
+				//	println("sol no factible")
+				//}
 				//println("")
 				/*
 				if (vehiculos < mejorVehiculos) {
