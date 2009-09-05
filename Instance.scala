@@ -25,6 +25,13 @@ case class Instance(val vehiculos: Int, val capacidad: Int, val customers: List[
 		tauMap + ((par, τ))
 	}
 
+	def overwriteTau(solucion: List[List[Customer]]) = {
+		// adios lo que tenia
+		tauMap clear
+
+		globalTau(solucion)
+	}
+
 	def globalTau(solucion: List[List[Customer]]) = {
 		def sumd(l: List[Customer]): Double = {
 			l.zip(l.tail).foldLeft(0.0)((x, y) => x + distancia(y._1, y._2))

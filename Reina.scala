@@ -1,8 +1,9 @@
-import scala.actors.{Actor, OutputChannel}
+import scala.actors.{Actor, OutputChannel, TIMEOUT}
 import scala.actors.Actor._
 import scala.actors.remote.RemoteActor
 import scala.actors.remote.RemoteActor._
 import scala.actors.Debug
+import scala.collection.mutable.Map
 
 object ReinaMain {
 	def main(args: Array[String]) {
@@ -23,7 +24,7 @@ object ReinaMain {
 class Reina(port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
-	var hormigas: List[OutputChannel[Any]] = Nil
+	val hormigas = Map.empty[String, OutputChannel[Any]]
 	val inst = Solomon.load("r101.txt")
 	val solver = new NearestNeighbour(inst)
 	var mejor = solver.solve
@@ -35,20 +36,33 @@ class Reina(port: Int, name: Symbol) extends Actor {
 
 	var mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
 	println("NN length = " + mejorLargo)
-	Debug.level = 9
+	Debug.level = 1
 
 	def act {
 		alive(port)
 		register(name, self)
 
 		loop {
-			receive {
-				case Hello => { 
-					hormigas = sender :: hormigas
+			react {
+				case Hello(id) => { 
+					hormigas + ((id, sender))
 					sender ! Start(inst, mejorLargo)
 				}
-				case MejorLargo(d) => {
-					println("el mejor largo es " + d)
+				case MejorSolucion(newMejor, id) => {
+					mejor = newMejor
+					println("nueva mejor solucion de " + id)
+					println(mejor.foldLeft(0.0)(_ + sumd(_)))
+
+					//println("sender: " + sender)
+					//println("hormigas: " + hormigas)
+					// println("hormigas-sender: " + (hormigas-sender))
+
+					// actualizo al resto de las hormigas
+					hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorSolucion(mejor, ""))
+				}
+				case TIMEOUT => {
+					// fue, mando Stop al resto
+					hormigas.foreach(p => p._2 ! Stop)
 				}
 			}
 		}

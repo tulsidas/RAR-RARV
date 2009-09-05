@@ -3,7 +3,7 @@ import scala.actors.Actor._
 import scala.actors.remote._
 import scala.actors.remote.RemoteActor._
 import scala.actors.Debug
-
+import java.util.UUID
 
 object FormicaMain {
 	def main(args: Array[String]) {
@@ -21,7 +21,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 	var mejorLargo: Double = Math.MAX_DOUBLE
 	var mejor: List[List[Customer]] = Nil
-	Debug.level = 9
+	val id = UUID.randomUUID.toString
+	Debug.level = 1
 
 	def act {
 		val reina = select(Node(host, port), name)
@@ -29,13 +30,13 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 		var inst: Instance = null
 
 		// hola		
-		reina ! Hello
+		reina ! Hello(id)
 
 		// espero Start
 		receive {
 			case Start(_inst, _mejorLargo) => {
 				inst = _inst
-				println(this + " Start")
+				println("Start!")
 				ant = new Ant(inst)
 				mejorLargo = _mejorLargo
 			}
@@ -46,11 +47,20 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 		}
 
 		var running = true
-		var i = 0
 		while(running) {
 			if (mailboxSize > 0) {
 				receive {
 					case Stop => running = false
+					case MejorSolucion(newMejor, _) => {
+						// guardo el nuevo mejor
+						mejor = newMejor
+						mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
+
+						println("recibo mejor solucion: " + mejorLargo)
+
+						// sobreescribo feromonas
+						inst overwriteTau(mejor)
+					}
 				}
 			}
 			else {
@@ -64,13 +74,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 				if (sal < mejorLargo) {
 					mejorLargo = sal
 					mejor = sa
-					println("mejor largo: " + mejorLargo)
-					reina ! MejorLargo(mejorLargo)
-				}
-
-				if (i % 1000 == 0) {
-					println("*")
-					i = i + 1
+					println("encontre mejor largo: " + mejorLargo)
+					reina ! MejorSolucion(mejor, id)
 				}
 
 				// actualizacion de feromonas globales
