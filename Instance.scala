@@ -76,8 +76,8 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	}
 
 	private def _distancia(c1: Customer, c2:Customer): Double = {
-		val difx = c1.pos._1 - c2.pos._1
-		val dify = c1.pos._2 - c2.pos._2
+		val difx = c1.x - c2.x
+		val dify = c1.y - c2.y
 		Math.sqrt((difx*difx).toDouble + (dify*dify).toDouble)
 	}
 }

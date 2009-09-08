@@ -2,6 +2,7 @@ import Params._
 
 object ACS {
 	def main(args: Array[String]) {
+		val nf = new java.text.DecimalFormat("000")
 		val inst = Solomon.load(args(0))
 		val solver = new NearestNeighbour(inst)
 
@@ -9,10 +10,14 @@ object ACS {
 			l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
 		}
 
-		//println("NN = " + nn.map(_.map(_.num)))
 		var mejor = solver.solve
 		var mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
+		println("NN = " + mejor.map(_.map(_.num)))
 		println("NN length = " + mejorLargo)
+		
+		Imaginario.writeImage(nf.format(0)+".jpg", inst, mejor)
+		
+		exit
 
 		inst.globalTau(mejor)
 
@@ -21,10 +26,9 @@ object ACS {
 
 		τ0 = m / mejorLargo
 
-		// val nf = new java.text.DecimalFormat("000")
 		val ant = new Ant(inst)
 
-		for (i <- 1 to 100) {
+		for (i <- 1 to 0) {
 			val sa = ant.solve
 			
 			//println("Ant = " + sa.map(_.map(_.num)))
@@ -45,6 +49,7 @@ object ACS {
 			inst.globalTau(sa)
 			
 			// Imaginario.writeImage(nf.format(i)+".jpg", inst)
+			//Imaginario.writeImage(nf.format(i)+".jpg", inst, sa)
 		}
 
 		println("Mejor solucion = " + mejor.map(_.map(_.num)))
