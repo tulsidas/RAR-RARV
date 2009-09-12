@@ -10,7 +10,6 @@ object Imaginario {
 		val scaleX = size / inst.customers.sort(_.x > _.x).head.x
 		val scaleY = size / inst.customers.sort(_.y > _.y).head.y
 
-
 		val buff = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
 		
 		val g = buff.createGraphics
@@ -41,6 +40,7 @@ object Imaginario {
 
 		// soluciones
 		sol.toStream.zip(colStream).foreach { stream =>
+		//sol.filter(_.length > 5).toStream.zip(colStream).foreach { stream =>
 			val l = stream _1
 			val col = stream _2
 

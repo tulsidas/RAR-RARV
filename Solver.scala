@@ -26,7 +26,7 @@ trait Solver {
 		var vecinos = nodos
 		var actual = inst.source
 		var capacidad = inst.capacidad
-		var nn = actual :: Nil // List[Customer]()
+		var nn = actual :: Nil
 
 		var prox:Customer = proximo(actual, vecinos, hora, capacidad)
 
@@ -53,7 +53,7 @@ trait Solver {
 		nn
 	}
 
-	def factible(nodo: Customer, vecino: Customer, hora: Double, capacidad: Int): Boolean = {
+	def insertable(nodo: Customer, vecino: Customer, hora: Double, capacidad: Int): Boolean = {
 		val d = inst.distancia(nodo, vecino)
 		hora + d < vecino.due && vecino.demand <= capacidad
 	}

@@ -8,14 +8,14 @@ class Ant(val inst: Instance) extends Solver {
 	def proximo(nodo: Customer, vecinos: List[Customer], 
 					hora: Double, capacidad: Int): Customer = {
 		// filtro los que llego a tiempo y me alcanza la capacidad
-		val factibles = vecinos.filter(vecino => factible(nodo, vecino, hora, capacidad))
+		val insertables = vecinos.filter(vecino => insertable(nodo, vecino, hora, capacidad))
 
-		if (factibles.isEmpty) {
+		if (insertables.isEmpty) {
 			null
 		}
 		else {
 			// un mapa [Customer, Double] con (tau*η^β) precalculado
-			val mapη = factibles.foldLeft(Map[Customer, Double]()) { 
+			val mapη = insertables.foldLeft(Map[Customer, Double]()) { 
 				(m, v) => m(v) = inst.tau(nodo, v) * Math.pow((1.0/inst.distancia(nodo, v)), β)
 			}
 
@@ -28,7 +28,7 @@ class Ant(val inst: Instance) extends Solver {
 				val bestη = mapη.values.toList.sort(_ > _).head
 
 				// si hay varios con el mismo η, obtengo uno al azar de esos
-				val bests = factibles.filter(mapη(_) == bestη)
+				val bests = insertables.filter(mapη(_) == bestη)
 
 				if (bests.length > 1) {
 					weightedCases(bests.map((_, 1/bests.length)))

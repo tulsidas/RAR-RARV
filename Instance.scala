@@ -8,8 +8,42 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	private[this] val distancias = Map.empty[(Customer, Customer), Double]
 	private[this] val tauMap = Map.empty[(Customer, Customer), Double]
 	
+	/**
+	 * Si la solución visita a todos los clientes usando a lo sumo los vehiculos disponibles
+	 */
 	def factible(sol: List[List[Customer]]): Boolean = {
 		sol.foldLeft(0)(_ + _.size - 1) == customers.length-1 && sol.length <= vehiculos
+	}
+	
+	def camionFactible(camion: List[Customer]): Boolean = {
+		var hora:Double = 0
+		var disponible = capacidad
+
+		def vecinoFactible(actual: Customer, prox: Customer): Boolean = {
+			val dist = distancia(actual, prox)
+			val servicio = Math.max(prox.ready, hora + dist)
+			
+			// llego antes del fin de la ventana y me alcanza la carga?
+			if (servicio <= prox.due && disponible >= prox.demand) {
+				// actualizo tiempo y carga
+				hora = servicio + prox.service
+				disponible -= prox.demand
+				true
+			}
+			else {
+				false
+			}
+		}
+		
+		def recorridoFactible(clientes: List[Customer]): Boolean = {
+			clientes match {
+				case Nil => true
+				case x :: Nil => true
+				case x :: y :: xs => vecinoFactible(x, y) && recorridoFactible(y :: xs)
+			}
+		}
+
+		recorridoFactible(camion/*::: List(source)*/)
 	}
 
 	def maxTau: Double = tauMap.values.toList.sort(_>_).head
