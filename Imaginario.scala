@@ -32,9 +32,9 @@ object Imaginario {
 		)
 		
 		def colStream: Stream[Color] = {
-			val colores = List(Color.CYAN, Color.DARK_GRAY, Color.GRAY, Color.GREEN,
+			val colores = List(Color.RED, Color.GREEN, Color.YELLOW, Color.CYAN, Color.DARK_GRAY, 
 									Color.LIGHT_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK,
-									Color.WHITE, Color.YELLOW)
+									Color.WHITE, Color.GRAY)
 			colores.toStream append colStream
 		}
 
