@@ -9,8 +9,11 @@ object LocalSearchMain {
 	
 		val ls = new LocalSearch(inst, mejor)
 		//ls.relocate()
+		println("dosOpt")
 		ls.dosOpt()
+		println("tresOpt")
 		ls.tresOpt()
+		println("cuatroOpt")
 		ls.cuatroOpt()
 	}
 }
@@ -42,52 +45,36 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		solucion.foreach(relocateCamion _)
 	}
 
-	def swap2(camion: List[Customer]): List[List[Customer]] = {
-		camion match {
-			case Nil => Nil
-			case x :: Nil => Nil
-			case x :: y :: xs => List(y :: x :: xs) ++ swap2(y :: xs).map(x :: _)
+	def opt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
+		def _opt(_camion: List[Customer]): List[List[Customer]] = {
+			_camion match {
+				case xs if xs.length < n => Nil
+				case xs => List(xs.take(n).reverse ++ xs.drop(n)) ++ opt(n)(xs)
+			}
 		}
+		
+		// saco el source y lo agrego al resto
+		_opt(camion.tail).map(camion.head :: _)
 	}
 	
-	def swap3(camion: List[Customer]): List[List[Customer]] = {
-		camion match {
-			case Nil => Nil
-			case x :: Nil => Nil
-			case x :: y :: Nil => Nil
-			case x :: y :: z :: xs => List(z :: y :: x :: xs) ++ 
-				swap3(y :: z :: xs).map(x :: _)
-		}
-	}
+	def search(gen: List[Customer] => List[List[Customer]]) = {
+		solucion.foreach { camion => 		
+			val largo = sumd(camion)
 
-	def swap4(camion: List[Customer]): List[List[Customer]] = {
-		camion match {
-			case Nil => Nil
-			case x :: Nil => Nil
-			case x :: y :: Nil => Nil
-			case x :: y :: z :: Nil => Nil
-			case w :: x :: y :: z :: xs => List(z :: y :: x :: w :: xs) ++ 
-				swap4(x :: y :: z :: xs).map(w :: _)
-		}
-	}
-	
-	def opt(swapper: List[Customer] => List[List[Customer]]) = {
-		solucion.foreach { camion => 
-			println("*"+camion.map(_ num))
-			
-			swapper(camion.tail).foreach { swapped =>
-				val l = camion.head :: swapped
-				println(" "+l.map(_ num))
-
+			gen(camion).foreach { l =>
 				if (inst.camionFactible(l)) {
-					println("new factible: " + l.map(_.num))
-					println("new largo = " + sumd(l))
+					val newLargo = sumd(l)
+					if (newLargo < largo) {
+						println("anterior = " + camion.map(_.num) + "|" + sumd(camion))
+						println("mejor solucion" + l.map(_.num) + "|" + sumd(l))
+						println()
+					}
 				}
 			}
 		}
 	}
 	
-	def dosOpt() = opt(swap2)
-	def tresOpt() = opt(swap3)
-	def cuatroOpt() = opt(swap4)
+	def dosOpt() = search(opt(2))
+	def tresOpt() = search(opt(3))
+	def cuatroOpt() = search(opt(4))
 }
