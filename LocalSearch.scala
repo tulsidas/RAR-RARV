@@ -9,19 +9,27 @@ object LocalSearchMain {
 	
 		val ls = new LocalSearch(inst, mejor)
 		//ls.relocate()
-		println("dosOpt")
+
+		println("dosOpt********************************\n")
 		ls.dosOpt()
-		println("tresOpt")
+		println("tresOpt********************************\n")
 		ls.tresOpt()
-		println("cuatroOpt")
+		println("cuatroOpt********************************\n")
 		ls.cuatroOpt()
+		
+		println("dosOrOpt********************************\n")
+		ls.dosOrOpt()
+		println("tresOrOpt********************************\n")
+		ls.tresOrOpt()
+		println("cuatroOrOpt********************************\n")
+		ls.cuatroOrOpt()
 	}
 }
 
 class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	val rnd = new scala.util.Random()
 
-	def sumd(l: List[Customer]): Double = {
+	private def sumd(l: List[Customer]): Double = {
 		l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
 	}
 
@@ -45,7 +53,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		solucion.foreach(relocateCamion _)
 	}
 
-	def opt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
+	private def opt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
 		def _opt(_camion: List[Customer]): List[List[Customer]] = {
 			_camion match {
 				case xs if xs.length < n => Nil
@@ -54,15 +62,37 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		}
 		
 		// saco el source y lo agrego al resto
-		_opt(camion.tail).map(camion.head :: _)
+		_opt(camion.tail).map(camion.head :: _)		
 	}
 	
-	def search(gen: List[Customer] => List[List[Customer]]) = {
+	private def orOpt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
+		def _orOpt(_camion: List[Customer]): List[List[Customer]] = {
+			_camion match {
+				case xs if xs.length < n + 1 => Nil
+
+				case xs => {
+					val chunk = xs.take(n)
+					val rest = xs.drop(n)
+					val chr = chunk ++ rest.tail
+				
+					List(rest.head :: chr) ++ _orOpt(chr).map(rest.head :: _)
+				}
+			}
+		}
+		
+		// saco el source y lo agrego al resto
+		_orOpt(camion.tail).map(camion.head :: _)
+	}
+	
+	private def search(gen: List[Customer] => List[List[Customer]]) = {
 		solucion.foreach { camion => 		
 			val largo = sumd(camion)
+			//println("original: " + camion.map(_.num))
 
 			gen(camion).foreach { l =>
+				//println("variante: " + l.map(_.num))
 				if (inst.camionFactible(l)) {
+					//println("factible: " + l.map(_.num) + "|" + sumd(l))
 					val newLargo = sumd(l)
 					if (newLargo < largo) {
 						println("anterior = " + camion.map(_.num) + "|" + sumd(camion))
@@ -77,4 +107,8 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	def dosOpt() = search(opt(2))
 	def tresOpt() = search(opt(3))
 	def cuatroOpt() = search(opt(4))
+
+	def dosOrOpt() = search(orOpt(2))
+	def tresOrOpt() = search(orOpt(3))
+	def cuatroOrOpt() = search(orOpt(4))
 }
