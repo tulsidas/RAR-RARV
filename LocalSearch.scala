@@ -8,21 +8,21 @@ object LocalSearchMain {
 		val mejor = solver.solve
 	
 		val ls = new LocalSearch(inst, mejor)
-		//ls.relocate()
-
-		println("dosOpt********************************\n")
-		ls.dosOpt()
-		println("tresOpt********************************\n")
-		ls.tresOpt()
-		println("cuatroOpt********************************\n")
-		ls.cuatroOpt()
+		println("relocate********************************\n")
+		ls.relocate(1)
+		println("relocate 2********************************\n")
+		ls.relocate(2)
+		println("relocate 3********************************\n")
+		ls.relocate(3)
+		println("relocate 4********************************\n")
+		ls.relocate(4)
 		
-		println("dosOrOpt********************************\n")
-		ls.dosOrOpt()
-		println("tresOrOpt********************************\n")
-		ls.tresOrOpt()
-		println("cuatroOrOpt********************************\n")
-		ls.cuatroOrOpt()
+		println("reverse 2********************************\n")
+		ls.reverse(2)
+		println("reverse 3********************************\n")
+		ls.reverse(3)
+		println("reverse 4********************************\n")
+		ls.reverse(4)
 	}
 }
 
@@ -33,38 +33,36 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
 	}
 
-	def relocate() = {
-		def relocateCamion(camion: List[Customer]) = {
-			def relocateCustomer(camion: List[Customer], customer: Customer) = {
-				val camionIt = camion - customer
-				for(i <- 1 to camionIt.length) {
-					val l = camionIt.take(i) ::: List(customer) ::: camionIt.drop(i)
-					if (l != camion && inst.camionFactible(l)) {
-						println("new factible: " + l.map(_.num))
-						println("new largo = " + sumd(l))
-					}
+	private def relocateOpt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
+		val ret = new scala.collection.mutable.HashSet[List[Customer]]
+		for(i <- 1 to camion.length-n) { // no muevo el source
+			val chunk = camion.slice(i, i+n)
+			val camionIt = camion -- chunk
+		
+			for (j <- 1 to camionIt.length) { // no muevo el source
+				val l = camionIt.take(j) ::: chunk ::: camionIt.drop(j)
+				if (l != camion) {
+					ret += l
 				}
-				println("")
 			}
-
-			camion.tail.foreach(relocateCustomer(camion, _))
 		}
-
-		solucion.foreach(relocateCamion _)
+		
+		ret.toList
 	}
 
-	private def opt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
-		def _opt(_camion: List[Customer]): List[List[Customer]] = {
+	private def reverseOpt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
+		def _swap(_camion: List[Customer]): List[List[Customer]] = {
 			_camion match {
 				case xs if xs.length < n => Nil
-				case xs => List(xs.take(n).reverse ++ xs.drop(n)) ++ opt(n)(xs)
+				case xs => List(xs.take(n).reverse ++ xs.drop(n)) ++ reverseOpt(n)(xs)
 			}
 		}
 		
 		// saco el source y lo agrego al resto
-		_opt(camion.tail).map(camion.head :: _)		
+		_swap(camion.tail).map(camion.head :: _)		
 	}
 	
+	/*
 	private def orOpt(n: Int)(camion: List[Customer]): List[List[Customer]] = {
 		def _orOpt(_camion: List[Customer]): List[List[Customer]] = {
 			_camion match {
@@ -83,6 +81,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		// saco el source y lo agrego al resto
 		_orOpt(camion.tail).map(camion.head :: _)
 	}
+	*/
 	
 	private def search(gen: List[Customer] => List[List[Customer]]) = {
 		solucion.foreach { camion => 		
@@ -104,11 +103,6 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		}
 	}
 	
-	def dosOpt() = search(opt(2))
-	def tresOpt() = search(opt(3))
-	def cuatroOpt() = search(opt(4))
-
-	def dosOrOpt() = search(orOpt(2))
-	def tresOrOpt() = search(orOpt(3))
-	def cuatroOrOpt() = search(orOpt(4))
+	def reverse(n: Int) = search(reverseOpt(n))
+	def relocate(n: Int) = search(relocateOpt(n))
 }
