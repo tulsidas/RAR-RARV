@@ -2,14 +2,13 @@ import Params._
 
 object LocalSearchMain {
 	def main(args: Array[String]) {
-	
 		val inst = Solomon.load(args(0))
 		val solver = new NearestNeighbour(inst)
 
 		val mejor = solver.solve
 	
 		val ls = new LocalSearch(inst, mejor)
-		ls.dosOptAsterisco()		
+		ls.dosOpt()		
 
 		/*	
 		println("relocate********************************\n")
@@ -40,7 +39,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	}
 
 	private def relocateOpt(n: Int)(camion: Ruta): List[Ruta] = {
-		val ret = new scala.collection.mutable.HashSet[Ruta]
+		val ret = new scala.collection.mutable.ListBuffer[Ruta]
 		for(i <- 1 to camion.length-n) { // no muevo el source
 			val chunk = camion.slice(i, i+n)
 			val camionIt = camion -- chunk
@@ -90,22 +89,35 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		}
 	}
 	
-	def reverse(n: Int) = search(reverseOpt(n))
-	def relocate(n: Int) = search(relocateOpt(n))
-	
 	// multiruta
-	def dosOptAsterisco() = {
-		def tailExchange(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
-			val ret = new scala.collection.mutable.HashSet[(Ruta, Ruta)]
-			for (i <- 1 to l1.length-1; j <- 1 to l2.length-1 if (!(i == 1 && j == 1))) {
-				ret += ((l1.take(j) ++ l2.drop(i), l2.take(i) ++ l1.drop(j)))
-			}
+	private def crossExchange(n: Int)(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
+		val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
 		
-			ret.toList
+		// desde 1 para no cambiar el source
+		for (i <- 1 to l1.length-n; j <- 1 to l2.length-n) {
+
+			// cambio el cachito de l1(i) en l2(j)
+			val nl1 = l1.take(i) ++ l2.drop(j).take(n) ++ l1.drop(i+n)
+			val nl2 = l2.take(j) ++ l1.drop(i).take(n) ++ l2.drop(j+n)
+
+			ret += ((nl1, nl2))
 		}
 		
+		ret.toList
+	}
+	
+	private def tailExchange(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
+		val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
+		for (i <- 1 to l1.length/*-1*/; j <- 1 to l2.length/*-1*/ if (!(i == 1 && j == 1))) {
+			ret += ((l1.take(j) ++ l2.drop(i), l2.take(i) ++ l1.drop(j)))
+		}
+	
+		ret.toList
+	}
+	
+	private def multisearch(gen: (Ruta, Ruta) => List[(Ruta, Ruta)]) = {
 		def producto(l: List[Ruta]): List[(Ruta, Ruta)] = {
-			val ret = new scala.collection.mutable.HashSet[(Ruta, Ruta)]
+			val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
 			for (i <- 0 to l.length-1; j <- i+1 to l.length-1) {
 				ret += ((l(i), l(j)))
 			}
@@ -119,7 +131,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 			val l1 = par._1
 			val l2 = par._2
 
-			tailExchange(l1, l2).foreach { np =>
+			gen(l1, l2).foreach { np =>
 				// por cada par, me fijo que las nuevas sean factibles y de menor largo
 				val n1 = np._1
 				val n2 = np._2
@@ -127,7 +139,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				if (inst.camionFactible(n1) && inst.camionFactible(n2)) {
 					// cambio factible
 					if (sumd(n1) + sumd(n2) < sumd(l1) + sumd(l2)) {
-						println("cambio factible")
+						println("cambio mejorable")
 						println(l1.map(_.num))
 						println(l2.map(_.num))
 						println("largo = " + (sumd(l1) + sumd(l2)))
@@ -143,7 +155,14 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				}
 			}
 		}
-		
-		null
 	}
+	
+	// metodos API
+	// intraruta
+	def reverse(n: Int) = search(reverseOpt(n))
+	def relocate(n: Int) = search(relocateOpt(n))
+	
+	// def interruta
+	def dosOpt() = multisearch(tailExchange)
+	def cross(n: Int) = multisearch(crossExchange(n))
 }
