@@ -31,6 +31,14 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 				true
 			}
 			else {
+				/*
+				if (servicio > prox.due) {
+					println(actual.num + " -> " + prox.num + " | servicio " + servicio + " > " + prox.due)
+				}
+				else if (disponible < prox.demand) {
+					println(actual.num + " -> " + prox.num + " | disponible " + disponible + " < " + prox.demand)
+				}
+				*/
 				false
 			}
 		}
