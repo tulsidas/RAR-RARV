@@ -9,66 +9,11 @@ object LocalSearchMain {
 	
 		val ls = new LocalSearch(inst, mejor)
 		println("largo original = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
-
-		println("relocate(3,2)********************************\n")
-		ls.relocate(3, 2)
-		println("relocate(3,1)********************************\n")
-		ls.relocate(3, 1)
-		println("relocate(3,0)********************************\n")
-		ls.relocate(3, 0)
-		println("relocate(2,1)********************************\n")
-		ls.relocate(2, 1)
-		println("relocate(2,0)********************************\n")
-		ls.relocate(2, 0)
-		println("relocate(1,0)********************************\n")
-		ls.relocate(1, 0)
-
-		println("relocate(2,3)********************************\n")
-		ls.relocate(2, 3)
-		println("relocate(1,3)********************************\n")
-		ls.relocate(1, 3)
-		println("relocate(0,3)********************************\n")
-		ls.relocate(0, 3)
-		println("relocate(1,2)********************************\n")
-		ls.relocate(1, 2)
-		println("relocate(0,2)********************************\n")
-		ls.relocate(0, 2)
-		println("relocate(0,1)********************************\n")
-		ls.relocate(0, 1)
-
-		/*		
-		println("dosOpt********************************\n")
-		ls.dosOpt()
-
-		println("cross 4********************************\n")
-		ls.cross(4)
-		println("cross 3********************************\n")
-		ls.cross(3)
-		println("cross 2********************************\n")
-		ls.cross(2)
-		println("cross 1********************************\n")
-		ls.cross(1)
-
-		println("reverse 4********************************\n")
-		ls.reverse(4)
-		println("reverse 3********************************\n")
-		ls.reverse(3)
-		println("reverse 2********************************\n")
-		ls.reverse(2)
-
-		println("relocate 4********************************\n")
-		ls.relocate(4)
-		println("relocate 3********************************\n")
-		ls.relocate(3)
-		println("relocate 2********************************\n")
-		ls.relocate(2)
-		println("relocate********************************\n")
-		ls.relocate(1)
-		*/
 		
-		println("---")
+		ls.search()
+
 		println(ls.mejorSolucion.map(_.map(_.num)))
-		println("largo = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
+		println("largo resultante = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
 	}
 }
 
@@ -112,7 +57,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		_swap(camion.tail).map(camion.head :: _)		
 	}
 	
-	private def search(gen: Ruta => List[Ruta]): Unit = {
+	private def unisearch(gen: Ruta => List[Ruta]): Unit = {
 		mejorSolucion.foreach { camion => 		
 			val largo = sumd(camion)
 
@@ -121,14 +66,14 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 					// actualizo mejor solucion
 					mejorSolucion = l :: (mejorSolucion - camion)
 
-					println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+					//println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
 
 					// llamada recursiva con la mejora
-					return search(gen)						
+					return unisearch(gen)						
 				}
 			}
 		}
-		println("mejor largo local = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+		//println("mejor largo local = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
 	}
 	
 	// multiruta
@@ -186,7 +131,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 						// actualizo mejor solucion
 						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
 
-						println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+						//println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
 
 						// llamada recursiva con la mejora
 						return multisearch(gen)
@@ -194,19 +139,47 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				}
 			}
 		}
-		println("mejor largo local (multi) = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+		//println("mejor largo local (multi) = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
 	}
 	
 	//////////////////////
 	// metodos publicos //
 	//////////////////////
+	
+	def search(): Unit = {
+		println("search")
+		val largo = mejorSolucion.foldLeft(0.0)(_ + sumd(_))
+		
+		println("dosOpt()")
+		dosOpt()
+		
+		for (n <- 0 to 3; m <- 0 to 3) {
+			println("relocate("+n+","+m+")")
+			relocate(n, m)
+		}
+		
+		for (n <- 2 to 4 reverse) {
+			println("reverse("+n+")")
+			reverse(n)
+		}
+
+		for (n <- 1 to 4 reverse) {
+			println("relocate("+n+")")
+			relocate(n)
+		}
+		
+		val newLargo = mejorSolucion.foldLeft(0.0)(_ + sumd(_))
+		if (newLargo < largo) {
+			// sigo
+			search()
+		}		
+	}
 
 	// intraruta
-	def reverse(n: Int) = search(reverseOpt(n))
-	def relocate(n: Int) = search(relocateOpt(n))
+	def reverse(n: Int) = unisearch(reverseOpt(n))
+	def relocate(n: Int) = unisearch(relocateOpt(n))
 	
 	// def interruta
 	def dosOpt() = multisearch(tailExchange)
-	def cross(n: Int) = multisearch(crossExchange(n, n))
 	def relocate(n: Int, m: Int) = multisearch(crossExchange(n, m))
 }
