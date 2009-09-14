@@ -8,33 +8,78 @@ object LocalSearchMain {
 		val mejor = solver.solve
 	
 		val ls = new LocalSearch(inst, mejor)
-		ls.dosOpt()		
+		println("largo original = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
 
-		/*	
-		println("relocate********************************\n")
-		ls.relocate(1)
-		println("relocate 2********************************\n")
-		ls.relocate(2)
-		println("relocate 3********************************\n")
-		ls.relocate(3)
-		println("relocate 4********************************\n")
-		ls.relocate(4)
-		
-		println("reverse 2********************************\n")
-		ls.reverse(2)
-		println("reverse 3********************************\n")
-		ls.reverse(3)
+		println("relocate(3,2)********************************\n")
+		ls.relocate(3, 2)
+		println("relocate(3,1)********************************\n")
+		ls.relocate(3, 1)
+		println("relocate(3,0)********************************\n")
+		ls.relocate(3, 0)
+		println("relocate(2,1)********************************\n")
+		ls.relocate(2, 1)
+		println("relocate(2,0)********************************\n")
+		ls.relocate(2, 0)
+		println("relocate(1,0)********************************\n")
+		ls.relocate(1, 0)
+
+		println("relocate(2,3)********************************\n")
+		ls.relocate(2, 3)
+		println("relocate(1,3)********************************\n")
+		ls.relocate(1, 3)
+		println("relocate(0,3)********************************\n")
+		ls.relocate(0, 3)
+		println("relocate(1,2)********************************\n")
+		ls.relocate(1, 2)
+		println("relocate(0,2)********************************\n")
+		ls.relocate(0, 2)
+		println("relocate(0,1)********************************\n")
+		ls.relocate(0, 1)
+
+		/*		
+		println("dosOpt********************************\n")
+		ls.dosOpt()
+
+		println("cross 4********************************\n")
+		ls.cross(4)
+		println("cross 3********************************\n")
+		ls.cross(3)
+		println("cross 2********************************\n")
+		ls.cross(2)
+		println("cross 1********************************\n")
+		ls.cross(1)
+
 		println("reverse 4********************************\n")
 		ls.reverse(4)
+		println("reverse 3********************************\n")
+		ls.reverse(3)
+		println("reverse 2********************************\n")
+		ls.reverse(2)
+
+		println("relocate 4********************************\n")
+		ls.relocate(4)
+		println("relocate 3********************************\n")
+		ls.relocate(3)
+		println("relocate 2********************************\n")
+		ls.relocate(2)
+		println("relocate********************************\n")
+		ls.relocate(1)
 		*/
+		
+		println("---")
+		println(ls.mejorSolucion.map(_.map(_.num)))
+		println("largo = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
 	}
 }
 
 class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	val rnd = new scala.util.Random()
 	type Ruta = List[Customer]
+	var i = 0
+	
+	var mejorSolucion = solucion
 
-	private def sumd(l: Ruta): Double = {
+	def sumd(l: Ruta): Double = {
 		l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
 	}
 
@@ -67,30 +112,27 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		_swap(camion.tail).map(camion.head :: _)		
 	}
 	
-	private def search(gen: Ruta => List[Ruta]) = {
-		solucion.foreach { camion => 		
+	private def search(gen: Ruta => List[Ruta]): Unit = {
+		mejorSolucion.foreach { camion => 		
 			val largo = sumd(camion)
-			//println("original: " + camion.map(_.num))
 
 			gen(camion).foreach { l =>
-				//println("variante: " + l.map(_.num))
-				if (inst.camionFactible(l)) {
-					//println("factible: " + l.map(_.num) + "|" + sumd(l))
-					val newLargo = sumd(l)
-					if (newLargo < largo) {
-						println("anterior = " + camion.map(_.num) + "|" + sumd(camion))
-						println("mejor solucion" + l.map(_.num) + "|" + sumd(l))
-						//Imaginario.writeImage(i+".jpg", inst, List(camion))
-						//Imaginario.writeImage(i+"_new.jpg", inst, List(l))
-						println()
-					}
+				if (inst.camionFactible(l) && sumd(l) < largo) {
+					// actualizo mejor solucion
+					mejorSolucion = l :: (mejorSolucion - camion)
+
+					println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+
+					// llamada recursiva con la mejora
+					return search(gen)						
 				}
 			}
 		}
+		println("mejor largo local = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
 	}
 	
 	// multiruta
-	private def crossExchange(n: Int)(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
+	private def crossExchange(n: Int, m: Int)(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
 		val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
 		
 		// desde 1 para no cambiar el source
@@ -115,7 +157,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		ret.toList
 	}
 	
-	private def multisearch(gen: (Ruta, Ruta) => List[(Ruta, Ruta)]) = {
+	private def multisearch(gen: (Ruta, Ruta) => List[(Ruta, Ruta)]): Unit = {
 		def producto(l: List[Ruta]): List[(Ruta, Ruta)] = {
 			val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
 			for (i <- 0 to l.length-1; j <- i+1 to l.length-1) {
@@ -124,10 +166,8 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 			ret.toList
 		}
 		
-		var i = 0
-
 		// agarro cada par de rutas y pruebo hacer cambios
-		producto(solucion).foreach { par =>
+		producto(mejorSolucion).foreach { par =>
 			val l1 = par._1
 			val l2 = par._2
 
@@ -139,30 +179,34 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				if (inst.camionFactible(n1) && inst.camionFactible(n2)) {
 					// cambio factible
 					if (sumd(n1) + sumd(n2) < sumd(l1) + sumd(l2)) {
-						println("cambio mejorable")
-						println(l1.map(_.num))
-						println(l2.map(_.num))
-						println("largo = " + (sumd(l1) + sumd(l2)))
-						println("=>")
-						println(n1.map(_.num))
-						println(n2.map(_.num))
-						println("largo = " + (sumd(n1) + sumd(n2)))
-						println("----------------")
-						Imaginario.writeImage(i+".jpg", inst, List(l1, l2))
-						Imaginario.writeImage(i+"_new.jpg", inst, List(n1, n2))
-						i = i+1
+						//Imaginario.writeImage(i+".jpg", inst, List(l1, l2))
+						//Imaginario.writeImage(i+"_new.jpg", inst, List(n1, n2))
+						//i = i+1
+
+						// actualizo mejor solucion
+						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
+
+						println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+
+						// llamada recursiva con la mejora
+						return multisearch(gen)
 					}
 				}
 			}
 		}
+		println("mejor largo local (multi) = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
 	}
 	
-	// metodos API
+	//////////////////////
+	// metodos publicos //
+	//////////////////////
+
 	// intraruta
 	def reverse(n: Int) = search(reverseOpt(n))
 	def relocate(n: Int) = search(relocateOpt(n))
 	
 	// def interruta
 	def dosOpt() = multisearch(tailExchange)
-	def cross(n: Int) = multisearch(crossExchange(n))
+	def cross(n: Int) = multisearch(crossExchange(n, n))
+	def relocate(n: Int, m: Int) = multisearch(crossExchange(n, m))
 }
