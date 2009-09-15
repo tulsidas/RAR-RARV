@@ -11,7 +11,7 @@ object FormicaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 
 		for (i <- 1 to cores) {
-			for (h <- 1 to 2) {
+			for (h <- 1 to args(1).toInt) {
 				new Formica(host, 9010, 'ACS).start()
 			}
 		}
