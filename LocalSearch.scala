@@ -121,21 +121,34 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				val n1 = np._1
 				val n2 = np._2
 				
+				// cambio factible
 				if (inst.camionFactible(n1) && inst.camionFactible(n2)) {
-					// cambio factible
+					if (l1.length + l2.length != n1.length + n2.length) {
+						println("!!!!! l1 = " + l1.length + " l2 = " + l2.length + " n1 = " + n1.length + " n2 = " + n2.length + " l1+l2 = " + (l1.length+l2.length) + " n1+n2 = " + (n1.length+n2.length))
+					}
+
+					// cambio mejorable (largo o vehiculos)				
 					if (inst.camionLength(n1) + inst.camionLength(n2) < 
 							inst.camionLength(l1) + inst.camionLength(l2)) {
+						// mejora del largo
+						
 						//Imaginario.writeImage(i+".jpg", inst, List(l1, l2))
 						//Imaginario.writeImage(i+"_new.jpg", inst, List(n1, n2))
 						//i = i+1
-
+						
 						// actualizo mejor solucion
 						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
 
-						//println("nuevo mejor largo = " + inst.solLength(mejorSolucion))
-
 						// llamada recursiva con la mejora
 						return multisearch(gen)
+					}
+					else if (n1.length < 2) {
+						// reduzco un vehiculo
+						mejorSolucion = List(n2) ::: (mejorSolucion -- List(l1, l2))
+					}
+					else if (n2.length < 2){
+						// reduzco un vehiculo
+						mejorSolucion = List(n1) ::: (mejorSolucion -- List(l1, l2))
 					}
 				}
 			}
@@ -152,7 +165,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		val largo = inst.solLength(mejorSolucion)
 		
 		dosOpt()
-		
+
 		for (n <- 0 to 3; m <- 0 to 3) {
 			relocate(n, m)
 		}

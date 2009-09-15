@@ -11,7 +11,9 @@ object FormicaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 
 		for (i <- 1 to cores) {
-			new Formica(host, 9010, 'ACS).start()
+			for (h <- 1 to 2) {
+				new Formica(host, 9010, 'ACS).start()
+			}
 		}
 	}
 }
@@ -40,7 +42,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 				ant = new Ant(inst)
 				mejorLargo = _mejorLargo
 				mejorVehiculos = _mejorVehiculos
-				println(System.currentTimeMillis + "\t|Start! ("+mejorLargo+" | " + mejorVehiculos + ")")
+				//println(System.currentTimeMillis + "\t|Start! ("+mejorLargo+" | " + mejorVehiculos + ")")
 			}
 		}
 

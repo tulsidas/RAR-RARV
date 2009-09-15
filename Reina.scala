@@ -15,8 +15,9 @@ object ReinaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 
 		for (i <- 1 to cores) {
-			println("nueva hormiga local")
-			new Formica("localhost", 9010, 'ACS).start()
+			for (h <- 1 to 2) {
+				new Formica("localhost", 9010, 'ACS).start()
+			}
 		}
 	}
 }
@@ -46,7 +47,7 @@ class Reina(file: String, port: Int, name: Symbol) extends Actor {
 
 	// helper para cortar el main loop
 	actor {
-		Thread.sleep(5 * 60 * 1000)
+		Thread.sleep(2 * 60 * 1000)
 		queenActress ! TIMEOUT
 	}
 
@@ -68,7 +69,10 @@ class Reina(file: String, port: Int, name: Symbol) extends Actor {
 					val newLargo = inst.solLength(newMejor)
 					val newVehiculos = newMejor.length
 					
-					if (newLargo < mejorLargo && newVehiculos <= mejorVehiculos) {
+					// veo si mejoro vehiculos o largo
+					if (newVehiculos < mejorVehiculos 
+						|| (newLargo < mejorLargo && newVehiculos <= mejorVehiculos)) {
+
 						mejor = newMejor
 						mejorLargo = newLargo
 						mejorVehiculos = newVehiculos
