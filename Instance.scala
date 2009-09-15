@@ -15,6 +15,14 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 		sol.foldLeft(0)(_ + _.size - 1) == customers.length-1 && sol.length <= vehiculos
 	}
 	
+	def camionLength(l: List[Customer]): Double = {
+		l.zip(l.tail++List(l.head)).foldLeft(0.0)((x, y) => x + distancia(y._1, y._2))
+	}
+
+	def solLength(sol: List[List[Customer]]): Double = {		
+		sol.foldLeft(0.0)(_ + camionLength(_))
+	}
+	
 	def camionFactible(camion: List[Customer]): Boolean = {
 		var hora:Double = 0
 		var disponible = capacidad
@@ -31,14 +39,6 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 				true
 			}
 			else {
-				/*
-				if (servicio > prox.due) {
-					println(actual.num + " -> " + prox.num + " | servicio " + servicio + " > " + prox.due)
-				}
-				else if (disponible < prox.demand) {
-					println(actual.num + " -> " + prox.num + " | disponible " + disponible + " < " + prox.demand)
-				}
-				*/
 				false
 			}
 		}

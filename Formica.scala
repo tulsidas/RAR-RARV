@@ -20,7 +20,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	var mejorLargo: Double = Math.MAX_DOUBLE
-	var mejorVehiculos: Double = Math.MAX_DOUBLE
+	var mejorVehiculos: Int = Math.MAX_INT
 	var mejor: List[List[Customer]] = Nil
 	val id = UUID.randomUUID.toString
 	Debug.level = 1
@@ -44,10 +44,6 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			}
 		}
 
-		def sumd(l: List[Customer]): Double = {
-			l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
-		}
-
 		var running = true
 		while(running) {
 			if (mailboxSize > 0) {
@@ -56,48 +52,45 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 					case MejorSolucion(newMejor, _) => {
 						// guardo el nuevo mejor
 						mejor = newMejor
-						mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
+						mejorLargo = inst.solLength(mejor)
 						mejorVehiculos = mejor.length
-
-						//println(System.currentTimeMillis + "\t|recibo mejor solucion: " + mejorLargo + " | " + mejorVehiculos)
 
 						// sobreescribo feromonas
 						inst overwriteTau(mejor)
+						
+						// establezco el nuevo máximo de vehículos
+						inst.vehiculos = mejorVehiculos
 					}
 				}
 			}
 			else {
-				val sa = ant.solve
-				val sal = sa.foldLeft(0.0)(_ + sumd(_))
-				val vehiculos = sa.length
-				val cust = sa.foldLeft(0)(_ + _.size - 1)
+				val sAnt = ant.solve
 				
 				//println("largo = " + sal)
 				//println("vehiculos = " + vehiculos)
 
-				if (inst.factible(sa)) {
-						if (sal < mejorLargo) {
-							mejorLargo = sal
-							mejor = sa
-							println("encontre mejor largo: " + mejorLargo)
-							reina ! MejorSolucion(mejor, id)
-							
-							// actualizacion de feromonas globales
-							inst.globalTau(sa)
-						}
+				if (inst.factible(sAnt)) {
+					// busqueda local en la nueva solucion
+					val optimizado = new LocalSearch(inst, sAnt).search()
+
+					val sal = inst.solLength(optimizado)
+					val vehiculos = optimizado.length
+					val cust = optimizado.foldLeft(0)(_ + _.size - 1)
+
+					if (sal < mejorLargo || vehiculos < mejorVehiculos) {
+						mejorLargo = sal
+						mejorVehiculos = vehiculos
+						mejor = optimizado
+
+						reina ! MejorSolucion(mejor, id)
+						
+						// sobreescribo feromonas
+						inst overwriteTau(mejor)
+						
+						// establezco el nuevo máximo de vehículos
+						inst.vehiculos = mejorVehiculos
+					}
 				}
-				//else {
-				//	println("sol no factible")
-				//}
-				//println("")
-				/*
-				if (vehiculos < mejorVehiculos) {
-					mejorVehiculos = vehiculos
-					mejor = sa
-					println(System.currentTimeMillis + "\t|encontre mejor #vehiculos: " + mejorVehiculos)
-					reina ! MejorSolucion(mejor, id)
-				}
-				*/
 			}
 		}
 	}

@@ -6,12 +6,8 @@ object ACS {
 		val inst = Solomon.load(args(0))
 		val solver = new NearestNeighbour(inst)
 
-		def sumd(l: List[Customer]): Double = {
-			l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
-		}
-
 		var mejor = solver.solve
-		var mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
+		var mejorLargo = inst.solLength(mejor)
 		println("NN = " + mejor.map(_.map(_.num)))
 		println("NN length = " + mejorLargo)
 		
@@ -32,11 +28,11 @@ object ACS {
 			val sa = ant.solve
 			
 			//println("Ant = " + sa.map(_.map(_.num)))
-			//println("length = " + sa.foldLeft(0.0)(_ + sumd(_)))
+			//println("length = " + inst.solLength(sa))
 			//println("vehiculos = " + sa.length)
 			//println("factible = " + inst.factible(sa))
 
-			val sal = sa.foldLeft(0.0)(_ + sumd(_))
+			val sal = inst.solLength(sa)
 			val sav = sa.length		
 
 			if (sal < mejorLargo) {

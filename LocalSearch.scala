@@ -6,14 +6,18 @@ object LocalSearchMain {
 		val solver = new NearestNeighbour(inst)
 
 		val mejor = solver.solve
+		
+		Imaginario.writeImage("original.jpg", inst, mejor)
 	
 		val ls = new LocalSearch(inst, mejor)
-		println("largo original = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
+		println("largo original = " + inst.solLength(mejor))
 		
-		ls.search()
+		val nuevo = ls.search()
 
-		println(ls.mejorSolucion.map(_.map(_.num)))
-		println("largo resultante = " + ls.mejorSolucion.foldLeft(0.0)(_ + ls.sumd(_)))
+		println(nuevo.map(_.map(_.num)))
+		println("largo resultante = " + inst.solLength(nuevo))
+		
+		Imaginario.writeImage("optimizada.jpg", inst, nuevo)
 	}
 }
 
@@ -22,11 +26,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	type Ruta = List[Customer]
 	var i = 0
 	
-	var mejorSolucion = solucion
-
-	def sumd(l: Ruta): Double = {
-		l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
-	}
+	private var mejorSolucion = solucion
 
 	private def relocateOpt(n: Int)(camion: Ruta): List[Ruta] = {
 		val ret = new scala.collection.mutable.ListBuffer[Ruta]
@@ -59,21 +59,21 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	
 	private def unisearch(gen: Ruta => List[Ruta]): Unit = {
 		mejorSolucion.foreach { camion => 		
-			val largo = sumd(camion)
+			val largo = inst.camionLength(camion)
 
 			gen(camion).foreach { l =>
-				if (inst.camionFactible(l) && sumd(l) < largo) {
+				if (inst.camionFactible(l) && inst.camionLength(l) < largo) {
 					// actualizo mejor solucion
 					mejorSolucion = l :: (mejorSolucion - camion)
 
-					//println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+					//println("nuevo mejor largo = " + inst.solLength(mejorSolucion))
 
 					// llamada recursiva con la mejora
 					return unisearch(gen)						
 				}
 			}
 		}
-		//println("mejor largo local = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+		//println("mejor largo local = " + inst.solLength(mejorSolucion))
 	}
 	
 	// multiruta
@@ -123,7 +123,8 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				
 				if (inst.camionFactible(n1) && inst.camionFactible(n2)) {
 					// cambio factible
-					if (sumd(n1) + sumd(n2) < sumd(l1) + sumd(l2)) {
+					if (inst.camionLength(n1) + inst.camionLength(n2) < 
+							inst.camionLength(l1) + inst.camionLength(l2)) {
 						//Imaginario.writeImage(i+".jpg", inst, List(l1, l2))
 						//Imaginario.writeImage(i+"_new.jpg", inst, List(n1, n2))
 						//i = i+1
@@ -131,7 +132,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 						// actualizo mejor solucion
 						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
 
-						//println("nuevo mejor largo = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+						//println("nuevo mejor largo = " + inst.solLength(mejorSolucion))
 
 						// llamada recursiva con la mejora
 						return multisearch(gen)
@@ -139,40 +140,39 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				}
 			}
 		}
-		//println("mejor largo local (multi) = " + mejorSolucion.foldLeft(0.0)(_ + sumd(_)))
+		//println("mejor largo local (multi) = " + inst.solLength(mejorSolucion))
 	}
 	
 	//////////////////////
 	// metodos publicos //
 	//////////////////////
 	
-	def search(): Unit = {
-		println("search")
-		val largo = mejorSolucion.foldLeft(0.0)(_ + sumd(_))
+	def search(): List[Ruta] = {
+		//println("search")
+		val largo = inst.solLength(mejorSolucion)
 		
-		println("dosOpt()")
 		dosOpt()
 		
 		for (n <- 0 to 3; m <- 0 to 3) {
-			println("relocate("+n+","+m+")")
 			relocate(n, m)
 		}
 		
 		for (n <- 2 to 4 reverse) {
-			println("reverse("+n+")")
 			reverse(n)
 		}
 
 		for (n <- 1 to 4 reverse) {
-			println("relocate("+n+")")
 			relocate(n)
 		}
 		
-		val newLargo = mejorSolucion.foldLeft(0.0)(_ + sumd(_))
+		val newLargo = inst.solLength(mejorSolucion)
 		if (newLargo < largo) {
 			// sigo
-			search()
-		}		
+			return search()
+		}
+		else {
+			return mejorSolucion
+		}
 	}
 
 	// intraruta

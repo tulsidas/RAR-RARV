@@ -8,7 +8,7 @@ import scala.collection.mutable.Map
 object ReinaMain {
 	def main(args: Array[String]) {
 		// arranco la reina
-		val reina = new Reina(9010, 'ACS)
+		val reina = new Reina(args(0), 9010, 'ACS)
 		reina.start()
 
 		// arranco hormigas en los nucleos
@@ -21,34 +21,32 @@ object ReinaMain {
 	}
 }
 
-class Reina(port: Int, name: Symbol) extends Actor {
+class Reina(file: String, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val hormigas = Map.empty[String, OutputChannel[Any]]
-	val inst = Solomon.load("r101.txt")
+	val inst = Solomon.load(file)
 	val solver = new NearestNeighbour(inst)
-	var mejor = solver.solve
+
+	// nearest neighbour optimizado
+	var mejor = new LocalSearch(inst, solver.solve).search()
+
 	inst.globalTau(mejor)
 
-	def sumd(l: List[Customer]): Double = {
-		l.zip(l.tail).foldLeft(0.0)((x, y) => x + inst.distancia(y._1, y._2))
-	}
-
-	var mejorLargo = mejor.foldLeft(0.0)(_ + sumd(_))
+	var mejorLargo = inst.solLength(mejor)
 	var mejorVehiculos = mejor.length
 	
 	// actualizo el maximo de vehiculos permitidos a lo que me dio NN
 	inst.vehiculos = mejorVehiculos
 	
-	println("NN length = " + mejorLargo)
-	println("NN vehiculos = " + mejorVehiculos)
+	println("NN: " + mejorLargo + " | " + mejorVehiculos)
 	Debug.level = 1
 
 	val queenActress = select(Node("localhost", 9010), 'ACS)
 
 	// helper para cortar el main loop
 	actor {
-		Thread.sleep(2 * 60 * 1000)
+		Thread.sleep(5 * 60 * 1000)
 		queenActress ! TIMEOUT
 	}
 
@@ -62,21 +60,19 @@ class Reina(port: Int, name: Symbol) extends Actor {
 			receive {
 				case Hello(id) => { 
 					hormigas + ((id, sender))
+					println(id + " <-- Hello")
 					sender ! Start(inst, mejorLargo, mejorVehiculos)
 				}
 				case MejorSolucion(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
-					val newLargo = newMejor.foldLeft(0.0)(_ + sumd(_))
-					if (newLargo < mejorLargo) {
+					val newLargo = inst.solLength(newMejor)
+					val newVehiculos = newMejor.length
+					
+					if (newLargo < mejorLargo && newVehiculos <= mejorVehiculos) {
 						mejor = newMejor
 						mejorLargo = newLargo
+						mejorVehiculos = newVehiculos
 
-					// chequeo que efectivamente sea mejor
-					//val newV = newMejor.length
-					//if (newV < mejorVehiculos) {
-					//	mejor = newMejor
-					//	mejorVehiculos = newV
-					
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						inst overwriteTau(mejor)
 
@@ -84,8 +80,7 @@ class Reina(port: Int, name: Symbol) extends Actor {
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorSolucion(mejor, ""))
 						
 						//println("mejor solucion = " + mejor.map(_.map(_.num)))
-						println("mejor largo = " + mejor.foldLeft(0.0)(_ + sumd(_)))
-						println("mejor vehiculos = " + mejor.length)
+						println("Nuevo mejor: " + mejorLargo + " | " + mejorVehiculos)
 					}
 				}
 				case TIMEOUT => {
@@ -96,7 +91,7 @@ class Reina(port: Int, name: Symbol) extends Actor {
 					running = false
 
 					println("mejor solucion = " + mejor.map(_.map(_.num)))
-					println("largo = " + mejor.foldLeft(0.0)(_ + sumd(_)))
+					println("largo = " + inst.solLength(mejor))
 					println("vehiculos = " + mejor.length)
 				}
 			}
