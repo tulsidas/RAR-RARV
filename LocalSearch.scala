@@ -3,21 +3,21 @@ import Params._
 object LocalSearchMain {
 	def main(args: Array[String]) {
 		val inst = Solomon.load(args(0))
+		
 		val solver = new NearestNeighbour(inst)
 
 		val mejor = solver.solve
 		
-		Imaginario.writeImage("original.jpg", inst, mejor)
+		//Imaginario.writeImage("original.jpg", inst, mejor)
 	
-		val ls = new LocalSearch(inst, mejor)
-		println("largo original = " + inst.solLength(mejor))
+		println("largo original = " + inst.solLength(mejor) + " | " + mejor.length)
 		
-		val nuevo = ls.search()
+		val nuevo = new LocalSearch(inst, mejor).search()
 
 		println(nuevo.map(_.map(_.num)))
-		println("largo resultante = " + inst.solLength(nuevo))
+		println("largo resultante = " + inst.solLength(nuevo) + " | " + nuevo.length)
 		
-		Imaginario.writeImage("optimizada.jpg", inst, nuevo)
+		//Imaginario.writeImage("optimizada.jpg", inst, nuevo)
 	}
 }
 
@@ -66,14 +66,11 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 					// actualizo mejor solucion
 					mejorSolucion = l :: (mejorSolucion - camion)
 
-					//println("nuevo mejor largo = " + inst.solLength(mejorSolucion))
-
 					// llamada recursiva con la mejora
 					return unisearch(gen)						
 				}
 			}
 		}
-		//println("mejor largo local = " + inst.solLength(mejorSolucion))
 	}
 	
 	// multiruta
@@ -153,7 +150,6 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				}
 			}
 		}
-		//println("mejor largo local (multi) = " + inst.solLength(mejorSolucion))
 	}
 	
 	//////////////////////
@@ -164,24 +160,37 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		//println("search")
 		val largo = inst.solLength(mejorSolucion)
 		
+		var t = System.currentTimeMillis
+		//println("dosOpt")
 		dosOpt()
+		//println("dosOpt = " + (System.currentTimeMillis-t))
 
-		for (n <- 0 to 3; m <- 0 to 3) {
+		for (n <- 1 to 3; m <- 1 to 3) {
+			t = System.currentTimeMillis
+			//println("relocate("+n+","+m+")")
 			relocate(n, m)
+			//println("relocate("+n+","+m+")= " + (System.currentTimeMillis-t))
 		}
 		
 		for (n <- 2 to 4 reverse) {
+			t = System.currentTimeMillis
+			//println("reverse("+n+")")
 			reverse(n)
+			//println("reverse("+n+")= " + (System.currentTimeMillis-t))
 		}
 
 		for (n <- 1 to 4 reverse) {
+			t = System.currentTimeMillis
+			//println("relocate("+n+")")
 			relocate(n)
+			//println("relocate("+n+")= " + (System.currentTimeMillis-t))
 		}
 		
 		val newLargo = inst.solLength(mejorSolucion)
 		if (newLargo < largo) {
 			// sigo
-			return search()
+			return mejorSolucion
+			//return search()
 		}
 		else {
 			return mejorSolucion
