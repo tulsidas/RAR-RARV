@@ -8,7 +8,7 @@ import scala.collection.mutable.Map
 object ReinaMain {
 	def main(args: Array[String]) {
 		// arranco la reina
-		val reina = new Reina(args(0), 9010, 'ACS)
+		val reina = new Reina(args(0), args(2).toInt, 9010, 'ACS)
 		reina.start()
 
 		// arranco hormigas en los nucleos
@@ -22,7 +22,7 @@ object ReinaMain {
 	}
 }
 
-class Reina(file: String, port: Int, name: Symbol) extends Actor {
+class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val hormigas = Map.empty[String, OutputChannel[Any]]
@@ -47,7 +47,7 @@ class Reina(file: String, port: Int, name: Symbol) extends Actor {
 
 	// helper para cortar el main loop
 	actor {
-		Thread.sleep(2 * 60 * 1000)
+		Thread.sleep(min * 60 * 1000)
 		queenActress ! TIMEOUT
 	}
 

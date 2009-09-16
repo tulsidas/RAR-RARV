@@ -189,8 +189,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		val newLargo = inst.solLength(mejorSolucion)
 		if (newLargo < largo) {
 			// sigo
-			return mejorSolucion
-			//return search()
+			return search()
 		}
 		else {
 			return mejorSolucion
