@@ -78,12 +78,12 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
 		
 		// desde 1 para no cambiar el source
-		for (i <- 1 to l1.length-n; j <- 1 to l2.length-n) {
+		for (i <- 1 to l1.length - n; j <- 1 to l2.length - m) {
 
 			// cambio el cachito de l1(i) en l2(j)
-			val nl1 = l1.take(i) ++ l2.drop(j).take(n) ++ l1.drop(i+n)
-			val nl2 = l2.take(j) ++ l1.drop(i).take(n) ++ l2.drop(j+n)
-
+			val nl1 = l1.take(i) ++ l2.drop(j).take(m) ++ l1.drop(i+n)
+			val nl2 = l2.take(j) ++ l1.drop(i).take(n) ++ l2.drop(j+m)
+			
 			ret += ((nl1, nl2))
 		}
 		
@@ -165,7 +165,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		dosOpt()
 		//println("dosOpt = " + (System.currentTimeMillis-t))
 
-		for (n <- 1 to 3; m <- 1 to 3) {
+		for (n <- 0 to 3; m <- 0 to 3 if (n > 0 || m > 0)) {
 			t = System.currentTimeMillis
 			//println("relocate("+n+","+m+")")
 			relocate(n, m)

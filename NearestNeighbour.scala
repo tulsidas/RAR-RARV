@@ -1,4 +1,6 @@
 class NearestNeighbour(val inst: Instance) extends Solver {
+	val rnd = new scala.util.Random()
+
 	def proximo(nodo: Customer, vecinos: List[Customer], 
 					hora: Double, capacidad: Int): Customer = {
 
@@ -11,7 +13,8 @@ class NearestNeighbour(val inst: Instance) extends Solver {
 			null
 		}
 		else {
-			insertables.head
+			//insertables.head
+			insertables(rnd.nextInt(insertables.length))
 		}
 	}
 }
