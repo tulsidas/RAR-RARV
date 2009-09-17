@@ -13,8 +13,7 @@ class NearestNeighbour(val inst: Instance) extends Solver {
 			null
 		}
 		else {
-			//insertables.head
-			insertables(rnd.nextInt(insertables.length))
+			insertables.head
 		}
 	}
 }
