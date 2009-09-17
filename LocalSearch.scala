@@ -92,10 +92,12 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	
 	private def tailExchange(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
 		val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
-		for (i <- 1 to l1.length/*-1*/; j <- 1 to l2.length/*-1*/ if (!(i == 1 && j == 1))) {
+		for (i <- 1 to l1.length; j <- 1 to l2.length 
+		//for (i <- 1 to l2.length; j <- 1 to l1.length 
+				if (!(i == 1 && j == 1) && !(i == l2.length && j == l1.length))) {
 			ret += ((l1.take(j) ++ l2.drop(i), l2.take(i) ++ l1.drop(j)))
 		}
-	
+
 		ret.toList
 	}
 	
@@ -120,10 +122,6 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				
 				// cambio factible
 				if (inst.camionFactible(n1) && inst.camionFactible(n2)) {
-					if (l1.length + l2.length != n1.length + n2.length) {
-						println("!!!!! l1 = " + l1.length + " l2 = " + l2.length + " n1 = " + n1.length + " n2 = " + n2.length + " l1+l2 = " + (l1.length+l2.length) + " n1+n2 = " + (n1.length+n2.length))
-					}
-
 					// cambio mejorable (largo o vehiculos)				
 					if (inst.camionLength(n1) + inst.camionLength(n2) < 
 							inst.camionLength(l1) + inst.camionLength(l2)) {
@@ -142,10 +140,12 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 					else if (n1.length < 2) {
 						// reduzco un vehiculo
 						mejorSolucion = List(n2) ::: (mejorSolucion -- List(l1, l2))
+						return multisearch(gen)
 					}
 					else if (n2.length < 2){
 						// reduzco un vehiculo
 						mejorSolucion = List(n1) ::: (mejorSolucion -- List(l1, l2))
+						return multisearch(gen)
 					}
 				}
 			}

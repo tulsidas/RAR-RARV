@@ -7,6 +7,11 @@ import scala.collection.mutable.Map
 
 object ReinaMain {
 	def main(args: Array[String]) {
+		if (args.length < 3) {
+			println("Reina input hormigas/core minutos")
+			exit
+		}
+
 		// arranco la reina
 		val reina = new Reina(args(0), args(2).toInt, 9010, 'ACS)
 		reina.start()
