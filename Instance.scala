@@ -58,18 +58,17 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 
 	def tau(a: Customer, b: Customer): Double = {
 		//println("tau("+a+","+b+")")
-		val par = (a, b)
-		if (tauMap.contains(par)) {
-			tauMap(par)
-		}  
-		else {
-			0
-		}
+		tauMap.getOrElse((a, b), 0)
 	}
 
 	def updateTau(a: Customer, b: Customer, τ: Double) = {
 		//println("updateTau("+a.num+","+b.num+") -> " + τ)
 		val par = (a, b)
+		tauMap + ((par, τ))
+	}
+
+	def updateTau(par: (Customer, Customer), τ: Double) = {
+		//println("updateTau("+a.num+","+b.num+") -> " + τ)
 		tauMap + ((par, τ))
 	}
 
@@ -81,13 +80,12 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	}
 
 	def globalTau(solucion: List[List[Customer]]) = {
-		val Δτ = solLength(solucion)
-		println("Δτ = " + Δτ)
+		val Δτ = 1 / solLength(solucion)
 
-		// τij = (1-p)τij + Δτ
+		// τij = (1-p)τij + p*Δτ
 		val pares = List.flatten(solucion.map(c => c.zip(c.tail ::: List(c.head))))
-		pares.foreach(par => updateTau(par._1, par._2, 
-			(1-p) * tau(par._1, par._2) + p*Δτ )
+		pares.foreach(par => updateTau(par, 
+			(1-p) * tau(par._1, par._2) + p * Δτ )
 		)
 	}
 
