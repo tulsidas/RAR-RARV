@@ -5,6 +5,19 @@ import scala.actors.remote.RemoteActor._
 import scala.actors.Debug
 import java.util.UUID
 
+object FormicaVMain {
+	def main(args: Array[String]) {
+		val host = args(0)
+		val cores = Runtime.getRuntime().availableProcessors()
+
+		for (i <- 1 to cores) {
+			for (h <- 1 to args(1).toInt) {
+				new FormicaV(host, 9010, 'ACS).start()
+			}
+		}
+	}
+}
+
 class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
@@ -45,19 +58,42 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 			if (mailboxSize > 0) {
 				receive {
 					case Stop => running = false
-					case MejorSolucion(newMejor, _) => {
-						// guardo el nuevo mejor
-						mejor = newMejor
-						mejorVehiculos = mejor.length
+					case MejorVehiculos(newMejor, _) => {
+						// guardo el nuevo mejor, si es realmente mejor
+						val vehiculos = newMejor.length
 						
-						println(id + "/V recibo solucion de " + mejorVehiculos)
+						println(id + " recibo MejorVehiculos de #" + vehiculos)
+						
+						if (vehiculos < mejorVehiculos) {
+							mejor = newMejor
+							mejorVehiculos = vehiculos
+							mejorCust = 0
 
-						// sobreescribo feromonas
-						inst overwriteTau(mejor)
+							// sobreescribo feromonas
+							inst overwriteTau(mejor)
+							
+							// actualizo el max permitido
+							inst.vehiculos = mejorVehiculos-1
+						}
+					}
+					case MejorCustomers(newMejor, _) => {
+						// guardo el nuevo mejor, si es realmente mejor
+						val vehiculos = newMejor.length
+						val customers = newMejor.foldLeft(0)(_ + _.size - 1)
 						
-						// establezco el nuevo máximo de vehículos
-						inst.vehiculos = mejorVehiculos-1
-						mejorCust = 0
+						println(id + " recibo MejorCustomers " + vehiculos + "|" + customers)
+						
+						if (vehiculos <= mejorVehiculos && customers > mejorCust) {
+							mejor = newMejor
+							mejorVehiculos = vehiculos
+							mejorCust = customers
+
+							// sobreescribo feromonas
+							inst overwriteTau(mejor)
+							
+							// actualizo el max permitido
+							inst.vehiculos = mejorVehiculos-1
+						}
 					}
 				}
 			}
@@ -73,7 +109,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 					inst.vehiculos = mejorVehiculos-1
 					mejorCust = 0
 
-					reina ! MejorSolucion(mejor, id)
+					reina ! MejorVehiculos(mejor, id)
 				}
 				else if (sAnt.length < mejorVehiculos) {
 					// faltan clientes por visitar, pero puede ser mejor
@@ -95,7 +131,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							inst.vehiculos = mejorVehiculos-1
 							mejorCust = 0
 
-							reina ! MejorSolucion(mejor, id)
+							reina ! MejorVehiculos(mejor, id)
 						}
 						else {
 							// mejora customers
@@ -104,7 +140,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							mejor = inserted
 							mejorCust = custInserted
 							
-							// reina ! MejorSolucion(mejor, id)
+							reina ! MejorCustomers(mejor, id)
 						}
 					}
 				}

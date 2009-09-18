@@ -26,7 +26,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 	var mejor: List[List[Customer]] = Nil
 	val id = UUID.randomUUID.toString
 	Debug.level = 1
-
+	
 	def act {
 		val reina = select(Node(host, port), name)
 		var ant: Ant = null
@@ -45,25 +45,28 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			}
 		}
 
+		def guardarMejor(newMejor: List[List[Customer]]) = {		
+			// guardo el nuevo mejor
+			mejor = newMejor
+			mejorLargo = inst.solLength(mejor)
+			mejorVehiculos = mejor.length
+			
+			println(id + " recibo solucion: " + mejorLargo +" | " + mejorVehiculos)
+
+			// sobreescribo feromonas
+			inst overwriteTau(mejor)
+			
+			// establezco el nuevo máximo de vehículos
+			inst.vehiculos = mejorVehiculos
+		}
+
 		var running = true
 		while(running) {
 			if (mailboxSize > 0) {
 				receive {
 					case Stop => running = false
-					case MejorSolucion(newMejor, _) => {
-						// guardo el nuevo mejor
-						mejor = newMejor
-						mejorLargo = inst.solLength(mejor)
-						mejorVehiculos = mejor.length
-						
-						println(id + " recibo solucion: " + mejorLargo +" | " + mejorVehiculos)
-
-						// sobreescribo feromonas
-						inst overwriteTau(mejor)
-						
-						// establezco el nuevo máximo de vehículos
-						inst.vehiculos = mejorVehiculos
-					}
+					case MejorLargo(newMejor, _) => guardarMejor(newMejor)
+					case MejorVehiculos(newMejor, _) => guardarMejor(newMejor)
 				}
 			}
 			else {
@@ -75,20 +78,22 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 					val sal = inst.solLength(optimizado)
 					val vehiculos = optimizado.length
-					val cust = optimizado.foldLeft(0)(_ + _.size - 1)
 
-					if (sal < mejorLargo || vehiculos < mejorVehiculos) {
+					if (vehiculos < mejorVehiculos) {
 						mejorLargo = sal
 						mejorVehiculos = vehiculos
 						mejor = optimizado
 
-						reina ! MejorSolucion(mejor, id)
-						
-						// sobreescribo feromonas
-						// inst overwriteTau(mejor)
+						reina ! MejorVehiculos(mejor, id)
 						
 						// establezco el nuevo máximo de vehículos
 						inst.vehiculos = mejorVehiculos
+					}
+					else if (sal < mejorLargo) {
+						mejorLargo = sal
+						mejor = optimizado
+
+						reina ! MejorLargo(mejor, id)
 					}
 				}
 			}
