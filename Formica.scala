@@ -42,7 +42,6 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 				ant = new Ant(inst)
 				mejorLargo = _mejorLargo
 				mejorVehiculos = _mejorVehiculos
-				//println(System.currentTimeMillis + "\t|Start! ("+mejorLargo+" | " + mejorVehiculos + ")")
 			}
 		}
 
@@ -56,6 +55,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejor = newMejor
 						mejorLargo = inst.solLength(mejor)
 						mejorVehiculos = mejor.length
+						
+						println(id + " recibo solucion: " + mejorLargo +" | " + mejorVehiculos)
 
 						// sobreescribo feromonas
 						inst overwriteTau(mejor)
@@ -68,9 +69,6 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			else {
 				val sAnt = ant.solve
 				
-				//println("largo = " + sal)
-				//println("vehiculos = " + vehiculos)
-
 				if (inst.factible(sAnt)) {
 					// busqueda local en la nueva solucion
 					val optimizado = new LocalSearch(inst, sAnt).search()

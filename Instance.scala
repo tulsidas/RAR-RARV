@@ -51,7 +51,7 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 			}
 		}
 
-		recorridoFactible(camion/*::: List(source)*/)
+		recorridoFactible(camion)
 	}
 
 	def maxTau: Double = tauMap.values.toList.sort(_>_).head
