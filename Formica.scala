@@ -85,7 +85,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						reina ! MejorSolucion(mejor, id)
 						
 						// sobreescribo feromonas
-						inst overwriteTau(mejor)
+						// inst overwriteTau(mejor)
 						
 						// establezco el nuevo máximo de vehículos
 						inst.vehiculos = mejorVehiculos

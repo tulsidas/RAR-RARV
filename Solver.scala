@@ -9,7 +9,7 @@ trait Solver {
 		var disponibles = inst.customers - source
 		var nn = List[List[Customer]]()
 
-		while (!disponibles.isEmpty /*&& nn.length < inst.vehiculos*/) {
+		while (!disponibles.isEmpty && nn.length < inst.vehiculos) {
 			// mando un camion
 			val visitas = camion(disponibles)
 			nn = nn ::: List(visitas)

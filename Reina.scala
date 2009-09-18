@@ -22,7 +22,7 @@ object ReinaMain {
 		var v = false
 		for (i <- 1 to cores) {
 			if (v) {
-				for (h <- 1 to 10) {
+				for (h <- 1 to 5) {
 						new FormicaV("localhost", 9010, 'ACS).start()
 				}
 			}
@@ -89,6 +89,8 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					// chequeo que efectivamente sea mejor
 					val newLargo = inst.solLength(newMejor)
 					val newVehiculos = newMejor.length
+					
+					// println(id + " <-- MejorSolucion")
 					
 					// menos vehiculos
 					if (newVehiculos < mejorVehiculos) {
