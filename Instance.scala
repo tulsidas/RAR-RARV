@@ -6,7 +6,7 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 
 	// cache de distancias
 	private[this] val distancias = Map.empty[(Customer, Customer), Double]
-	private[this] val tauMap = Map.empty[(Customer, Customer), Double]
+	val tauMap = Map.empty[(Customer, Customer), Double]
 	
 	/**
 	 * Si la solución visita a todos los clientes usando a lo sumo los vehiculos disponibles
@@ -81,11 +81,8 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	}
 
 	def globalTau(solucion: List[List[Customer]]) = {
-		def sumd(l: List[Customer]): Double = {
-			l.zip(l.tail).foldLeft(0.0)((x, y) => x + distancia(y._1, y._2))
-		}
-
-		val Δτ = solucion.foldLeft(0.0)(_ + sumd(_))
+		val Δτ = solLength(solucion)
+		println("Δτ = " + Δτ)
 
 		// τij = (1-p)τij + Δτ
 		val pares = List.flatten(solucion.map(c => c.zip(c.tail ::: List(c.head))))

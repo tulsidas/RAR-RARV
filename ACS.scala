@@ -11,12 +11,11 @@ object ACS {
 		println("NN = " + mejor.map(_.map(_.num)))
 		println("NN length = " + mejorLargo)
 		
-		Imaginario.writeImage(nf.format(0)+".jpg", inst, mejor)
+		//Imaginario.writeImage(nf.format(0)+".jpg", inst, mejor)
+		//Imaginario.writeTauImage(nf.format(0)+".jpg", inst)
 		
-		exit
-
 		inst.globalTau(mejor)
-
+		
 		// cantidad de hormigas
 		val m = 1
 
@@ -24,14 +23,10 @@ object ACS {
 
 		val ant = new Ant(inst)
 
-		for (i <- 1 to 0) {
-			val sa = ant.solve
-			
-			//println("Ant = " + sa.map(_.map(_.num)))
-			//println("length = " + inst.solLength(sa))
-			//println("vehiculos = " + sa.length)
-			//println("factible = " + inst.factible(sa))
+		Imaginario.writeTauCSV(nf.format(0)+".csv", inst)
 
+		for (i <- 1 to 500) {
+			val sa = ant.solve
 			val sal = inst.solLength(sa)
 			val sav = sa.length		
 
@@ -46,7 +41,13 @@ object ACS {
 			
 			// Imaginario.writeImage(nf.format(i)+".jpg", inst)
 			//Imaginario.writeImage(nf.format(i)+".jpg", inst, sa)
+			//Imaginario.writeTauImage(nf.format(i)+".jpg", inst)
+//			if (i % 10 == 0) {
+				//Imaginario.writeTauCSV(nf.format(i)+".csv", inst)
+//			}
 		}
+		
+		Imaginario.writeTauCSV(nf.format(0)+"final.csv", inst)
 
 		println("Mejor solucion = " + mejor.map(_.map(_.num)))
 		println("Largo: " + mejorLargo)

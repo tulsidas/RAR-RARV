@@ -25,13 +25,14 @@ class Ant(val inst: Instance) extends Solver {
 				// exploitation
 
 				// obtengo el mayor η
-				val bestη = mapη.values.toList.sort(_ > _).head
+				val values = mapη.values.toList
+				val bestη = values.tail.foldLeft(values.head){ (a,b) => if (a > b) a else b }
 
-				// si hay varios con el mismo η, obtengo uno al azar de esos
+				// si hay varios con el mismo η, obtengo el que cierra antes
 				val bests = insertables.filter(mapη(_) == bestη)
 
 				if (bests.length > 1) {
-					weightedCases(bests.map((_, 1/bests.length)))
+					bests.tail.foldLeft(bests.head) { (a,b) => if (a.due < b.due) a else b }
 				}
 				else {
 					bests.head
