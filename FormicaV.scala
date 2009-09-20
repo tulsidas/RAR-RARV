@@ -52,15 +52,18 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 			case Start(_inst, _mejor) => {
 				// 1 menos del mejor
 				inst = _inst
-				inst.vehiculos = inst.vehiculos - 1
 				
 				ant = new AntV(inst)
 				
 				mejor = _mejor
 				mejorVehiculos = _mejor.length
+
+				inst.vehiculos = mejorVehiculos - 1
 				
 				τ0 = 1 / (inst.customers.length * inst.solLength(mejor))
 				inst.globalTau(mejor)
+				
+				//println("Start! buscando con " + inst.vehiculos)
 			}
 		}
 
@@ -74,7 +77,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
 						
-						println(id + " recibo MejorVehiculos " + vehiculos + " |actual: " + mejorVehiculos)
+						//println(id + " recibo MejorVehiculos " + vehiculos + " |actual: " + mejorVehiculos)
 						
 						if (vehiculos < mejorVehiculos+1) {
 							mejor = newMejor
@@ -91,7 +94,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							println(id + " || buscando " + inst.vehiculos + " vehiculos")
 						}
 						
-						println(id + " ==> " + mejorVehiculos + " | " + mejorCust)
+						//println(id + " ==> " + mejorVehiculos + " | " + mejorCust)
 					}
 					case MejorCustomers(newMejor, _) => {
 						// guardo el nuevo mejor, si es realmente mejor

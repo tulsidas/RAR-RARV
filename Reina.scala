@@ -125,7 +125,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					// chequeo que efectivamente sea mejor
 					val newVehiculos = newMejor.length
 
-					println(id  + " manda: MejorVehiculos: " + newVehiculos + "||" + "actual: " + mejorVehiculos)
+					//println(id  + " manda: MejorVehiculos: " + newVehiculos + "||" + "actual: " + mejorVehiculos)
 					
 					// menos vehiculos
 					if (newVehiculos < mejorVehiculos && inst.factible(newMejor)) {
@@ -134,7 +134,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = newVehiculos
                   mejorCustomers = 0
                   
-                  println("ahora actual es: " + mejorVehiculos +"|"+mejorCustomers)
+                  //println("ahora actual es: " + mejorVehiculos +"|"+mejorCustomers)
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						// inst overwriteTau(mejor)
