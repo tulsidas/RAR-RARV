@@ -4,6 +4,7 @@ import scala.actors.remote.{RemoteActor, Node}
 import scala.actors.remote.RemoteActor._
 import scala.actors.Debug
 import scala.collection.mutable.Map
+import Params._
 
 object ReinaMain {
 	def main(args: Array[String]) {
@@ -18,18 +19,20 @@ object ReinaMain {
 
 		// arranco hormigas en los nucleos
 		val cores = Runtime.getRuntime().availableProcessors()
-
-		var v = false
+		
+		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
-				for (h <- 1 to 5) {
+				for (h <- 1 to 4) {
 						new FormicaV("localhost", 9010, 'ACS).start()
 				}
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
 			}
+			/*
 			v = !v
+			*/
 		}
 	}
 }
@@ -45,7 +48,6 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 
 	// nearest neighbour optimizado
 	var mejor = new LocalSearch(inst, solver.solve).search()
-	var mejorInf = mejor
 	var mejorCustomers = 0
 
 	inst.globalTau(mejor)
@@ -57,6 +59,12 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	inst.vehiculos = mejorVehiculos
 	
 	println("NN: " + mejorLargo + " | " + mejorVehiculos)
+	if (!inst.factible(mejor)) {
+		println("NN no factible!!")
+		println("visitados: " + mejor.foldLeft(0)(_ + _.size - 1))
+		exit
+	}
+	
 	Debug.level = 1
 
 	val queenActress = select(Node("localhost", 9010), 'ACS)
@@ -80,12 +88,16 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					hormigas + ((id, sender))
 					println(id + " <-- Hello")
 					sender ! Start(inst, mejorLargo, mejorVehiculos)
+					
+					τ0 = (hormigas.size + hormigasV.size) / mejorLargo
 				}
 				case HelloV(id) => { 
 					// una hormiga vehicular
 					hormigasV + ((id, sender))
 					println(id + " <-- Hello/V")
 					sender ! StartV(inst, mejorVehiculos)
+
+					τ0 = (hormigas.size + hormigasV.size) / mejorLargo
 				}
 				case MejorLargo(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
@@ -108,17 +120,15 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 				}
 				case MejorVehiculos(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
-					val newLargo = inst.solLength(newMejor)
 					val newVehiculos = newMejor.length
 					
 					// menos vehiculos
 					if (newVehiculos < mejorVehiculos) {
+						println(id + " <-- MejorVehiculos " + newVehiculos)
 						mejor = newMejor
-						mejorLargo = newLargo
+						mejorLargo = inst.solLength(newMejor)
 						mejorVehiculos = newVehiculos
 
-						println(id + " <-- MejorVehiculos: " + mejorVehiculos)
-						
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						inst overwriteTau(mejor)
 						
@@ -126,18 +136,24 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))
 						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))
 					}
+					else {
+						println(id + " <-- MejorVehiculos (ignoro) " + newVehiculos)
+					}
 				}
 				case MejorCustomers(newMejor, id) => {
-					val customers = newMejor.foldLeft(0)(_ + _.size - 1)
+					val newCustomers = newMejor.foldLeft(0)(_ + _.size - 1)
+					val newVehiculos = newMejor.length
 
-					println(id + " <-- MejorCustomers: " + customers + " | " + newMejor.length)
-
-					if (customers > mejorCustomers) {
-						mejorCustomers = customers
-						mejorInf = newMejor
+					if (/*newVehiculos < mejorVehiculos || */newCustomers > mejorCustomers) {
+						mejorCustomers = newCustomers
+						
+						println(id + " <-- MejorCustomers " + newCustomers + " | " + newMejor.length)
 
 						// broadcast a las hormigas V
-						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorCustomers(mejor, ""))
+						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorCustomers(newMejor, ""))
+					}
+					else {
+						println(id + " <-- MejorCustomers (ignoro) " + newCustomers + " | " + newMejor.length)
 					}
 				}
 				case TIMEOUT => {

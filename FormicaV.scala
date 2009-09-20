@@ -29,13 +29,15 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 	
 	// #de clientes visitados de la mejor solucion
 	var mejorCust = 0
+	
+	var nonVisited = new scala.collection.mutable.HashMap[Customer, Int]()
 
 	val id = UUID.randomUUID.toString
 	Debug.level = 1
 
 	def act {
 		val reina = select(Node(host, port), name)
-		var ant: Ant = null
+		var ant: AntV = null
 		var inst: Instance = null
 		
 		// hola		
@@ -48,7 +50,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				inst = _inst
 				inst.vehiculos = inst.vehiculos - 1
 				
-				ant = new Ant(inst)
+				ant = new AntV(inst)
 				mejorVehiculos = _mejorVehiculos
 			}
 		}
@@ -62,7 +64,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
 						
-						println(id + " recibo MejorVehiculos de #" + vehiculos)
+						//println(id + " recibo MejorVehiculos " + vehiculos)
 						
 						if (vehiculos < mejorVehiculos) {
 							mejor = newMejor
@@ -81,15 +83,15 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 						val vehiculos = newMejor.length
 						val customers = newMejor.foldLeft(0)(_ + _.size - 1)
 						
-						println(id + " recibo MejorCustomers " + vehiculos + "|" + customers)
+						//println(id + " recibo MejorCustomers " + vehiculos + "|" + customers)
 						
-						if (vehiculos <= mejorVehiculos && customers > mejorCust) {
+						if (vehiculos < mejorVehiculos || customers > mejorCust) {
 							mejor = newMejor
 							mejorVehiculos = vehiculos
 							mejorCust = customers
 
 							// sobreescribo feromonas
-							inst overwriteTau(mejor)
+							inst.overwriteTau(mejor)
 							
 							// actualizo el max permitido
 							inst.vehiculos = mejorVehiculos-1
@@ -98,54 +100,55 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				}
 			}
 			else {
+				ant.nonVisited = nonVisited
+
 				val sAnt = ant.solve
 				
-				if (inst.factible(sAnt)) {
-					println("reduci vehiculos: " + mejorVehiculos + " -> " + sAnt.length)
-					mejorVehiculos = sAnt.length
-					mejor = sAnt
+				if (sAnt.length < mejorVehiculos) {
+					if (inst.factible(sAnt)) {
+						mejorVehiculos = sAnt.length
+						mejor = sAnt
 	
-					// establezco el nuevo máximo de vehículos (menos 1)
-					inst.vehiculos = mejorVehiculos-1
-					mejorCust = 0
+						// establezco el nuevo máximo de vehículos (menos 1)
+						inst.vehiculos = mejorVehiculos-1
+						mejorCust = 0
 
-					reina ! MejorVehiculos(mejor, id)
-				}
-				else if (sAnt.length < mejorVehiculos) {
-					// faltan clientes por visitar, pero puede ser mejor
-					val visited = sAnt.foldLeft(List[Customer]())(_ ++ _)
-					val nonvisit = inst.customers -- visited
-						
-					val inserted = new LocalInsert(inst, sAnt, nonvisit).insert()
-					val custInserted = inserted.foldLeft(0)(_ + _.size - 1)
+						println(id + " --> MejorVehiculos " + mejorVehiculos)
+						reina ! MejorVehiculos(mejor, id)
+					}
+					else {
+						// faltan clientes por visitar, pero puede ser mejor
+						val visited = sAnt.foldLeft(List[Customer]())(_ ++ _)
+						val faltantes = inst.customers -- visited
 					
-					if (custInserted > mejorCust) {
-						if (inst.factible(inserted)) {
-							// mejora vehiculos
-							println("reduci vehiculos (c/insert): " + mejorVehiculos + " -> " + inserted.length)
+						// actualizo vector nonVisited
+						faltantes.foreach(nv => nonVisited.put(nv, nonVisited.getOrElseUpdate(nv, 0)+1))
+					
+						val inserted = new LocalInsert(inst, sAnt, faltantes, nonVisited).insert()
+						val custInserted = inserted.foldLeft(0)(_ + _.size - 1)
+					
+						if (custInserted > mejorCust) {
+							// limpio mapa de no-visitados
+							nonVisited.clear
 
 							mejorVehiculos = inserted.length
 							mejor = inserted
-		
-							// establezco el nuevo máximo de vehículos (menos 1)
-							inst.vehiculos = mejorVehiculos-1
-							mejorCust = 0
-
-							reina ! MejorVehiculos(mejor, id)
-						}
-						else {
-							// mejora customers
-							println("mejore customers: " + mejorCust + " -> " + custInserted)
-
-							mejor = inserted
 							mejorCust = custInserted
-							
-							reina ! MejorCustomers(mejor, id)
+
+							if (inst.factible(inserted)) {
+								// establezco el nuevo máximo de vehículos (menos 1)
+								inst.vehiculos = mejorVehiculos-1
+								mejorCust = 0
+
+								println(id + " --> MejorVehiculos " + mejorVehiculos)
+								reina ! MejorVehiculos(mejor, id)
+							}
+							else {
+								println(id + " --> MejorCustomers " + mejorCust + "|" + mejorVehiculos)
+								reina ! MejorCustomers(mejor, id)
+							}
 						}
 					}
-				}
-				else {
-					println("basura: " + (sAnt.length) + " | visitas: " + (sAnt.foldLeft(0)(_ + _.size - 1)))
 				}
 			}
 		}

@@ -5,6 +5,13 @@ import Params._
 class Ant(val inst: Instance) extends Solver {
 	val rnd = new Random()
 
+	/**
+	 * el valor heurístico de distancia entre nodo y v
+	 */	
+	def η(nodo: Customer, v: Customer): Double = {
+		inst.tau(nodo, v) * Math.pow((1.0/inst.distancia(nodo, v)), β)
+	}
+
 	def proximo(nodo: Customer, vecinos: List[Customer], 
 					hora: Double, capacidad: Int): Customer = {
 		// filtro los que llego a tiempo y me alcanza la capacidad
@@ -16,7 +23,7 @@ class Ant(val inst: Instance) extends Solver {
 		else {
 			// un mapa [Customer, Double] con (tau*η^β) precalculado
 			val mapη = insertables.foldLeft(Map[Customer, Double]()) { 
-				(m, v) => m(v) = inst.tau(nodo, v) * Math.pow((1.0/inst.distancia(nodo, v)), β)
+				(m, v) => m(v) = η(nodo, v)
 			}
 
 			val q = rnd.nextDouble
