@@ -49,7 +49,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 
 		// espero Start
 		receive {
-			case Start(_inst, _mejor) => {
+			case StartV(_inst, _mejor, _mejorCust) => {
 				// 1 menos del mejor
 				inst = _inst
 				
@@ -57,6 +57,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				
 				mejor = _mejor
 				mejorVehiculos = _mejor.length
+				mejorCust = _mejorCust
 
 				inst.vehiculos = mejorVehiculos - 1
 				

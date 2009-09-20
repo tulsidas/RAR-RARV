@@ -95,7 +95,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					// una hormiga vehicular
 					hormigasV + ((id, sender))
 					println(id + " <-- Hello/V")
-					sender ! Start(inst, mejor)
+					sender ! StartV(inst, mejor, mejorCustomers)
 
 					τ0 = 1 / inst.customers.length * mejorLargo
 				}
