@@ -3,8 +3,6 @@ import scala.collection.Map
 class LocalInsert(inst: Instance, solucion: List[List[Customer]], 
 	nonvisit: List[Customer], nvMap: Map[Customer, Int]) {
 
-	val cust = solucion.foldLeft(0)(_ + _.size - 1)
-	
 	var mejor = solucion
 	
 	def insert(): List[List[Customer]] = {

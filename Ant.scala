@@ -16,6 +16,8 @@ class Ant(val inst: Instance) extends Solver {
 					hora: Double, capacidad: Int): Customer = {
 		// filtro los que llego a tiempo y me alcanza la capacidad
 		val insertables = vecinos.filter(vecino => insertable(nodo, vecino, hora, capacidad))
+		
+		//println(nodo.num + " -> insertables = " + insertables.map(_.num))
 
 		if (insertables.isEmpty) {
 			null
@@ -26,35 +28,47 @@ class Ant(val inst: Instance) extends Solver {
 				(m, v) => m(v) = η(nodo, v)
 			}
 
+			//println("η = " + mapη.map(p => (p._1.num, p._2)).mkString(","))
+
 			val q = rnd.nextDouble
 
 			if (q < q0) {
 				// exploitation
+				//println("exploitation")
 
 				// obtengo el mayor η
 				val values = mapη.values.toList
 				val bestη = values.tail.foldLeft(values.head){ (a,b) => if (a > b) a else b }
 
-				// si hay varios con el mismo η, obtengo el que cierra antes
 				val bests = insertables.filter(mapη(_) == bestη)
 
+				// si hay varios con el mismo η, obtengo el que cierra antes
 				if (bests.length > 1) {
-					bests.tail.foldLeft(bests.head) { (a,b) => if (a.due < b.due) a else b }
+					val ret = bests.tail.foldLeft(bests.head) { (a,b) => if (a.due < b.due) a else b }
+					//println("-----> " + ret.num)
+					ret
 				}
 				else {
-					bests.head
+					val ret = bests.head
+					//println("-----> " + ret.num)
+					ret
 				}
 			}
 			else {
 				// exploration
+				//println("exploration")
 
 				// el denominador
 				val Σ = mapη.values.reduceLeft(_+_)
 
-				// construyo una lista de [Customer, proba]
+				// construyo una lista de (Customer, proba)
 				val probas = mapη.map(t => (t._1, mapη(t._1) / Σ)) toList
 
-				weightedCases(probas)
+				//println("probas = " + probas.map(p => (p._1.num, p._2)).mkString(","))
+
+				val ret = weightedCases(probas)
+				//println("-----> " + ret.num)
+				ret
 			}
 		}
 	}
@@ -62,9 +76,6 @@ class Ant(val inst: Instance) extends Solver {
 	def weightedCases[A](inp: List[(A, Double)]): A = {
 		def coinFlip[A](p: Double)(a1: A, a2: A) = {
 			//if (p < 0.0 || p > 1.0) error("invalid probability: " + p)
-			var prob = p
-			if (p < 0) prob = 0
-			if (p > 1) prob = 1
 			
 			if (rnd.nextDouble() < p) a1 else a2
 		}

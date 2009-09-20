@@ -37,14 +37,7 @@ object ACS {
 			}
 
 			// actualizacion de feromonas globales
-			inst.globalTau(sa)
-			
-			// Imaginario.writeImage(nf.format(i)+".jpg", inst)
-			//Imaginario.writeImage(nf.format(i)+".jpg", inst, sa)
-			//Imaginario.writeTauImage(nf.format(i)+".jpg", inst)
-//			if (i % 10 == 0) {
-				//Imaginario.writeTauCSV(nf.format(i)+".csv", inst)
-//			}
+			inst.globalTau(sa)			
 		}
 		
 		Imaginario.writeTauCSV(nf.format(0)+"final.csv", inst)

@@ -62,13 +62,15 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	}
 
 	def updateTau(a: Customer, b: Customer, τ: Double) = {
-		//println("updateTau("+a.num+","+b.num+") -> " + τ)
 		val par = (a, b)
+
+		val actual = tauMap.getOrElse(par, 0)
+		//println("updateTau("+a.num+","+b.num+"):  " + actual + " -> " + τ)
 		tauMap + ((par, τ))
 	}
 
 	def updateTau(par: (Customer, Customer), τ: Double) = {
-		//println("updateTau("+a.num+","+b.num+") -> " + τ)
+		//println("updateTau("+par._1.num+","+par._2.num+") -> " + τ)
 		tauMap + ((par, τ))
 	}
 
@@ -82,10 +84,17 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	def globalTau(solucion: List[List[Customer]]) = {
 		val Δτ = 1 / solLength(solucion)
 
+		//println("global tau | p * Δτ = " + (p * Δτ))
 		// τij = (1-p)τij + p*Δτ
 		val pares = List.flatten(solucion.map(c => c.zip(c.tail ::: List(c.head))))
 		pares.foreach(par => updateTau(par, 
 			(1-p) * tau(par._1, par._2) + p * Δτ )
+		)
+	}
+
+	def globalEvaporate() = {
+		tauMap.keys.foreach(par => updateTau(par, 
+			(1-p) * tau(par._1, par._2))
 		)
 	}
 

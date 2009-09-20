@@ -17,6 +17,8 @@ trait Solver {
 			// saco los visitados por ese camion
 			disponibles = disponibles -- visitas
 		}
+		
+		//inst.globalEvaporate()
 
 		nn
 	}
@@ -29,7 +31,7 @@ trait Solver {
 		var nn = actual :: Nil
 
 		var prox:Customer = proximo(actual, vecinos, hora, capacidad)
-
+		
 		while (prox != null && !vecinos.isEmpty) {
 			nn = nn ::: List(prox)
 
@@ -41,13 +43,16 @@ trait Solver {
 			actual = prox
 
 			prox = proximo(actual, vecinos, hora, capacidad)
+		}
 
-			// actualizar tau local
-			if (prox != null) {
-				val τ = (1-ξ)*inst.tau(actual, prox) + ξ * τ0
-				//println("τ = " + inst.tau(actual, prox) + " -> " + τ)
-				inst.updateTau(actual, prox, τ)
-			}
+		// actualizar tau local
+		nn.zip(nn.tail++List(nn.head)).foreach { p =>
+			val actual = p._1
+			val prox = p._2
+			
+			val τ = (1-ξ) * inst.tau(actual, prox) + ξ * τ0
+			inst.updateTau(actual, prox, τ)
+			//println("local update τ ("+actual.num+", "+prox.num+") " + inst.tau(actual, prox) + " -> " + τ)
 		}
 
 		nn

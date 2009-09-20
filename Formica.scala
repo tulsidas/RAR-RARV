@@ -1,3 +1,5 @@
+import Params._
+
 import scala.actors.Actor
 import scala.actors.Actor._
 import scala.actors.remote._
@@ -37,11 +39,15 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 		// espero Start
 		receive {
-			case Start(_inst, _mejorLargo, _mejorVehiculos) => {
+			case Start(_inst, _mejor) => {
 				inst = _inst
 				ant = new Ant(inst)
-				mejorLargo = _mejorLargo
-				mejorVehiculos = _mejorVehiculos
+				mejor = _mejor
+				mejorLargo = _mejor.length
+				mejorVehiculos = _mejor.foldLeft(0)(_ + _.size - 1)
+				
+				τ0 = 1 / (inst.customers.length * inst.solLength(mejor))
+				inst.globalTau(mejor)				
 			}
 		}
 
@@ -51,10 +57,11 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			mejorLargo = inst.solLength(mejor)
 			mejorVehiculos = mejor.length
 
-         println(id + " <-- MejorSolucion " + mejorLargo + " | " + mejorVehiculos)
+         //println(id + " <-- MejorSolucion " + mejorLargo + " | " + mejorVehiculos)
 
 			// sobreescribo feromonas
-			inst overwriteTau(mejor)
+			//inst overwriteTau(mejor)
+			inst globalTau(mejor)
 			
 			// establezco el nuevo máximo de vehículos
 			inst.vehiculos = mejorVehiculos
@@ -88,12 +95,18 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						
 						// establezco el nuevo máximo de vehículos
 						inst.vehiculos = mejorVehiculos
+						
+						// global update feromonas
+						inst.globalTau(mejor)
 					}
 					else if (sal < mejorLargo) {
 						mejorLargo = sal
 						mejor = optimizado
 
 						reina ! MejorLargo(mejor, id)
+						
+						// global update feromonas
+						inst.globalTau(mejor)
 					}
 				}
 			}
