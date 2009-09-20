@@ -64,7 +64,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
 						
-						//println(id + " recibo MejorVehiculos " + vehiculos)
+						println(id + " <-- MejorVehiculos " + vehiculos)
 						
 						if (vehiculos < mejorVehiculos) {
 							mejor = newMejor
@@ -83,7 +83,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 						val vehiculos = newMejor.length
 						val customers = newMejor.foldLeft(0)(_ + _.size - 1)
 						
-						//println(id + " recibo MejorCustomers " + vehiculos + "|" + customers)
+						println(id + " <-- MejorCustomers " + vehiculos + " | " + customers)
 						
 						if (vehiculos < mejorVehiculos || customers > mejorCust) {
 							mejor = newMejor

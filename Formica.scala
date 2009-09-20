@@ -50,8 +50,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			mejor = newMejor
 			mejorLargo = inst.solLength(mejor)
 			mejorVehiculos = mejor.length
-			
-			println(id + " recibo solucion: " + mejorLargo +" | " + mejorVehiculos)
+
+         println(id + " <-- MejorSolucion " + mejorLargo + " | " + mejorVehiculos)
 
 			// sobreescribo feromonas
 			inst overwriteTau(mejor)

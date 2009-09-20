@@ -20,7 +20,7 @@ object ReinaMain {
 		// arranco hormigas en los nucleos
 		val cores = Runtime.getRuntime().availableProcessors()
 		
-		var v = true
+		var v = false
 		for (i <- 1 to cores) {
 			if (v) {
 				for (h <- 1 to 4) {
@@ -128,6 +128,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						mejor = newMejor
 						mejorLargo = inst.solLength(newMejor)
 						mejorVehiculos = newVehiculos
+                  mejorCustomers = 0
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						inst overwriteTau(mejor)
@@ -136,15 +137,14 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))
 						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))
 					}
-					else {
-						println(id + " <-- MejorVehiculos (ignoro) " + newVehiculos)
-					}
+					//else {
+					//	println(id + " <-- MejorVehiculos (ignoro) " + newVehiculos)
+					//}
 				}
 				case MejorCustomers(newMejor, id) => {
 					val newCustomers = newMejor.foldLeft(0)(_ + _.size - 1)
-					val newVehiculos = newMejor.length
 
-					if (/*newVehiculos < mejorVehiculos || */newCustomers > mejorCustomers) {
+					if (newCustomers > mejorCustomers) {
 						mejorCustomers = newCustomers
 						
 						println(id + " <-- MejorCustomers " + newCustomers + " | " + newMejor.length)
@@ -152,14 +152,15 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						// broadcast a las hormigas V
 						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorCustomers(newMejor, ""))
 					}
-					else {
-						println(id + " <-- MejorCustomers (ignoro) " + newCustomers + " | " + newMejor.length)
-					}
+					//else {
+					//	println(id + " <-- MejorCustomers (ignoro) " + newCustomers + " | " + newMejor.length)
+					//}
 				}
 				case TIMEOUT => {
 					println("TIMEOUT")
 					// fue, mando Stop al resto
 					hormigas.foreach(p => p._2 ! Stop)
+					hormigasV.foreach(p => p._2 ! Stop)
 
 					running = false
 
