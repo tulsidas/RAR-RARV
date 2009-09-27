@@ -40,6 +40,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 	val reina = select(Node(host, port), name)
 
 	var inst: Instance = null
+	
+	val t = System.currentTimeMillis
 
 	def act {
 		var ant: AntV = null
@@ -68,20 +70,14 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 		}
 
 		var running = true
-		var iter = 0
 
 		while(running) {
 			if (mailboxSize > 0) {
 				receive {
-					case Stop => {
-						running = false
-						println("" + iter + " iteraciones")
-					}
-					case MejorVehiculos(newMejor, _) => {
+					case Stop => { running = false }
+					case MejorVehiculos(newMejor, newTau, _) => {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
-						
-						//println(id + " recibo MejorVehiculos " + vehiculos + " |actual: " + mejorVehiculos)
 						
 						if (vehiculos < mejorVehiculos+1) {
 							mejor = newMejor
@@ -89,23 +85,18 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							mejorCust = 0
 
 							// sobreescribo feromonas
-							inst overwriteTau(mejor)
-							//inst globalTau(mejor)
+							inst overwriteTau(newTau)
 							
 							// actualizo el max permitido
 							inst.vehiculos = mejorVehiculos-1
 							
-							println(id + " || buscando " + inst.vehiculos + " vehiculos")
+							println((System.currentTimeMillis-t) + " | " + id + " || buscando " + inst.vehiculos + " vehiculos")
 						}
-						
-						//println(id + " ==> " + mejorVehiculos + " | " + mejorCust)
 					}
-					case MejorCustomers(newMejor, _) => {
+					case MejorCustomers(newMejor, newTau, _) => {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
 						val customers = newMejor.foldLeft(0)(_ + _.size - 1)
-						
-						println(id + " recibo MejorCustomers " + vehiculos + " | " + customers + " |actual: " + (mejorVehiculos+1) + " | " + mejorCust)
 						
 						if (vehiculos < mejorVehiculos && inst.factible(newMejor)) {
 							mejor = newMejor
@@ -113,26 +104,22 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							mejorCust = 0
 
 							// sobreescribo feromonas
-							inst.overwriteTau(mejor)
-							//inst globalTau(mejor)
+							inst.overwriteTau(newTau)
 							
 							// actualizo el max permitido
 							inst.vehiculos = mejorVehiculos-1
 							
-							println(id + " || buscando " + inst.vehiculos + " vehiculos")
+							println((System.currentTimeMillis-t) + " | " + id + " || buscando " + inst.vehiculos + " vehiculos")
 						}
 						else if (vehiculos == mejorVehiculos && customers > mejorCust) {
 							mejorCust = customers
 							mejor = newMejor
 							
-							println(id + " || buscando " + inst.vehiculos + " vehiculos y más de " + mejorCust + " clientes")
+							println((System.currentTimeMillis-t) + " | " + id + " || buscando " + inst.vehiculos + " vehiculos y más de " + mejorCust + " clientes")
 
 							// sobreescribo feromonas
-							inst.overwriteTau(mejor)
-							//inst globalTau(mejor)
+							inst.overwriteTau(newTau)
 						}
-						
-						println(id + " ==> " + mejorVehiculos + " | " + mejorCust)
 					}
 				}
 			}
@@ -140,13 +127,10 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				ant.nonVisited = nonVisited
 
 				val sAnt = ant.solve
-				
+
 				chequearSolucion(sAnt)
 				
-				// global update feromonas
 				// inst.globalTau(mejor)
-				
-				iter = iter + 1
 			}
 		}
 	}
@@ -159,8 +143,6 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 			if (vehiculos < mejorVehiculos) {
 				// reduci vehiculos fehacientemente
 
-				println(id + " >>>" + vehiculos + " | " + customers)
-
 				mejorVehiculos = vehiculos
 				mejor = sAnt
 
@@ -168,13 +150,12 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				inst.vehiculos = mejorVehiculos-1
 				mejorCust = 0
 
-				//println(id + " --> MejorVehiculos " + mejorVehiculos)
-				reina ! MejorVehiculos(mejor, id)
+				println((System.currentTimeMillis-t) + " | " + id + " || encontre " + vehiculos + " vehiculos")
+
+				reina ! MejorVehiculos(mejor, inst.tauMap, id)
 				
-				println(id + " --> MejorVehiculos " + mejorVehiculos + " | " + mejorCust)
-	
 				// global update feromonas
-				// inst.globalTau(mejor)
+				inst.globalTau(mejor)
 			}
 		}
 		// no factible, pero puedo mejorar con inserciones
@@ -189,8 +170,6 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 			val inserted = new LocalInsert(inst, sAnt, faltantes, nonVisited).insert()
 			val custInserted = inserted.foldLeft(0)(_ + _.size - 1)
 			
-			//println(id + " >" + vehiculos + " | " + customers)
-
 			// consegui insertar y obtener más visitas, veo qué onda
 			if (custInserted > mejorCust) {
 				// limpio mapa de no-visitados
@@ -205,22 +184,18 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 					inst.vehiculos = mejorVehiculos-1
 					mejorCust = 0
 
-					//println(id + " --> MejorVehiculos " + mejorVehiculos)
-					reina ! MejorVehiculos(mejor, id)
-					
-					println(id + " --> MejorVehiculos " + mejorVehiculos + " | " + mejorCust)
+					println((System.currentTimeMillis-t) + " | " + id + " || encontre " + mejorVehiculos + " vehiculos")
+					reina ! MejorVehiculos(mejor, inst.tauMap, id)
 					
 					// global update feromonas
-					// inst.globalTau(mejor)
+					inst.globalTau(mejor)
 				}
 				else {
-					//println(id + " --> MejorCustomers " + mejorCust + "|" + mejorVehiculos)
-					reina ! MejorCustomers(mejor, id)
-
-					println(id + " --> MejorCustomers " + mejorVehiculos + " | " + mejorCust)
+					println((System.currentTimeMillis-t) + " | " + id + " || encontre " + mejorVehiculos + " vehiculos y " + mejorCust + " clientes")
+					reina ! MejorCustomers(mejor, inst.tauMap, id)
 					
 					// global update feromonas
-					// inst.globalTau(mejor)
+					inst.globalTau(mejor)
 				}
 			}
 		}

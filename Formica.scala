@@ -1,10 +1,12 @@
 import Params._
 
-import scala.actors.Actor
+import scala.actors.{Actor, Debug}
 import scala.actors.Actor._
 import scala.actors.remote._
 import scala.actors.remote.RemoteActor._
-import scala.actors.Debug
+
+import scala.collection.Map
+
 import java.util.UUID
 
 object FormicaMain {
@@ -50,7 +52,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			}
 		}
 
-		def guardarMejor(newMejor: List[List[Customer]]) = {		
+		def guardarMejor(newMejor: List[List[Customer]], newTau: Map[(Customer, Customer), Double]) = {
 			// guardo el nuevo mejor
 			mejor = newMejor
 			mejorLargo = inst.solLength(mejor)
@@ -60,7 +62,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 			// sobreescribo feromonas
 			//inst overwriteTau(mejor)
-			inst globalTau(mejor)
+			//inst globalTau(mejor)
+			inst.overwriteTau(newTau)
 			
 			// establezco el nuevo máximo de vehículos
 			inst.vehiculos = mejorVehiculos
@@ -71,8 +74,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			if (mailboxSize > 0) {
 				receive {
 					case Stop => running = false
-					case MejorLargo(newMejor, _) => guardarMejor(newMejor)
-					case MejorVehiculos(newMejor, _) => guardarMejor(newMejor)
+					case MejorLargo(newMejor, newTau, _) => guardarMejor(newMejor, newTau)
+					case MejorVehiculos(newMejor, newTau, _) => guardarMejor(newMejor, newTau)
 				}
 			}
 			else {
@@ -90,7 +93,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = vehiculos
 						mejor = optimizado
 
-						reina ! MejorVehiculos(mejor, id)
+						reina ! MejorVehiculos(mejor, inst.tauMap, id)
 						
 						// establezco el nuevo máximo de vehículos
 						inst.vehiculos = mejorVehiculos
@@ -102,7 +105,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorLargo = sal
 						mejor = optimizado
 
-						reina ! MejorLargo(mejor, id)
+						reina ! MejorLargo(mejor, inst.tauMap, id)
 						
 						// global update feromonas
 						inst.globalTau(mejor)

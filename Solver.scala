@@ -46,14 +46,7 @@ trait Solver {
 		}
 
 		// actualizar tau local
-		nn.zip(nn.tail++List(nn.head)).foreach { p =>
-			val actual = p._1
-			val prox = p._2
-			
-			val τ = (1-ξ) * inst.tau(actual, prox) + ξ * τ0
-			inst.updateTau(actual, prox, τ)
-			//println("local update τ ("+actual.num+", "+prox.num+") " + inst.tau(actual, prox) + " -> " + τ)
-		}
+		inst.localTau(nn)
 
 		nn
 	}

@@ -74,27 +74,33 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 		tauMap + ((par, τ))
 	}
 
-	def overwriteTau(solucion: List[List[Customer]]) = {
-		// adios lo que tenia
+	def overwriteTau(newTau: scala.collection.Map[(Customer, Customer), Double]) = {
 		tauMap clear
-
-		globalTau(solucion)
+		
+		tauMap ++ newTau.elements
+	}
+	
+	def localTau(camion: List[Customer]) = {
+		camion.zip(camion.tail ++ List(camion.head)).foreach { p =>
+			val actual = p._1
+			val prox = p._2
+			
+			val τ = (1-ξ) * tau(actual, prox) + ξ * τ0
+			//if (τ < tau(actual, prox)) {
+				updateTau(actual, prox, τ)
+			//}
+		}
 	}
 
 	def globalTau(solucion: List[List[Customer]]) = {
 		val Δτ = 1 / solLength(solucion)
 
-		//println("global tau | p * Δτ = " + (p * Δτ))
+		// println("globalTau | p * Δτ = " + (p * Δτ))
+
 		// τij = (1-p)τij + p*Δτ
 		val pares = List.flatten(solucion.map(c => c.zip(c.tail ::: List(c.head))))
 		pares.foreach(par => updateTau(par, 
-			(1-p) * tau(par._1, par._2) + p * Δτ )
-		)
-	}
-
-	def globalEvaporate() = {
-		tauMap.keys.foreach(par => updateTau(par, 
-			(1-p) * tau(par._1, par._2))
+			(1-p) * tau(par._1, par._2) + p * Δτ)
 		)
 	}
 

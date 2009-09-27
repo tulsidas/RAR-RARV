@@ -23,16 +23,14 @@ object ReinaMain {
 		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
-				for (h <- 1 to 5) {
+				for (h <- 1 to 2) {
 						new FormicaV("localhost", 9010, 'ACS).start()
 				}
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
 			}
-			/*
-			v = !v
-			*/
+			//v = !v
 		}
 	}
 }
@@ -96,17 +94,17 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					println(id + " <-- Hello/V")
 					sender ! StartV(inst, mejor, mejorCustomers)
 				}
-				case MejorLargo(newMejor, id) => {
+				case MejorLargo(newMejor, newTau, id) => {
 					// chequeo que efectivamente sea mejor
 					val newLargo = inst.solLength(newMejor)
 					val newVehiculos = newMejor.length
 					
 					if (newLargo < mejorLargo && newVehiculos <= mejorVehiculos) {
 						// actualizo a las hormigas largueras
-						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, ""))
+						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, newTau, ""))
 						if (newVehiculos < mejorVehiculos) {
 							// actualizo a las hormigas vehiculares
-							hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, ""))
+							hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, newTau, ""))
 						}
                   
                   println(id + " MejorLargo: " + newLargo)
@@ -116,11 +114,10 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = newVehiculos
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
-						inst overwriteTau(mejor)
-						//inst globalTau(mejor)
+						inst overwriteTau(newTau)
 					}
 				}
-				case MejorVehiculos(newMejor, id) => {
+				case MejorVehiculos(newMejor, newTau, id) => {
 					// chequeo que efectivamente sea mejor
 					val newVehiculos = newMejor.length
 
@@ -134,15 +131,14 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
                   mejorCustomers = 0
                   
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
-						inst overwriteTau(mejor)
-						//inst globalTau(mejor)
+						inst overwriteTau(newTau)
 						
 						// actualizo a todas las hormigas
-						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))
-						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))
+						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, newTau, ""))
+						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, newTau, ""))
 					}
 				}
-				case MejorCustomers(newMejor, id) => {
+				case MejorCustomers(newMejor, newTau, id) => {
 					val newVehiculos = newMejor.length
 					val newCustomers = newMejor.foldLeft(0)(_ + _.size - 1)
 					
@@ -150,7 +146,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						mejorCustomers = newCustomers
 						
 						// broadcast a las hormigas V
-						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorCustomers(newMejor, ""))
+						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorCustomers(newMejor, newTau, ""))
 					}
 				}
 				case TIMEOUT => {
