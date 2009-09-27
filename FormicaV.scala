@@ -62,7 +62,6 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				inst.vehiculos = mejorVehiculos - 1
 				
 				τ0 = 1 / (inst.customers.length * inst.solLength(mejor))
-				inst.globalTau(mejor)
 				
 				println("Start! buscando con " + inst.vehiculos)
 			}
@@ -90,8 +89,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							mejorCust = 0
 
 							// sobreescribo feromonas
-							//inst overwriteTau(mejor)
-							inst globalTau(mejor)
+							inst overwriteTau(mejor)
+							//inst globalTau(mejor)
 							
 							// actualizo el max permitido
 							inst.vehiculos = mejorVehiculos-1
@@ -114,8 +113,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							mejorCust = 0
 
 							// sobreescribo feromonas
-							//inst.overwriteTau(mejor)
-							inst globalTau(mejor)
+							inst.overwriteTau(mejor)
+							//inst globalTau(mejor)
 							
 							// actualizo el max permitido
 							inst.vehiculos = mejorVehiculos-1
@@ -128,7 +127,9 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 							
 							println(id + " || buscando " + inst.vehiculos + " vehiculos y más de " + mejorCust + " clientes")
 
-							inst globalTau(mejor)
+							// sobreescribo feromonas
+							inst.overwriteTau(mejor)
+							//inst globalTau(mejor)
 						}
 						
 						println(id + " ==> " + mejorVehiculos + " | " + mejorCust)
@@ -141,6 +142,9 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				val sAnt = ant.solve
 				
 				chequearSolucion(sAnt)
+				
+				// global update feromonas
+				// inst.globalTau(mejor)
 				
 				iter = iter + 1
 			}
@@ -170,7 +174,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				println(id + " --> MejorVehiculos " + mejorVehiculos + " | " + mejorCust)
 	
 				// global update feromonas
-				inst.globalTau(mejor)
+				// inst.globalTau(mejor)
 			}
 		}
 		// no factible, pero puedo mejorar con inserciones
@@ -207,7 +211,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 					println(id + " --> MejorVehiculos " + mejorVehiculos + " | " + mejorCust)
 					
 					// global update feromonas
-					inst.globalTau(mejor)
+					// inst.globalTau(mejor)
 				}
 				else {
 					//println(id + " --> MejorCustomers " + mejorCust + "|" + mejorVehiculos)
@@ -216,7 +220,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 					println(id + " --> MejorCustomers " + mejorVehiculos + " | " + mejorCust)
 					
 					// global update feromonas
-					inst.globalTau(mejor)
+					// inst.globalTau(mejor)
 				}
 			}
 		}

@@ -21,9 +21,9 @@ object ReinaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 		
 		var v = true
-		for (i <- 1 to 1 /*cores*/) {
+		for (i <- 1 to cores) {
 			if (v) {
-				for (h <- 1 to 1) {
+				for (h <- 1 to 5) {
 						new FormicaV("localhost", 9010, 'ACS).start()
 				}
 			}
@@ -50,10 +50,11 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	var mejor = new LocalSearch(inst, solver.solve).search()
 	var mejorCustomers = 0
 
-	inst.globalTau(mejor)
-
 	var mejorLargo = inst.solLength(mejor)
 	var mejorVehiculos = mejor.length
+
+	inst.globalTau(mejor)
+	τ0 = 1 / inst.customers.length * mejorLargo
 	
 	// actualizo el maximo de vehiculos permitidos a lo que me dio NN
 	inst.vehiculos = mejorVehiculos
@@ -64,12 +65,6 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 		println("visitados: " + mejor.foldLeft(0)(_ + _.size - 1))
 		exit
 	}
-	
-	val nf = new java.text.DecimalFormat("000")
-	var s = 0
-	
-	Imaginario.writeImage(nf.format(s)+"s.jpg", inst, mejor)
-	Imaginario.writeTauImage(nf.format(s)+"tau.jpg", inst)
 	
 	Debug.level = 1
 
@@ -94,16 +89,12 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					hormigas + ((id, sender))
 					println(id + " <-- Hello")
 					sender ! Start(inst, mejor)
-					
-					τ0 = 1 / inst.customers.length * mejorLargo
 				}
 				case HelloV(id) => { 
 					// una hormiga vehicular
 					hormigasV + ((id, sender))
 					println(id + " <-- Hello/V")
 					sender ! StartV(inst, mejor, mejorCustomers)
-
-					τ0 = 1 / inst.customers.length * mejorLargo
 				}
 				case MejorLargo(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
@@ -120,17 +111,13 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
                   
                   println(id + " MejorLargo: " + newLargo)
 						
-						s = s+1
-						Imaginario.writeImage(nf.format(s)+"s.jpg", inst, mejor)
-						Imaginario.writeTauImage(nf.format(s)+"tau.jpg", inst)
-						
 						mejor = newMejor
 						mejorLargo = newLargo
 						mejorVehiculos = newVehiculos
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
-						//inst overwriteTau(mejor)
-						inst globalTau(mejor)
+						inst overwriteTau(mejor)
+						//inst globalTau(mejor)
 					}
 				}
 				case MejorVehiculos(newMejor, id) => {
@@ -146,15 +133,9 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = newVehiculos
                   mejorCustomers = 0
                   
-						s = s+1
-						Imaginario.writeImage(nf.format(s)+"s.jpg", inst, mejor)
-						Imaginario.writeTauImage(nf.format(s)+"tau.jpg", inst)
-
-                  //println("ahora actual es: " + mejorVehiculos +"|"+mejorCustomers)
-
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
-						// inst overwriteTau(mejor)
-						inst globalTau(mejor)
+						inst overwriteTau(mejor)
+						//inst globalTau(mejor)
 						
 						// actualizo a todas las hormigas
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, ""))

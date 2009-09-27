@@ -47,7 +47,6 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 				mejorVehiculos = _mejor.foldLeft(0)(_ + _.size - 1)
 				
 				τ0 = 1 / (inst.customers.length * inst.solLength(mejor))
-				inst.globalTau(mejor)				
 			}
 		}
 
