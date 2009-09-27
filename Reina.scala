@@ -21,9 +21,9 @@ object ReinaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 		
 		var v = true
-		for (i <- 1 to cores) {
+		for (i <- 1 to 1 /*cores*/) {
 			if (v) {
-				for (h <- 1 to 10) {
+				for (h <- 1 to 1) {
 						new FormicaV("localhost", 9010, 'ACS).start()
 				}
 			}
@@ -64,6 +64,12 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 		println("visitados: " + mejor.foldLeft(0)(_ + _.size - 1))
 		exit
 	}
+	
+	val nf = new java.text.DecimalFormat("000")
+	var s = 0
+	
+	Imaginario.writeImage(nf.format(s)+"s.jpg", inst, mejor)
+	Imaginario.writeTauImage(nf.format(s)+"tau.jpg", inst)
 	
 	Debug.level = 1
 
@@ -111,6 +117,12 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 							// actualizo a las hormigas vehiculares
 							hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, ""))
 						}
+                  
+                  println(id + " MejorLargo: " + newLargo)
+						
+						s = s+1
+						Imaginario.writeImage(nf.format(s)+"s.jpg", inst, mejor)
+						Imaginario.writeTauImage(nf.format(s)+"tau.jpg", inst)
 						
 						mejor = newMejor
 						mejorLargo = newLargo
@@ -134,6 +146,10 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = newVehiculos
                   mejorCustomers = 0
                   
+						s = s+1
+						Imaginario.writeImage(nf.format(s)+"s.jpg", inst, mejor)
+						Imaginario.writeTauImage(nf.format(s)+"tau.jpg", inst)
+
                   //println("ahora actual es: " + mejorVehiculos +"|"+mejorCustomers)
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva

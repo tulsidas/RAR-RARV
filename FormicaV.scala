@@ -64,16 +64,20 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				τ0 = 1 / (inst.customers.length * inst.solLength(mejor))
 				inst.globalTau(mejor)
 				
-				//println("Start! buscando con " + inst.vehiculos)
+				println("Start! buscando con " + inst.vehiculos)
 			}
 		}
 
 		var running = true
+		var iter = 0
 
 		while(running) {
 			if (mailboxSize > 0) {
 				receive {
-					case Stop => running = false
+					case Stop => {
+						running = false
+						println("" + iter + " iteraciones")
+					}
 					case MejorVehiculos(newMejor, _) => {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
@@ -137,6 +141,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				val sAnt = ant.solve
 				
 				chequearSolucion(sAnt)
+				
+				iter = iter + 1
 			}
 		}
 	}

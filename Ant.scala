@@ -17,8 +17,6 @@ class Ant(val inst: Instance) extends Solver {
 		// filtro los que llego a tiempo y me alcanza la capacidad
 		val insertables = vecinos.filter(vecino => insertable(nodo, vecino, hora, capacidad))
 		
-		//println(nodo.num + " -> insertables = " + insertables.map(_.num))
-
 		if (insertables.isEmpty) {
 			null
 		}
@@ -28,13 +26,10 @@ class Ant(val inst: Instance) extends Solver {
 				(m, v) => m(v) = η(nodo, v)
 			}
 
-			//println("η = " + mapη.map(p => (p._1.num, p._2)).mkString(","))
-
 			val q = rnd.nextDouble
 
 			if (q < q0) {
 				// exploitation
-				//println("exploitation")
 
 				// obtengo el mayor η
 				val values = mapη.values.toList
@@ -44,19 +39,14 @@ class Ant(val inst: Instance) extends Solver {
 
 				// si hay varios con el mismo η, obtengo el que cierra antes
 				if (bests.length > 1) {
-					val ret = bests.tail.foldLeft(bests.head) { (a,b) => if (a.due < b.due) a else b }
-					//println("-----> " + ret.num)
-					ret
+					bests.tail.foldLeft(bests.head) { (a,b) => if (a.due < b.due) a else b }
 				}
 				else {
-					val ret = bests.head
-					//println("-----> " + ret.num)
-					ret
+					bests.head
 				}
 			}
 			else {
 				// exploration
-				//println("exploration")
 
 				// el denominador
 				val Σ = mapη.values.reduceLeft(_+_)
@@ -64,19 +54,13 @@ class Ant(val inst: Instance) extends Solver {
 				// construyo una lista de (Customer, proba)
 				val probas = mapη.map(t => (t._1, mapη(t._1) / Σ)) toList
 
-				//println("probas = " + probas.map(p => (p._1.num, p._2)).mkString(","))
-
-				val ret = weightedCases(probas)
-				//println("-----> " + ret.num)
-				ret
+				weightedCases(probas)
 			}
 		}
 	}
 
 	def weightedCases[A](inp: List[(A, Double)]): A = {
 		def coinFlip[A](p: Double)(a1: A, a2: A) = {
-			//if (p < 0.0 || p > 1.0) error("invalid probability: " + p)
-			
 			if (rnd.nextDouble() < p) a1 else a2
 		}
 
