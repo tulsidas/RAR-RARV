@@ -5,6 +5,7 @@ trait Solver {
 	val source = inst.source
 
 	def solve: List[List[Customer]] = {
+		//println("=============================================")
 		val source = inst.source
 		var disponibles = inst.customers - source
 		var nn = List[List[Customer]]()
@@ -19,6 +20,8 @@ trait Solver {
 		}
 		
 		//inst.globalEvaporate()
+		
+		//println(nn.map(_.map(_.num)))
 
 		nn
 	}

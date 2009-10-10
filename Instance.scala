@@ -51,7 +51,7 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 			}
 		}
 
-		recorridoFactible(camion)
+		camion(0) == source && recorridoFactible(camion)
 	}
 
 	def maxTau: Double = tauMap.values.toList.sort(_>_).head
@@ -86,9 +86,7 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 			val prox = p._2
 			
 			val τ = (1-ξ) * tau(actual, prox) + ξ * τ0
-			//if (τ < tau(actual, prox)) {
-				updateTau(actual, prox, τ)
-			//}
+			updateTau(actual, prox, τ)
 		}
 	}
 

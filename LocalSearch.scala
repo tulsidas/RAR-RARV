@@ -2,6 +2,7 @@ import Params._
 
 object LocalSearchMain {
 	def main(args: Array[String]) {
+		/*
 		val inst = Solomon.load(args(0))
 		
 		val solver = new NearestNeighbour(inst)
@@ -18,6 +19,7 @@ object LocalSearchMain {
 		println("largo resultante = " + inst.solLength(nuevo) + " | " + nuevo.length)
 		
 		//Imaginario.writeImage("optimizada.jpg", inst, nuevo)
+		*/
 	}
 }
 

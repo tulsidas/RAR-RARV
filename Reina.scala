@@ -21,9 +21,9 @@ object ReinaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 		
 		var v = true
-		for (i <- 1 to cores) {
+		for (i <- 1 to 1/*cores*/) {
 			if (v) {
-				for (h <- 1 to 2) {
+				for (h <- 1 to 1) {
 						new FormicaV("localhost", 9010, 'ACS).start()
 				}
 			}
@@ -46,7 +46,10 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 
 	// nearest neighbour optimizado
 	var mejor = new LocalSearch(inst, solver.solve).search()
+	//var mejor = Loader.load("sol_r103.txt", inst)
 	var mejorCustomers = 0
+	
+	println("NN = " + mejor.map(_.map(_.num)))
 
 	var mejorLargo = inst.solLength(mejor)
 	var mejorVehiculos = mejor.length

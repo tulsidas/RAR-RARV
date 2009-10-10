@@ -12,7 +12,7 @@ object Solomon {
 
 		var customers = Set[Customer]()
 
-		for (n <- (9 until lines.length)) {
+		for (n <- (9 until 30/*lines.length*/)) {
 		  val params = lines(n).split("\\s+").toList
 
 		  val num = Integer.parseInt(params(1))

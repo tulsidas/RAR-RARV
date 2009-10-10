@@ -26,6 +26,9 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 	// la mejor solucion actual
 	var mejor: List[List[Customer]] = Nil
 	
+	// la mejor solucion infactible
+	var mejorInf: List[List[Customer]] = Nil
+	
 	// #de vehiculos de la mejor solucion
 	var mejorVehiculos = Math.MAX_INT
 	
@@ -74,13 +77,18 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 		while(running) {
 			if (mailboxSize > 0) {
 				receive {
-					case Stop => { running = false }
+					case Stop => { 
+						running = false
+						println(c.foldLeft(0)(_ + _).toFloat / c.size.toFloat)
+						println(ci.foldLeft(0)(_ + _).toFloat / ci.size.toFloat)
+					}
 					case MejorVehiculos(newMejor, newTau, _) => {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
 						
 						if (vehiculos < mejorVehiculos+1) {
 							mejor = newMejor
+							mejorInf = newMejor
 							mejorVehiculos = vehiculos
 							mejorCust = 0
 
@@ -97,6 +105,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 						// guardo el nuevo mejor, si es realmente mejor
 						val vehiculos = newMejor.length
 						val customers = newMejor.foldLeft(0)(_ + _.size - 1)
+						
+						mejorInf = newMejor
 						
 						if (vehiculos < mejorVehiculos && inst.factible(newMejor)) {
 							mejor = newMejor
@@ -130,14 +140,23 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 
 				chequearSolucion(sAnt)
 				
-				// inst.globalTau(mejor)
+				// feromonas segun el mejor
+				//inst.globalTau(mejor)
+				
+				// y el mejor infactible
+				inst.globalTau(mejorInf)
 			}
 		}
 	}
 	
+	var c = List[Int]()
+	var ci = List[Int]()
+	
 	def chequearSolucion(sAnt: List[List[Customer]]) = {
 		val customers = sAnt.foldLeft(0)(_ + _.size - 1)
 		val vehiculos = sAnt.length
+		
+		c = customers :: c
 		
 		if (inst.factible(sAnt)) {
 			if (vehiculos < mejorVehiculos) {
@@ -169,6 +188,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 			// busqueda de inserciones
 			val inserted = new LocalInsert(inst, sAnt, faltantes, nonVisited).insert()
 			val custInserted = inserted.foldLeft(0)(_ + _.size - 1)
+			
+			ci = custInserted :: ci
 			
 			// consegui insertar y obtener más visitas, veo qué onda
 			if (custInserted > mejorCust) {

@@ -99,7 +99,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						inst.vehiculos = mejorVehiculos
 						
 						// global update feromonas
-						inst.globalTau(mejor)
+						// inst.globalTau(mejor)
 					}
 					else if (sal < mejorLargo) {
 						mejorLargo = sal
@@ -108,9 +108,12 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						reina ! MejorLargo(mejor, inst.tauMap, id)
 						
 						// global update feromonas
-						inst.globalTau(mejor)
+						// inst.globalTau(mejor)
 					}
 				}
+				
+				// global update feromonas
+				inst.globalTau(mejor)
 			}
 		}
 	}
