@@ -73,10 +73,11 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 		tauMap + ((par, τ))
 	}
 
-	def overwriteTau(newTau: scala.collection.Map[(Customer, Customer), Double]) = {
+	//def overwriteTau(newTau: scala.collection.Map[(Customer, Customer), Double]) = {
+	def overwriteTau(sol: List[List[Customer]]) = {
 		tauMap clear
 		
-		tauMap ++ newTau.elements
+		globalTau(sol)
 	}
 	
 	def localTau(camion: List[Customer]) = {

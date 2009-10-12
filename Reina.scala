@@ -19,18 +19,16 @@ object ReinaMain {
 
 		// arranco hormigas en los nucleos
 		val cores = Runtime.getRuntime().availableProcessors()
-		
+
 		var v = true
-		for (i <- 1 to 1/*cores*/) {
+		for (i <- 1 to cores) {
 			if (v) {
-				for (h <- 1 to 1) {
-						new FormicaV("localhost", 9010, 'ACS).start()
-				}
+				new RAR("localhost", 9010, 'ACS).start()
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
 			}
-			//v = !v
+			v = !v
 		}
 	}
 }
@@ -39,7 +37,6 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val hormigas = Map.empty[String, OutputChannel[Any]]
-	val hormigasV = Map.empty[String, OutputChannel[Any]]
 
 	val inst = Solomon.load(file)
 	val solver = new NearestNeighbour(inst)
@@ -47,10 +44,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	// nearest neighbour optimizado
 	var mejor = new LocalSearch(inst, solver.solve).search()
 	//var mejor = Loader.load("sol_r103.txt", inst)
-	var mejorCustomers = 0
 	
-	println("NN = " + mejor.map(_.map(_.num)))
-
 	var mejorLargo = inst.solLength(mejor)
 	var mejorVehiculos = mejor.length
 
@@ -60,6 +54,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	// actualizo el maximo de vehiculos permitidos a lo que me dio NN
 	inst.vehiculos = mejorVehiculos
 	
+	println("NN = " + mejor.map(_.map(_.num)))
 	println("NN: " + mejorLargo + " | " + mejorVehiculos)
 	if (!inst.factible(mejor)) {
 		println("NN no factible!!")
@@ -88,75 +83,36 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 				case Hello(id) => { 
 					// una hormiga comun
 					hormigas + ((id, sender))
-					println(id + " <-- Hello")
 					sender ! Start(inst, mejor)
 				}
-				case HelloV(id) => { 
-					// una hormiga vehicular
-					hormigasV + ((id, sender))
-					println(id + " <-- Hello/V")
-					sender ! StartV(inst, mejor, mejorCustomers)
-				}
-				case MejorLargo(newMejor, newTau, id) => {
+				case Mejor(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
 					val newLargo = inst.solLength(newMejor)
 					val newVehiculos = newMejor.length
 					
-					if (newLargo < mejorLargo && newVehiculos <= mejorVehiculos) {
+					//println("Mejor("+newLargo+" | "+newVehiculos+")")
+					//println("actual = "+mejorLargo+" | "+mejorVehiculos)
+					
+					if (newVehiculos < mejorVehiculos || 
+						(newVehiculos == mejorVehiculos && newLargo < mejorLargo)) {
+
 						// actualizo a las hormigas largueras
-						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, newTau, ""))
-						if (newVehiculos < mejorVehiculos) {
-							// actualizo a las hormigas vehiculares
-							hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorLargo(mejor, newTau, ""))
-						}
+						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! Mejor(mejor, ""))
                   
-                  println(id + " MejorLargo: " + newLargo)
+                  println("REINA --> Mejor: " + newLargo + " | " + newVehiculos)
 						
 						mejor = newMejor
 						mejorLargo = newLargo
 						mejorVehiculos = newVehiculos
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
-						inst overwriteTau(newTau)
-					}
-				}
-				case MejorVehiculos(newMejor, newTau, id) => {
-					// chequeo que efectivamente sea mejor
-					val newVehiculos = newMejor.length
-
-					//println(id  + " manda: MejorVehiculos: " + newVehiculos + "||" + "actual: " + mejorVehiculos)
-					
-					// menos vehiculos
-					if (newVehiculos < mejorVehiculos && inst.factible(newMejor)) {
-						mejor = newMejor
-						mejorLargo = inst.solLength(newMejor)
-						mejorVehiculos = newVehiculos
-                  mejorCustomers = 0
-                  
-						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
-						inst overwriteTau(newTau)
-						
-						// actualizo a todas las hormigas
-						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, newTau, ""))
-						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorVehiculos(mejor, newTau, ""))
-					}
-				}
-				case MejorCustomers(newMejor, newTau, id) => {
-					val newVehiculos = newMejor.length
-					val newCustomers = newMejor.foldLeft(0)(_ + _.size - 1)
-					
-					if (newCustomers > mejorCustomers && newVehiculos <= mejorVehiculos-1) {
-						mejorCustomers = newCustomers
-						
-						// broadcast a las hormigas V
-						hormigasV.filterKeys(uid => uid != id).foreach(p => p._2 ! MejorCustomers(newMejor, newTau, ""))
+						//inst overwriteTau(newTau)
 					}
 				}
 				case TIMEOUT => {
 					println("TIMEOUT")
 					// fue, mando Stop al resto
 					hormigas.foreach(p => p._2 ! Stop)
-					hormigasV.foreach(p => p._2 ! Stop)
 
 					running = false
 

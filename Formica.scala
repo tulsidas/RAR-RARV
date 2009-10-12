@@ -52,18 +52,18 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			}
 		}
 
-		def guardarMejor(newMejor: List[List[Customer]], newTau: Map[(Customer, Customer), Double]) = {
+		def guardarMejor(newMejor: List[List[Customer]]) = {
 			// guardo el nuevo mejor
 			mejor = newMejor
 			mejorLargo = inst.solLength(mejor)
 			mejorVehiculos = mejor.length
 
-         println(id + " <-- MejorSolucion " + mejorLargo + " | " + mejorVehiculos)
+         println(id + " recibo Mejor " + mejorLargo + " | " + mejorVehiculos)
 
 			// sobreescribo feromonas
 			//inst overwriteTau(mejor)
 			//inst globalTau(mejor)
-			inst.overwriteTau(newTau)
+			//inst.overwriteTau(newTau)
 			
 			// establezco el nuevo máximo de vehículos
 			inst.vehiculos = mejorVehiculos
@@ -74,8 +74,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			if (mailboxSize > 0) {
 				receive {
 					case Stop => running = false
-					case MejorLargo(newMejor, newTau, _) => guardarMejor(newMejor, newTau)
-					case MejorVehiculos(newMejor, newTau, _) => guardarMejor(newMejor, newTau)
+					case Mejor(newMejor, _) => guardarMejor(newMejor)
 				}
 			}
 			else {
@@ -93,7 +92,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = vehiculos
 						mejor = optimizado
 
-						reina ! MejorVehiculos(mejor, inst.tauMap, id)
+						println(id + " envio Mejor " + inst.solLength(mejor) + " | " + mejor.length)
+						reina ! Mejor(mejor, id)
 						
 						// establezco el nuevo máximo de vehículos
 						inst.vehiculos = mejorVehiculos
@@ -105,7 +105,8 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorLargo = sal
 						mejor = optimizado
 
-						reina ! MejorLargo(mejor, inst.tauMap, id)
+						println(id + " envio Mejor " + inst.solLength(mejor) + " | " + mejor.length)
+						reina ! Mejor(mejor, id)
 						
 						// global update feromonas
 						// inst.globalTau(mejor)
