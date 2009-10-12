@@ -5,7 +5,6 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	val source = customers(0)
 
 	// cache de distancias
-	private[this] val distancias = Map.empty[(Customer, Customer), Double]
 	val tauMap = Map.empty[(Customer, Customer), Double]
 	
 	/**
@@ -47,7 +46,7 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 			clientes match {
 				case Nil => true
 				case x :: Nil => true
-				case x :: y :: xs => vecinoFactible(x, y) && recorridoFactible(y :: xs)
+				case x :: xs => vecinoFactible(x, xs.head) && recorridoFactible(xs)
 			}
 		}
 
@@ -102,16 +101,10 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 		)
 	}
 
-	def distancia(a: Customer, b:Customer): Double = {
-		val par = _par(a, b)
-		if (distancias.contains(par)) {  
-			distancias(par)  
-		}  
-		else {  
-			val y = _distancia(par._1, par._2)
-			distancias + ((par, y))
-			y  
-		}
+	def distancia(c1: Customer, c2:Customer): Double = {
+		val difx = c1.x - c2.x
+		val dify = c1.y - c2.y
+		Math.sqrt((difx*difx).toDouble + (dify*dify).toDouble)
 	}
 
 	def tiempo(actual: Customer, prox: Customer, hora: Double): Double = {
@@ -123,11 +116,5 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 
 	private def _par(a: Customer, b: Customer): (Customer, Customer) = {
 		if (a.num < b.num) (a,b) else (b,a)
-	}
-
-	private def _distancia(c1: Customer, c2:Customer): Double = {
-		val difx = c1.x - c2.x
-		val dify = c1.y - c2.y
-		Math.sqrt((difx*difx).toDouble + (dify*dify).toDouble)
 	}
 }

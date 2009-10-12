@@ -1,5 +1,4 @@
 import scala.util.Random
-import scala.collection.immutable.TreeMap
 import Params._
 
 class Ant(val inst: Instance) extends Solver {
@@ -8,23 +7,22 @@ class Ant(val inst: Instance) extends Solver {
 	/**
 	 * el valor heurístico de distancia entre nodo y v
 	 */	
-	def η(nodo: Customer, v: Customer): Double = {
-		//inst.tau(nodo, v) * Math.pow((1.0/inst.distancia(nodo, v)), β)
-		inst.tau(nodo, v) / inst.distancia(nodo, v)
+	def η(nodo: Customer, v: Customer, h: Double): Double = {
+		inst.tau(nodo, v) / inst.tiempo(nodo, v, h)
 	}
 
 	def proximo(nodo: Customer, vecinos: List[Customer], 
 					hora: Double, capacidad: Int): Customer = {
-		println("-----------------\ndesde " + nodo.num)
+		//println("-----------------\ndesde " + nodo.num)
 					
 		// filtro los que llego a tiempo y me alcanza la capacidad
 		val insertables = vecinos.filter(vecino => insertable(nodo, vecino, hora, capacidad))
-		println("insertables: " + insertables.map(_.num))
+		//println("insertables: " + insertables.map(_.num))
 		
-		val tau = insertables.foldLeft(Map[Customer, Double]()) { 
-			(m, v) => m(v) = inst.tau(nodo, v)
-		}
-		println("tau("+nodo.num+") | " + tau.map( p => (p._1.num, p._2)).toList.filter(_._2 > 0))
+		//val tau = insertables.foldLeft(Map[Customer, Double]()) { 
+		//	(m, v) => m(v) = inst.tau(nodo, v)
+		//}
+		//println("tau("+nodo.num+") | " + tau.map( p => (p._1.num, p._2)).toList.filter(_._2 > 0))
 		
 		if (insertables.isEmpty) {
 			null
@@ -32,10 +30,10 @@ class Ant(val inst: Instance) extends Solver {
 		else {
 			// un mapa [Customer, Double] con (tau*η^β) precalculado
 			val mapη = insertables.foldLeft(Map[Customer, Double]()) { 
-				(m, v) => m(v) = η(nodo, v)
+				(m, v) => m(v) = η(nodo, v, hora)
 			}
 			
-			println("mapη = " + mapη.map( p => (p._1.num, p._2)).toList.filter(_._2 > 0 ))
+			//println("mapη = " + mapη.map( p => (p._1.num, p._2)).toList.filter(_._2 > 0 ))
 
 			// obtengo el mayor η
 			val values = mapη.values.toList
@@ -47,22 +45,22 @@ class Ant(val inst: Instance) extends Solver {
 			if (q < q0) {
 				// exploitation
 				
-				println("exploitation")
+				//println("exploitation")
 
 				// si hay varios con el mismo η, obtengo el que cierra antes
 				if (bests.length > 1) {
 					val best = bests.tail.foldLeft(bests.head) { (a,b) => if (a.due < b.due) a else b }
-					println("best = " + best.num)
+					//println("best = " + best.num)
 					best
 				}
 				else {
-					println("bests.head = " + bests.head.num)
+					//println("bests.head = " + bests.head.num)
 					bests.head
 				}
 			}
 			else {
 				// exploration
-				println("exploration")
+				//println("exploration")
 
 				// el denominador
 				val Σ = mapη.values.reduceLeft(_+_)
@@ -70,11 +68,11 @@ class Ant(val inst: Instance) extends Solver {
 				// construyo una lista de (Customer, proba)
 				val probas = (mapη.map(t => (t._1, mapη(t._1) / Σ)) toList)// filter(_._2 > 0)
 				
-				println("probas = " + probas.map( p => (p._1.num, p._2)) )
+				//println("probas = " + probas.map( p => (p._1.num, p._2)) )
 
 				val ret = weightedCases(probas)
 				
-				println("elijo: " + ret.num)
+				//println("elijo: " + ret.num)
 				
 				ret
 			}

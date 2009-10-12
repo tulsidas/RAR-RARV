@@ -1,77 +1,74 @@
 import scala.collection.Map
 
-class LocalInsert(inst: Instance, solucion: List[List[Customer]], 
-	nonvisit: List[Customer], nvMap: Map[Customer, Int]) {
+class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 
 	var mejor = solucion
+	val ininsertables = new scala.collection.mutable.ListBuffer[Customer]()
+	var nnv = List[Customer]()
 	
-	//var mejorOrig = solucion
-	//var inagregables = List[Customer]()
-
-	def insert(): List[List[Customer]] = {
-		println("********insert()********")
-		println(solucion.map(_.map(_.num)))
-		println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
-		println("nonvisit: " + nonvisit.map(_.num))
-		println("nvMap - " + nvMap.map(p => (p._1.num, p._2)))
-
-		//val clientes = mejor.foldLeft(0)(_ + _.size - 1)
+	def insert(nonvisit: List[Customer], nvMap: Map[Customer, Int]): List[List[Customer]] = {
+		// println("\n********insert()********")
+		// println(solucion.map(_.map(_.num)))
+		// println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
+		// println("nonvisit: " + nonvisit.map(_.num))
 
 		// pruebo meter los no visitados (el menos visitado primero)
 		nonvisit.sort((c1, c2) => nvMap.getOrElse(c1, 0) > nvMap.getOrElse(c2, 0)).foreach(insert)
-		
-		//val nclientes = mejor.foldLeft(0)(_ + _.size - 1)
 
-		//println("mejore de " +clientes+ " a " +nclientes)
-	
-		/*
-		println("inagregables = " + inagregables.map(_.num))		
-		inagregables.foreach { c =>
-			// pruebo agregarlo al ppio de todo
-			val p = tryInsert(mejorOrig, c).size
+		if (ininsertables.size == 0) {
+			mejor
+		}
+		else {
+			nnv = nonvisit
+			var i = 0
+			while (ininsertables.size > 0 && i < 10) {
+				i = i + 1
+
+				nnv = ininsertables.toList ++ (nnv -- ininsertables.toList)
+				//println("retry " + i)
+				//println("ininsertables = " + ininsertables.map(_.num)) 
+				//println("nueva nonvisit = " + nnv.map(_.num))
+
+				ininsertables.clear
+				mejor = solucion		// intento con la solucion inicial
+
+				nnv.foreach(insert)
+			}
 			
-			if (p > 0) {
-				println(c.num + " agregado al principio tiene " + p + " opciones")
-			}
+			mejor // mal, guardar el mejor no el último
 		}
-		*/
-
-		println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
-
-		mejor
 	}
 	
-	private def tryInsert(sol: List[List[Customer]], cust: Customer): List[List[List[Customer]]] = {
-		var factibles = new scala.collection.mutable.ListBuffer[List[List[Customer]]]()
+   private def tryInsert(sol: List[List[Customer]], cust: Customer): List[List[List[Customer]]] = {
+      var factibles = new scala.collection.mutable.ListBuffer[List[List[Customer]]]()
 
-		mejor.foreach { camion =>
-			for (pos <- 1 to camion.length) {
-				val nuevo = camion.take(pos) ++ (cust :: camion.drop(pos))
-				if (inst.camionFactible(nuevo)) {
-					factibles += nuevo :: (mejor - camion)
-				}
-			}
-		}
-		
-		factibles.toList
-	}
+      mejor.foreach { camion =>
+         for (pos <- 1 to camion.length) {
+            val nuevo = camion.take(pos) ++ (cust :: camion.drop(pos))
+            if (inst.camionFactible(nuevo)) {
+               factibles += nuevo :: (mejor - camion)
+            }
+         }
+      }
+
+      factibles.toList
+   }
 	
-	private def insert(nv: Customer): Unit = {
+	private def insert(nv: Customer) = {
 		val factibles = tryInsert(mejor, nv)
 		
-		println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
+		// TODO si el primero es ininsertable al pedo seguir intentando
+		// println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
 
-		/*if (factibles.size == 0) {
-			// agrego al customer a la lista de inagregables
-			inagregables = nv :: inagregables
-		}
-		else*/ if (factibles.size > 0) {
-
-			// me quedo con el de menor largo
+		// me quedo con el de menor largo
+		if (factibles.size > 0) {
 			mejor = factibles.tail.foldLeft(factibles.head){ (a,b) => if (inst.solLength(a) < inst.solLength(b)) a else b }
 		}
+		else if (factibles.size == 0) {
+			ininsertables + nv
+		}
 	}
-
+	
 	/*
 	 * probar permutaciones hasta 6 (6! = 720)
 	 *	

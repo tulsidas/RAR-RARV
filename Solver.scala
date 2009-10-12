@@ -39,8 +39,7 @@ trait Solver {
 			nn = nn ::: List(prox)
 
 			// si llego antes que abra, a esperar				
-			val tiempoEspera = Math.max(0, prox.ready - (hora + inst.distancia(actual, prox)))
-			hora += tiempoEspera + prox.service + inst.distancia(actual, prox)
+			hora += prox.service + inst.tiempo(actual, prox, hora)
 			capacidad -= prox.demand
 			vecinos = vecinos - prox
 			actual = prox

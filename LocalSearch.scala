@@ -1,28 +1,5 @@
 import Params._
 
-object LocalSearchMain {
-	def main(args: Array[String]) {
-		/*
-		val inst = Solomon.load(args(0))
-		
-		val solver = new NearestNeighbour(inst)
-
-		val mejor = solver.solve
-		
-		//Imaginario.writeImage("original.jpg", inst, mejor)
-	
-		println("largo original = " + inst.solLength(mejor) + " | " + mejor.length)
-		
-		val nuevo = new LocalSearch(inst, mejor).search()
-
-		println(nuevo.map(_.map(_.num)))
-		println("largo resultante = " + inst.solLength(nuevo) + " | " + nuevo.length)
-		
-		//Imaginario.writeImage("optimizada.jpg", inst, nuevo)
-		*/
-	}
-}
-
 class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	val rnd = new scala.util.Random()
 	type Ruta = List[Customer]

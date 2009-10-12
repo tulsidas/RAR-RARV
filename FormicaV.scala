@@ -79,8 +79,8 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 				receive {
 					case Stop => { 
 						running = false
-						println(c.foldLeft(0)(_ + _).toFloat / c.size.toFloat)
-						println(ci.foldLeft(0)(_ + _).toFloat / ci.size.toFloat)
+						println("customers: " + c.foldLeft(0)(_ + _).toFloat / c.size.toFloat)
+						println("customers inserted: " + ci.foldLeft(0)(_ + _).toFloat / ci.size.toFloat)
 					}
 					case MejorVehiculos(newMejor, newTau, _) => {
 						// guardo el nuevo mejor, si es realmente mejor
@@ -186,7 +186,7 @@ class FormicaV(host: String, port: Int, name: Symbol) extends Actor {
 			faltantes.foreach(nv => nonVisited.put(nv, nonVisited.getOrElseUpdate(nv, 0)+1))
 
 			// busqueda de inserciones
-			val inserted = new LocalInsert(inst, sAnt, faltantes, nonVisited).insert()
+			val inserted = new LocalInsert(inst, sAnt).insert(faltantes, nonVisited.readOnly)
 			val custInserted = inserted.foldLeft(0)(_ + _.size - 1)
 			
 			ci = custInserted :: ci
