@@ -6,14 +6,14 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 	val ininsertables = new scala.collection.mutable.ListBuffer[Customer]()
 	var nnv = List[Customer]()
 	
-	def insert(nonvisit: List[Customer], nvMap: Map[Customer, Int]): List[List[Customer]] = {
+	def insert(nonvisit: List[Customer]): List[List[Customer]] = {
 		// println("\n********insert()********")
 		// println(solucion.map(_.map(_.num)))
 		// println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
 		// println("nonvisit: " + nonvisit.map(_.num))
 
 		// pruebo meter los no visitados (el menos visitado primero)
-		nonvisit.sort((c1, c2) => nvMap.getOrElse(c1, 0) > nvMap.getOrElse(c2, 0)).foreach(insert)
+		nonvisit.foreach(insert)
 
 		if (ininsertables.size == 0) {
 			mejor

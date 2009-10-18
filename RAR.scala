@@ -22,6 +22,10 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 
 	Debug.level = 1
 	
+	private[this] def updateProm(par: (Int, Float), nuevo: Float): (Int, Float) = {
+		(par._1 + 1, (par._1 * par._2 + nuevo) / (par._1 + 1))
+	}
+	
 	def act {
 		val reina = select(Node(host, port), name)
 
@@ -39,12 +43,18 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 		}
 
 		var running = true
+		var promLargo = (0, 0f)
+		var promFactible = (0, 0f)
+		var promVehiculos = (0, 0f)
 
 		while(running) {
 			if (mailboxSize > 0) {
 				receive {
 					case Stop => { 
 						running = false
+						println("promedio rotura: " + promLargo._2)
+						println("promedio factibles: " + promFactible._2)
+						println("promedio vehiculos: " + promVehiculos._2)
 					}
 					case Mejor(newMejor, _) => {
 						val newLargo = inst.solLength(newMejor)
@@ -52,7 +62,7 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 					
 						if (newVehiculos < mejor.length || 
 							(newVehiculos == mejor.length && newLargo < inst.solLength(mejor))) {
-				         println(id + " recibo Mejor " + newLargo + " | " + newVehiculos)
+				         //println(id + " recibo Mejor " + newLargo + " | " + newVehiculos)
 
 							mejor = newMejor
 						}
@@ -60,17 +70,37 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 				}
 			}
 			else {
-				val ryr = recreate(mejor, ruin())
-				if (inst.factible(ryr) && 
-						(ryr.length < mejor.length || inst.solLength(ryr) < inst.solLength(mejor))) {
+				val rotos = ruin()
+				//val rotos = ruinV(1)
+				val ryr = recreate(mejor, rotos)
+				val factible = inst.factible(ryr)
+				val vehiculos = ryr.length
+				
+				promLargo = updateProm(promLargo, rotos.length)
+				promFactible = updateProm(promFactible, if (factible) 1 else 0)
+				promVehiculos = updateProm(promVehiculos, vehiculos)
 
-					//println(ryr.map(_.map(_.num)))
-
-					// un nuevo mejor
-					mejor = ryr
+				//println("rotos = " + rotos.map(_.num))
+				if (factible) {
+					//print("recreate("+rotos.length+") | factible | " + vehiculos + " | " + inst.solLength(ryr))
+					val optimizado = ryr // TODO new LocalSearch(inst, ryr).search()
+					//println(" ==> " + optimizado.length + " | " + inst.solLength(optimizado))
 					
-					println(id + " envio Mejor " + inst.solLength(ryr) + " | " + ryr.length)
-					reina ! Mejor(mejor, id)
+					if (optimizado.length < mejor.length || 
+						inst.solLength(optimizado) < inst.solLength(mejor)) {
+
+						//println(ryr.map(_.map(_.num)))
+
+						// un nuevo mejor
+						mejor = optimizado
+					
+						//println(id + " envio Mejor " + inst.solLength(ryr) + " | " + ryr.length)
+						reina ! Mejor(mejor, id)
+					}
+
+				}
+				else {
+					//println("recreate("+rotos.length+") | NO factible | " + vehiculos)
 				}
 			}
 		}
@@ -82,9 +112,17 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 		inst.customers.tail.filter(c => rnd.nextDouble > π)
 	}
 	
+	/** arruino n vehiculos al azar y después random del resto */
+	private def ruinV(n: Int): List[Customer] = {
+		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
+		//println("vehiculo roto = " + vehiculo.map(_.num))
+		
+		vehiculo ++ (inst.customers.tail -- vehiculo).filter(c => rnd.nextDouble > π)
+	}	
+	
 	private def recreate(solucion: List[List[Customer]], rotos: List[Customer]): List[List[Customer]] = {
 		val arruinado = solucion.map(_ -- rotos).filter(_.length > 1)
-		new LocalInsert(inst, arruinado).insert(rotos, Map())
+		new LocalInsert(inst, arruinado).insert(rotos)
 	}
 	
 	/** arruino por distancia al source */

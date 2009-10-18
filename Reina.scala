@@ -12,7 +12,7 @@ object ReinaMain {
 			println("Reina input minutos")
 			exit
 		}
-
+		
 		// arranco la reina
 		val reina = new Reina(args(0), args(1).toInt, 9010, 'ACS)
 		reina.start()
@@ -28,7 +28,7 @@ object ReinaMain {
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
 			}
-			v = !v
+			// v = !v
 		}
 	}
 }
@@ -54,14 +54,16 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	// actualizo el maximo de vehiculos permitidos a lo que me dio NN
 	inst.vehiculos = mejorVehiculos
 	
-	println("NN = " + mejor.map(_.map(_.num)))
-	println("NN: " + mejorLargo + " | " + mejorVehiculos)
 	if (!inst.factible(mejor)) {
 		println("NN no factible!!")
 		println("visitados: " + mejor.foldLeft(0)(_ + _.size - 1))
 		exit
 	}
 	
+	println("NN = " + mejor.map(_.map(_.num)))
+	println("NN: " + mejorLargo + " | " + mejorVehiculos + " | prom/vehiculo: " + 
+		mejor.foldLeft(0)(_ + _.size - 1).toFloat / mejorVehiculos.toFloat)
+
 	Debug.level = 1
 
 	val queenActress = select(Node("localhost", 9010), 'ACS)
@@ -96,14 +98,14 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					if (newVehiculos < mejorVehiculos || 
 						(newVehiculos == mejorVehiculos && newLargo < mejorLargo)) {
 
-						// actualizo a las hormigas largueras
-						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! Mejor(mejor, ""))
-                  
-                  println("REINA --> Mejor: " + newLargo + " | " + newVehiculos)
-						
 						mejor = newMejor
 						mejorLargo = newLargo
 						mejorVehiculos = newVehiculos
+
+						// actualizo a las hormigas largueras
+						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! Mejor(mejor, ""))
+                  
+                  println(id + " --> Mejor: " + newLargo + " | " + newVehiculos)
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						//inst overwriteTau(newTau)

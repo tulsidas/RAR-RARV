@@ -58,7 +58,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 			mejorLargo = inst.solLength(mejor)
 			mejorVehiculos = mejor.length
 
-         println(id + " recibo Mejor " + mejorLargo + " | " + mejorVehiculos)
+         //println(id + " recibo Mejor " + mejorLargo + " | " + mejorVehiculos)
 
 			// sobreescribo feromonas
 			//inst overwriteTau(mejor)
@@ -92,7 +92,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorVehiculos = vehiculos
 						mejor = optimizado
 
-						println(id + " envio Mejor " + inst.solLength(mejor) + " | " + mejor.length)
+						//println(id + " envio Mejor " + inst.solLength(mejor) + " | " + mejor.length)
 						reina ! Mejor(mejor, id)
 						
 						// establezco el nuevo máximo de vehículos
@@ -105,7 +105,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 						mejorLargo = sal
 						mejor = optimizado
 
-						println(id + " envio Mejor " + inst.solLength(mejor) + " | " + mejor.length)
+						//println(id + " envio Mejor " + inst.solLength(mejor) + " | " + mejor.length)
 						reina ! Mejor(mejor, id)
 						
 						// global update feromonas
