@@ -8,6 +8,17 @@ import java.util.UUID
 
 import Params._
 
+object RARMain {
+	def main(args: Array[String]) {
+		val host = args(0)
+		val cores = Runtime.getRuntime().availableProcessors()
+
+		for (i <- 1 to cores) {
+			new RAR(host, 9010, 'ACS).start()
+		}
+	}
+}
+
 class RAR(host: String, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
