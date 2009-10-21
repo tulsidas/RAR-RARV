@@ -3,7 +3,54 @@ import java.io.File
 import java.awt.image._
 import javax.imageio.ImageIO
 
+import scala.collection.Map
+
 object Imaginario {
+	def writeRARImage(file: String, inst: Instance, rotos: Map[Customer, Int]) = {
+		val size = 650
+
+		val scaleX = size / inst.customers.sort(_.x > _.x).head.x
+		val scaleY = size / inst.customers.sort(_.y > _.y).head.y
+		
+		val buff = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
+		
+		val g = buff.createGraphics
+		
+		def drawCustomer(cust: Customer, color: Color) = {
+			// el punto
+			g.setColor(color)
+			g.fillRect(cust.x * scaleX, cust.y * scaleY, 6, 6)
+		
+			// el num
+			g.setColor(Color.WHITE)
+			g.drawString(""+cust.num, cust.x * scaleX, cust.y * scaleY)
+		}
+		
+		def drawCustTau(cust: Customer, v: Int) = {
+			def s = v + 6
+			
+			// el punto
+			g.setColor(Color.YELLOW)
+			g.drawOval(cust.x * scaleX - s/2 + 3, cust.y * scaleY - s/2 + 3, s, s)
+		}
+	
+		// para los customers		
+		g.setFont(new Font(Font.MONOSPACED, Font.BOLD, 10))
+		
+		// nodos
+		drawCustomer(inst.source, Color.WHITE)
+		inst.customers.drop(1).foreach(
+			drawCustomer(_, Color.BLUE)
+		)
+
+		// pseudotau
+		rotos.foreach { par =>
+			drawCustTau(par._1, par._2) 
+		}		
+
+		ImageIO.write(buff, "jpeg", new File(file));
+	}
+
 	def writeImage(file: String, inst: Instance, sol: List[List[Customer]]) = {
 		val size = 650
 

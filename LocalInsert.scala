@@ -7,12 +7,12 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 	var nnv = List[Customer]()
 	
 	def insert(nonvisit: List[Customer]): List[List[Customer]] = {
-		// println("\n********insert()********")
-		// println(solucion.map(_.map(_.num)))
-		// println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
-		// println("nonvisit: " + nonvisit.map(_.num))
+		println("\n********insert()********")
+		//println(solucion.map(_.map(_.num)))
+		//println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
+		println("nonvisit: " + nonvisit.map(_.num))
 
-		// pruebo meter los no visitados (el menos visitado primero)
+		// pruebo meter los no visitados
 		nonvisit.foreach(insert)
 
 		if (ininsertables.size == 0) {
@@ -21,13 +21,13 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 		else {
 			nnv = nonvisit
 			var i = 0
-			while (ininsertables.size > 0 && i < 10) {
+			while (ininsertables.size > 0 && i < 6/*10*/) {
 				i = i + 1
 
 				nnv = ininsertables.toList ++ (nnv -- ininsertables.toList)
-				//println("retry " + i)
-				//println("ininsertables = " + ininsertables.map(_.num)) 
-				//println("nueva nonvisit = " + nnv.map(_.num))
+				println("retry " + i)
+				println("ininsertables = " + ininsertables.map(_.num)) 
+				println("nueva nonvisit = " + nnv.map(_.num))
 
 				ininsertables.clear
 				mejor = solucion		// intento con la solucion inicial
@@ -57,8 +57,7 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 	private def insert(nv: Customer) = {
 		val factibles = tryInsert(mejor, nv)
 		
-		// TODO si el primero es ininsertable al pedo seguir intentando
-		// println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
+		println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
 
 		// me quedo con el de menor largo
 		if (factibles.size > 0) {

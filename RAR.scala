@@ -14,20 +14,20 @@ object RARMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 
 		for (i <- 1 to cores) {
-			new RAR(host, 9010, 'ACS).start()
+			new RAR(host, 9010, 'ACS, i % 2 == 0).start()
 		}
 	}
 }
 
-class RAR(host: String, port: Int, name: Symbol) extends Actor {
+class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val rnd = new Random()
-
+	
 	val id = UUID.randomUUID.toString
 	
 	var inst: Instance = null
-
+	
 	// la mejor solucion actual
 	var mejor: List[List[Customer]] = Nil
 
@@ -36,6 +36,8 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 	private[this] def updateProm(par: (Int, Float), nuevo: Float): (Int, Float) = {
 		(par._1 + 1, (par._1 * par._2 + nuevo) / (par._1 + 1))
 	}
+	
+	var mapRoto = new scala.collection.mutable.HashMap[Customer, Int]()
 	
 	def act {
 		val reina = select(Node(host, port), name)
@@ -49,7 +51,8 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 				inst = _inst
 				mejor = _mejor
 				
-				println(id + " RAR Start!")
+				if (rarVehicular) println(id + " RARV Start")
+				else println(id + " RAR Start")
 			}
 		}
 
@@ -57,6 +60,9 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 		var promLargo = (0, 0f)
 		var promFactible = (0, 0f)
 		var promVehiculos = (0, 0f)
+		//var i = 0
+
+		val customers = mejor.foldLeft(0)(_ + _.size - 1)
 
 		while(running) {
 			if (mailboxSize > 0) {
@@ -66,6 +72,7 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 						println("promedio rotura: " + promLargo._2)
 						println("promedio factibles: " + promFactible._2)
 						println("promedio vehiculos: " + promVehiculos._2)
+						//println("rotos: " + mapRoto.size + "\n" + mapRoto.map(p => (p._1.num, p._2)))
 					}
 					case Mejor(newMejor, _) => {
 						val newLargo = inst.solLength(newMejor)
@@ -81,8 +88,9 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 				}
 			}
 			else {
-				val rotos = ruin()
-				//val rotos = ruinV(1)
+				val rotos = if (rarVehicular) ruinV(inst.customers.tail, 1) else ruinK(inst.customers.tail, 33)
+				// rompo vehiculos promedio
+				//val rotos = ruinK(inst.customers.tail, customers / mejor.length * 9)
 				val ryr = recreate(mejor, rotos)
 				val factible = inst.factible(ryr)
 				val vehiculos = ryr.length
@@ -93,8 +101,11 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 
 				//println("rotos = " + rotos.map(_.num))
 				if (factible) {
+					// actualizo map rotos
+					rotos.foreach(c => mapRoto.put(c, mapRoto.getOrElseUpdate(c, 0)+1))
+
 					//print("recreate("+rotos.length+") | factible | " + vehiculos + " | " + inst.solLength(ryr))
-					val optimizado = ryr // TODO new LocalSearch(inst, ryr).search()
+					val optimizado = new LocalSearch(inst, ryr).search()
 					//println(" ==> " + optimizado.length + " | " + inst.solLength(optimizado))
 					
 					if (optimizado.length < mejor.length || 
@@ -112,24 +123,34 @@ class RAR(host: String, port: Int, name: Symbol) extends Actor {
 				}
 				else {
 					//println("recreate("+rotos.length+") | NO factible | " + vehiculos)
+					rotos.foreach(c => mapRoto.put(c, Math.max(0, mapRoto.getOrElseUpdate(c, 0)-1)))
 				}
+				
+				//Imaginario.writeRARImage(i+".jpg", inst, mapRoto.readOnly)
+				//i = i + 1
 			}
 		}
 	}
 
 	
 	/** arruino random */
-	private def ruin(): List[Customer] = {
-		inst.customers.tail.filter(c => rnd.nextDouble > π)
+	private def ruin(cust: List[Customer]): List[Customer] = {
+		cust.filter(c => rnd.nextDouble > π)
+	}
+	
+	private def ruinK(cust: List[Customer], k:Int): List[Customer] = k match {
+		case 0 => Nil
+		case n => {
+			val c = cust(rnd.nextInt(cust.size))
+			c :: ruinK(cust - c, n-1)
+		}
 	}
 	
 	/** arruino n vehiculos al azar y después random del resto */
-	private def ruinV(n: Int): List[Customer] = {
+	private def ruinV(cust: List[Customer], n: Int): List[Customer] = {
 		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
-		//println("vehiculo roto = " + vehiculo.map(_.num))
-		
-		vehiculo ++ (inst.customers.tail -- vehiculo).filter(c => rnd.nextDouble > π)
-	}	
+		vehiculo ++ ruin(cust -- vehiculo)
+	}
 	
 	private def recreate(solucion: List[List[Customer]], rotos: List[Customer]): List[List[Customer]] = {
 		val arruinado = solucion.map(_ -- rotos).filter(_.length > 1)
