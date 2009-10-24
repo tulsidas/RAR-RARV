@@ -1,0 +1,488 @@
+#LyX 1.6.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Un algoritmo distribuído de Ruin&Recreate para VRPTW
+\end_layout
+
+\begin_layout Author
+Andrés Martínez Quijano
+\begin_inset Newline newline
+\end_inset
+
+aquijano@dc.uba.ar
+\end_layout
+
+\begin_layout Abstract
+bla bla bla
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Árbitro
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+arbitro(
+\shape italic
+instancia
+\shape default
+, 
+\shape italic
+tiempo
+\shape default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+mejor
+\shape default
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+vecino_mas_cercano(
+\shape italic
+instancia
+\shape default
+)
+\end_layout
+
+\begin_layout LyX-Code
+por cada procesador/núcleo {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+iniciar RAR(
+\shape italic
+mejor
+\shape default
+, ?)
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+mientras no pase 
+\shape italic
+tiempo
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+nueva
+\shape default
+ := recibir_mejor_solucion()
+\end_layout
+
+\begin_layout LyX-Code
+si nueva es mejor que 
+\shape italic
+mejor
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+mejor
+\shape default
+ := 
+\shape italic
+nueva
+\end_layout
+
+\begin_layout LyX-Code
+enviar 
+\shape italic
+nueva
+\shape default
+ a los nodos
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+enviar 
+\series bold
+\shape smallcaps
+STOP
+\series default
+\shape default
+ a los procesos
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+RAR
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+RAR(
+\shape italic
+mejor
+\shape default
+, 
+\shape italic
+vehicular
+\shape default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+mientras no se reciba 
+\series bold
+\shape smallcaps
+STOP
+\series default
+\shape default
+:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+nueva
+\shape default
+ := recibir_mejor_solucion()
+\end_layout
+
+\begin_layout LyX-Code
+si nueva es mejor que 
+\shape italic
+mejor
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+mejor
+\shape default
+ := 
+\shape italic
+nueva
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+si 
+\shape italic
+vehicular
+\shape default
+ 
+\begin_inset Formula $\Rightarrow$
+\end_inset
+
+
+\shape italic
+ r
+\shape default
+ := arruinarVehiculo(
+\shape italic
+mejor
+\shape default
+)
+\end_layout
+
+\begin_layout LyX-Code
+si no 
+\begin_inset Formula $\Rightarrow$
+\end_inset
+
+
+\shape italic
+ r
+\shape default
+ := arruinar(
+\shape italic
+mejor
+\shape default
+)
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\shape italic
+r
+\shape default
+ := recrear(
+\shape italic
+mejor - r
+\shape default
+, r)
+\end_layout
+
+\begin_layout LyX-Code
+busqueda_local(
+\shape italic
+r
+\shape default
+)
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+si 
+\shape italic
+r
+\shape default
+ es mejor que 
+\shape italic
+mejor
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+mejor
+\shape default
+ := 
+\shape italic
+r
+\end_layout
+
+\begin_layout LyX-Code
+enviar 
+\shape italic
+mejor
+\shape default
+ al árbitro
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+arruinarVehiculo(
+\shape italic
+solucion
+\shape default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+s
+\shape default
+ := quitar un vehiculo al azar de 
+\shape italic
+solucion
+\end_layout
+
+\begin_layout LyX-Code
+devolver arruinar(
+\shape italic
+s
+\shape default
+)
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+arruinar(
+\shape italic
+solucion
+\shape default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada 
+\shape italic
+cliente
+\shape default
+ en 
+\shape italic
+solucion {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+quitar 
+\shape italic
+cliente
+\shape default
+ de 
+\shape italic
+solucion
+\shape default
+ con probabilidad 
+\begin_inset Formula $\Pi$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucion
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+recrear(
+\shape italic
+solucionRota
+\shape default
+, 
+\shape italic
+clientes
+\shape default
+) {
+\end_layout
+
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
