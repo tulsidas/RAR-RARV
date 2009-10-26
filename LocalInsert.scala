@@ -34,6 +34,7 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 			}
 			
 			if (forceFactible) {
+				println("force insert!")
 				ininsertables.foreach(forceInsert)
 			}
 			
