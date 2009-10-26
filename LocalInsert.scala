@@ -6,11 +6,9 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 	val ininsertables = new scala.collection.mutable.ListBuffer[Customer]()
 	var nnv = List[Customer]()
 	
-	def insert(nonvisit: List[Customer]): List[List[Customer]] = {
-		println("\n********insert()********")
-		//println(solucion.map(_.map(_.num)))
-		//println(mejor.length + " | " + mejor.foldLeft(0)(_ + _.size - 1) + " | " + inst.solLength(mejor))
-		println("nonvisit: " + nonvisit.map(_.num))
+	def insert(nonvisit: List[Customer], forceFactible: Boolean): List[List[Customer]] = {
+		//println("\n********insert()********")
+		//println("nonvisit (" + nonvisit.size + ") = " + nonvisit.map(_.num))
 
 		// pruebo meter los no visitados
 		nonvisit.foreach(insert)
@@ -21,13 +19,13 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 		else {
 			nnv = nonvisit
 			var i = 0
-			while (ininsertables.size > 0 && i < 6/*10*/) {
+			while (ininsertables.size > 0 && i < 15) {
 				i = i + 1
 
 				nnv = ininsertables.toList ++ (nnv -- ininsertables.toList)
-				println("retry " + i)
-				println("ininsertables = " + ininsertables.map(_.num)) 
-				println("nueva nonvisit = " + nnv.map(_.num))
+				//println("retry " + i)
+				//println("ininsertables = " + ininsertables.map(_.num).toList) 
+				//println("nueva nonvisit = " + nnv.map(_.num))
 
 				ininsertables.clear
 				mejor = solucion		// intento con la solucion inicial
@@ -35,11 +33,15 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 				nnv.foreach(insert)
 			}
 			
+			if (forceFactible) {
+				ininsertables.foreach(forceInsert)
+			}
+			
 			mejor // mal, guardar el mejor no el último
 		}
 	}
 	
-   private def tryInsert(sol: List[List[Customer]], cust: Customer): List[List[List[Customer]]] = {
+   private def tryInsert(cust: Customer): List[List[List[Customer]]] = {
       var factibles = new scala.collection.mutable.ListBuffer[List[List[Customer]]]()
 
       mejor.foreach { camion =>
@@ -55,9 +57,9 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
    }
 	
 	private def insert(nv: Customer) = {
-		val factibles = tryInsert(mejor, nv)
+		val factibles = tryInsert(nv)
 		
-		println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
+		//println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
 
 		// me quedo con el de menor largo
 		if (factibles.size > 0) {
@@ -65,6 +67,22 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 		}
 		else if (factibles.size == 0) {
 			ininsertables + nv
+		}
+	}
+	
+	/**
+	 * Mete el cliente sí o sí, asignando un nuevo vehículo si es necesario
+	 */
+	private def forceInsert(nv: Customer) = {
+		val factibles = tryInsert(nv)
+		
+		if (factibles.size > 0) {
+			// me quedo con el de menor largo
+			mejor = factibles.tail.foldLeft(factibles.head){ (a,b) => if (inst.solLength(a) < inst.solLength(b)) a else b }
+		}
+		else if (factibles.size == 0) {
+			// agrego nuevo vehiculo		
+			mejor = List(inst.source, nv) :: mejor
 		}
 	}
 	

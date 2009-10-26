@@ -37,7 +37,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		(par._1 + 1, (par._1 * par._2 + nuevo) / (par._1 + 1))
 	}
 	
-	var mapRoto = new scala.collection.mutable.HashMap[Customer, Int]()
+	//var mapRoto = new scala.collection.mutable.HashMap[Customer, Int]()
 	
 	def act {
 		val reina = select(Node(host, port), name)
@@ -60,9 +60,12 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		var promLargo = (0, 0f)
 		var promFactible = (0, 0f)
 		var promVehiculos = (0, 0f)
-		//var i = 0
-
-		val customers = mejor.foldLeft(0)(_ + _.size - 1)
+		
+		val dp = distanciaPromedio
+		
+		//println("distanciaMax = " + distancias.sort(_>_).head)
+		//println("distanciaMin = " + distancias.sort(_<_).head)
+		//println("distanciaPromedio = " + dp)
 
 		while(running) {
 			if (mailboxSize > 0) {
@@ -88,56 +91,133 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 				}
 			}
 			else {
-				val rotos = if (rarVehicular) ruinV(inst.customers.tail, 1) else ruinK(inst.customers.tail, 33)
-				// rompo vehiculos promedio
-				//val rotos = ruinK(inst.customers.tail, customers / mejor.length * 9)
+				rnd.setSeed(System.currentTimeMillis)
+			
+				val rotos = 
+					if (rarVehicular) {
+						ruinRndV(inst.customers.tail, 1) 
+					}
+					else {
+						if (rnd.nextDouble > δ) {
+							// entre d/3 y 2d/3
+							ruinDist(dp/3 + rnd.nextDouble*(dp/3))
+						}
+						else {
+							ruinRnd(inst.customers.tail)
+						}
+
+						// ruinTime(dist, inst.customers.tail(rnd.nextInt(inst.customers.length-1)))
+					}
+						
 				val ryr = recreate(mejor, rotos)
 				val factible = inst.factible(ryr)
 				val vehiculos = ryr.length
-				
+
 				promLargo = updateProm(promLargo, rotos.length)
 				promFactible = updateProm(promFactible, if (factible) 1 else 0)
 				promVehiculos = updateProm(promVehiculos, vehiculos)
 
-				//println("rotos = " + rotos.map(_.num))
 				if (factible) {
-					// actualizo map rotos
-					rotos.foreach(c => mapRoto.put(c, mapRoto.getOrElseUpdate(c, 0)+1))
-
-					//print("recreate("+rotos.length+") | factible | " + vehiculos + " | " + inst.solLength(ryr))
+					//println("recreate("+rotos.length+") | factible | " + vehiculos + " | " + inst.solLength(ryr))
 					val optimizado = new LocalSearch(inst, ryr).search()
-					//println(" ==> " + optimizado.length + " | " + inst.solLength(optimizado))
 					
 					if (optimizado.length < mejor.length || 
 						inst.solLength(optimizado) < inst.solLength(mejor)) {
 
-						//println(ryr.map(_.map(_.num)))
-
 						// un nuevo mejor
 						mejor = optimizado
-					
-						//println(id + " envio Mejor " + inst.solLength(ryr) + " | " + ryr.length)
+						
 						reina ! Mejor(mejor, id)
 					}
-
 				}
 				else {
 					//println("recreate("+rotos.length+") | NO factible | " + vehiculos)
-					rotos.foreach(c => mapRoto.put(c, Math.max(0, mapRoto.getOrElseUpdate(c, 0)-1)))
 				}
-				
-				//Imaginario.writeRARImage(i+".jpg", inst, mapRoto.readOnly)
-				//i = i + 1
 			}
 		}
 	}
 
+	private def recreate(solucion: List[List[Customer]], rotos: List[Customer]): List[List[Customer]] = {
+		val arruinado = solucion.map(_ -- rotos).filter(_.length > 1)
+		new LocalInsert(inst, arruinado).insert(rotos, false)
+	}
 	
 	/** arruino random */
-	private def ruin(cust: List[Customer]): List[Customer] = {
+	private def ruinRnd(cust: List[Customer]): List[Customer] = {
 		cust.filter(c => rnd.nextDouble > π)
 	}
 	
+	/** arruino n vehiculos al azar y después random del resto */
+	private def ruinRndV(customers: List[Customer], n: Int): List[Customer] = {
+		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
+		vehiculo ++ ruinRnd(customers -- vehiculo)
+	}
+	
+	/** arruino por distancia espacial a un cliente dado */
+	private def ruinDist(dist: Double): List[Customer] = {
+		val customers = inst.customers.tail
+		val c = customers(rnd.nextInt(customers.length))
+		
+		// println("ruin("+dist+","+c.num+")")
+
+		customers.filter(inst.distancia(_, c) < dist)
+	}
+
+	/* arruino por distancia espacial a un cliente dado
+	private def ruinDistV(dist: Double, c: Customer, n: Int, customers: List[Customer]): List[Customer] = {
+		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
+		vehiculo ++ ruinDist(dist, c, customers -- vehiculo)
+	}
+	*/
+
+	/** arruino por distancia temporal a un cliente dado */
+	private def ruinTime(dist: Double, cust: Customer): List[Customer] = {
+		Nil
+	}
+	
+	/*
+	private def ruinW(cust: List[Customer], pesos: scala.collection.Map[Customer, Int]): List[Customer] = {
+		val target = cust.size * π
+		//println("\nruinW | " + cust.map(_.num) + " | " + cust.size + " | " + target)
+		//println("pesos = " + pesos.map(p => (p._1.num, p._2)).toList)
+
+		// rompo #clientes * π clientes obtenidos al azar segun peso ponderado
+
+		var ret:List[Customer] = Nil
+		
+		// creo una lista replicando los pesos
+		var remaining:List[Customer] = Nil
+		
+		cust.foreach { c =>
+			val times = Math.max(1, pesos.getOrElse(c, 1))
+			for(i <- 1 to times) {
+				remaining = c :: remaining
+			}
+		}
+		
+		// println("remaining inicial = " + remaining.map(_.num))
+		// println("remaining inicial = " + remaining.size)
+		
+		try {
+			while (ret.size < target) {
+				// saco uno de remaining
+				val nuevo = remaining(rnd.nextInt(remaining.size))
+			
+				// saco todas las repeticiones de nuevo de remaining
+				remaining = remaining.remove(_ == nuevo)
+			
+				ret = nuevo :: ret
+			}
+		}
+		catch {
+			case _ => println("EXCEPTION remaining = " + remaining.map(_.num))
+		}
+
+		//println("ret = " + ret.map(_.num))
+		
+		ret.toList
+	}
+
 	private def ruinK(cust: List[Customer], k:Int): List[Customer] = k match {
 		case 0 => Nil
 		case n => {
@@ -145,26 +225,32 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 			c :: ruinK(cust - c, n-1)
 		}
 	}
-	
-	/** arruino n vehiculos al azar y después random del resto */
-	private def ruinV(cust: List[Customer], n: Int): List[Customer] = {
-		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
-		vehiculo ++ ruin(cust -- vehiculo)
-	}
-	
-	private def recreate(solucion: List[List[Customer]], rotos: List[Customer]): List[List[Customer]] = {
-		val arruinado = solucion.map(_ -- rotos).filter(_.length > 1)
-		new LocalInsert(inst, arruinado).insert(rotos)
-	}
+	*/
 	
 	/** arruino por distancia al source */
 	//private def ruin(dist: Int): List[Customer] = ruin(dist, inst.source)
 		
-	/** arruino por distancia a un customer dado */
-	/*private def ruin(dist: Int, cust: Customer): List[Customer] = {
-		println("ruin("+dist+","+cust.num+")")
+	private def distanciaPromedio = {
+		val d = distancias
+		d.reduceLeft(_+_) / d.size
+	}	
 	
-		inst.customers.filter(
-			c => inst.distancia(c, cust) < dist && inst.distancia(c, cust) > 0)
-	}*/	
+	private def distancias: List[Double] = {
+		def pares(clientes: List[Customer]): List[(Customer, Customer)] = {
+			def zzip(cliente: Customer, resto: List[Customer]): List[(Customer, Customer)] = resto match {
+				case Nil => Nil
+				case xs => List(cliente).zipAll(xs, cliente, cliente)
+			}
+
+			clientes match {
+				case Nil => Nil
+				case x :: xs => zzip(x, xs) ::: pares(xs)
+			}
+		}
+		
+		pares(inst.customers).map( p => inst.distancia(p._1, p._2) )
+	}
+
+	
+	// TODO chequear arruines espaciales y temporales
 }	

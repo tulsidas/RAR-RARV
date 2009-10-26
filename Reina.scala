@@ -20,14 +20,14 @@ object ReinaMain {
 		// arranco hormigas en los nucleos
 		val cores = Runtime.getRuntime().availableProcessors()
 
-		//var v = true
-		for (i <- 1 to 1) {
-			//if (v) {
+		var v = true
+		for (i <- 1 to cores) {
+			if (v) {
 				new RAR("localhost", 9010, 'ACS, i%2==0).start()
-			//}
-			//else {
-			//	new Formica("localhost", 9010, 'ACS).start()
-			//}
+			}
+			else {
+				new Formica("localhost", 9010, 'ACS).start()
+			}
 			//v = !v
 		}
 	}
@@ -60,7 +60,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 		exit
 	}
 	
-	println("NN = " + mejor.map(_.map(_.num)))
+	// println("NN = " + mejor.map(_.map(_.num)))
 	println("NN: " + mejorLargo + " | " + mejorVehiculos + " | prom/vehiculo: " + 
 		mejor.foldLeft(0)(_ + _.size - 1).toFloat / mejorVehiculos.toFloat)
 
