@@ -17,8 +17,9 @@
 
 \graphics default
 \paperfontsize default
+\spacing single
 \use_hyperref false
-\papersize default
+\papersize a4paper
 \use_geometry false
 \use_amsmath 1
 \use_esint 1
@@ -35,6 +36,7 @@
 \paperpagestyle default
 \tracking_changes false
 \output_changes false
+\author "" 
 \author "" 
 \end_header
 
@@ -224,7 +226,7 @@ mejor
 \shape default
 , 
 \shape italic
-vehicular
+vehicular?
 \shape default
 ) {
 \end_layout
@@ -276,7 +278,7 @@ nueva
 \begin_layout LyX-Code
 si 
 \shape italic
-vehicular
+vehicular?
 \shape default
  
 \begin_inset Formula $\Rightarrow$
@@ -322,7 +324,11 @@ r
 \shape italic
 mejor - r
 \shape default
-, r)
+, 
+\shape italic
+r
+\shape default
+)
 \end_layout
 
 \begin_layout LyX-Code
@@ -380,6 +386,10 @@ mejor
 \end_layout
 
 \begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
 arruinarVehiculo(
 \shape italic
 solucion
@@ -409,6 +419,10 @@ s
 \end_deeper
 \begin_layout LyX-Code
 }
+\end_layout
+
+\begin_layout LyX-Code
+
 \end_layout
 
 \begin_layout LyX-Code
@@ -463,6 +477,33 @@ solucion
 }
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+recrear
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout LyX-Code
 recrear(
 \shape italic
@@ -475,6 +516,174 @@ clientes
 ) {
 \end_layout
 
+\begin_layout LyX-Code
+
+\shape italic
+ininsertables
+\shape default
+ := {}
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada cliente en 
+\shape italic
+clientes
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada vehiculo en 
+\shape italic
+solucionRota
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+nuevasSoluciones
+\shape default
+ := obtener todas las 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+soluciones factibles resultantes de 
+\end_layout
+
+\begin_layout LyX-Code
+insertar al cliente en la 
+\shape italic
+solucionRota
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+si 
+\shape italic
+nuevasSoluciones
+\shape default
+ es vacío
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+agregar el cliente a 
+\shape italic
+ininsertables
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+si no
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+actualizar 
+\shape italic
+solucionRota
+\shape default
+ con 
+\end_layout
+
+\begin_layout LyX-Code
+la solución de menor largo 
+\end_layout
+
+\begin_layout LyX-Code
+de 
+\shape italic
+nuevasSoluciones
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+si es vacio {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucionRota
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+si no {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+/* se intenta cambiar el orden de inserción */
+\end_layout
+
+\begin_layout LyX-Code
+reintentar T veces:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+recrear(
+\shape italic
+solucionRota
+\shape default
+, 
+\shape italic
+ininsertables
+\shape default
+ + 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+(
+\shape italic
+clientes
+\shape default
+ - 
+\shape italic
+ininsertables
+\shape default
+))
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_deeper
 \begin_layout LyX-Code
 }
 \end_layout

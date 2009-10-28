@@ -61,11 +61,14 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		var promFactible = (0, 0f)
 		var promVehiculos = (0, 0f)
 		
-		val dp = distanciaPromedio
+		val d = distancias
+		val dp = d.reduceLeft(_+_) / d.size
 		
-		//println("distanciaMax = " + distancias.sort(_>_).head)
-		//println("distanciaMin = " + distancias.sort(_<_).head)
-		//println("distanciaPromedio = " + dp)
+		if (rarVehicular) {
+			println("distanciaMax = " + d.sort(_>_).head)
+			println("distanciaMin = " + d.sort(_<_).head)
+			println("distanciaPromedio = " + dp)
+		}
 
 		while(running) {
 			if (mailboxSize > 0) {
@@ -118,8 +121,10 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 				promVehiculos = updateProm(promVehiculos, vehiculos)
 
 				if (factible) {
-					//println("recreate("+rotos.length+") | factible | " + vehiculos + " | " + inst.solLength(ryr))
+					println("recreate("+rotos.length+") | factible | " + ryr.length + " | " + inst.solLength(ryr))
 					val optimizado = new LocalSearch(inst, ryr).search()
+					
+					println("recreate(optimizado) | factible | " + optimizado.length + " | " + inst.solLength(optimizado))
 					
 					if (optimizado.length < mejor.length || 
 						inst.solLength(optimizado) < inst.solLength(mejor)) {
@@ -230,11 +235,6 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	/** arruino por distancia al source */
 	//private def ruin(dist: Int): List[Customer] = ruin(dist, inst.source)
 		
-	private def distanciaPromedio = {
-		val d = distancias
-		d.reduceLeft(_+_) / d.size
-	}	
-	
 	private def distancias: List[Double] = {
 		def pares(clientes: List[Customer]): List[(Customer, Customer)] = {
 			def zzip(cliente: Customer, resto: List[Customer]): List[(Customer, Customer)] = resto match {

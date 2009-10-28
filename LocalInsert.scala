@@ -60,7 +60,7 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 	private def insert(nv: Customer) = {
 		val factibles = tryInsert(nv)
 		
-		//println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
+		// println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
 
 		// me quedo con el de menor largo
 		if (factibles.size > 0) {

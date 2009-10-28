@@ -20,7 +20,7 @@ object Params {
 	///////////
 	
 	// prob de arruine de cada cliente
-	val π = 0.4
+	val π = 0.5
 	
 	// prob de hacer arruine espacial o aleatorio
 	val δ = 0.8

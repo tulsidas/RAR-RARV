@@ -3,7 +3,6 @@ import Params._
 class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	val rnd = new scala.util.Random()
 	type Ruta = List[Customer]
-	var i = 0
 	
 	private var mejorSolucion = solucion
 
@@ -105,10 +104,6 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 					if (inst.camionLength(n1) + inst.camionLength(n2) < 
 							inst.camionLength(l1) + inst.camionLength(l2)) {
 						// mejora del largo
-						
-						//Imaginario.writeImage(i+".jpg", inst, List(l1, l2))
-						//Imaginario.writeImage(i+"_new.jpg", inst, List(n1, n2))
-						//i = i+1
 						
 						// actualizo mejor solucion
 						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
