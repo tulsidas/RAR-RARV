@@ -11,7 +11,8 @@ case class Instance(var vehiculos: Int, val capacidad: Int, val customers: List[
 	 * Si la solución visita a todos los clientes usando a lo sumo los vehiculos disponibles
 	 */
 	def factible(sol: List[List[Customer]]): Boolean = {
-		sol.foldLeft(0)(_ + _.size - 1) == customers.length-1 && sol.length <= vehiculos
+		sol.foldLeft(0)(_ + _.size - 1) == customers.length-1 && sol.length <= vehiculos && 
+			sol.forall(camionFactible(_))
 	}
 	
 	def camionLength(l: List[Customer]): Double = {

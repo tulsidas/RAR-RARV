@@ -13,7 +13,7 @@ object RARMain {
 		val host = args(0)
 		val cores = Runtime.getRuntime().availableProcessors()
 
-		for (i <- 1 to cores) {
+		for (i <- 1 to 1) {
 			new RAR(host, 9010, 'ACS, i % 2 == 0).start()
 		}
 	}
@@ -121,10 +121,10 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 				promVehiculos = updateProm(promVehiculos, vehiculos)
 
 				if (factible) {
-					println("recreate("+rotos.length+") | factible | " + ryr.length + " | " + inst.solLength(ryr))
+					//println("recreate("+rotos.length+") | factible | " + ryr.length + " | " + inst.solLength(ryr))
 					val optimizado = new LocalSearch(inst, ryr).search()
 					
-					println("recreate(optimizado) | factible | " + optimizado.length + " | " + inst.solLength(optimizado))
+					//println("recreate(optimizado) | factible | " + optimizado.length + " | " + inst.solLength(optimizado))
 					
 					if (optimizado.length < mejor.length || 
 						inst.solLength(optimizado) < inst.solLength(mejor)) {
@@ -136,7 +136,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 					}
 				}
 				else {
-					//println("recreate("+rotos.length+") | NO factible | " + vehiculos)
+					// println("recreate("+rotos.length+") | NO factible | " + vehiculos)
 				}
 			}
 		}

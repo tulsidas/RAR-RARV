@@ -21,7 +21,7 @@ object ReinaMain {
 		val cores = Runtime.getRuntime().availableProcessors()
 
 		var v = true
-		for (i <- 1 to 1) {
+		for (i <- 1 to cores) {
 			if (v) {
 				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
 			}
