@@ -30,7 +30,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	
 	// la mejor solucion actual
 	var mejor: List[List[Customer]] = Nil
-
+	
 	Debug.level = 1
 	
 	private[this] def updateProm(par: (Int, Float), nuevo: Float): (Int, Float) = {
@@ -149,7 +149,8 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	
 	/** arruino random */
 	private def ruinRnd(cust: List[Customer]): List[Customer] = {
-		cust.filter(c => rnd.nextDouble > π)
+	   val p = if (rarVehicular) πv else π
+		cust.filter(c => rnd.nextDouble > p)
 	}
 	
 	/** arruino n vehiculos al azar y después random del resto */

@@ -24,11 +24,12 @@ object ReinaMain {
 		for (i <- 1 to cores) {
 			if (v) {
 				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
+//				new RAR("localhost", 9010, 'ACS, false).start()
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
 			}
-			//v = !v
+//			v = !v
 		}
 	}
 }
@@ -79,6 +80,8 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 		register(name, self)
 
 		var running = true
+		
+		val startTime = System.currentTimeMillis
 
 		while(running) {
 			receive {
@@ -92,9 +95,6 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 					val newLargo = inst.solLength(newMejor)
 					val newVehiculos = newMejor.length
 					
-					//println("Mejor("+newLargo+" | "+newVehiculos+")")
-					//println("actual = "+mejorLargo+" | "+mejorVehiculos)
-					
 					if (newVehiculos < mejorVehiculos || 
 						(newVehiculos == mejorVehiculos && newLargo < mejorLargo)) {
 
@@ -105,7 +105,8 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 						// actualizo a las hormigas largueras
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! Mejor(mejor, ""))
                   
-                  println(id + " --> Mejor: " + newLargo + " | " + newVehiculos)
+                  val t = System.currentTimeMillis - startTime
+                  println("["+t+"] " + id + " --> Mejor: " + newLargo + " | " + newVehiculos)
 
 						// sobreescribo feromonas, para mandar lo actualizado si se une una hormiga nueva
 						//inst overwriteTau(newTau)

@@ -1,10 +1,10 @@
-#LyX 1.6.2 created this file. For more info see http://www.lyx.org/
+#LyX 1.6.4 created this file. For more info see http://www.lyx.org/
 \lyxformat 345
 \begin_document
 \begin_header
 \textclass article
 \use_default_options true
-\language english
+\language spanish
 \inputencoding auto
 \font_roman default
 \font_sans default
@@ -43,7 +43,7 @@
 \begin_body
 
 \begin_layout Title
-Un algoritmo distribuído de Ruin&Recreate para VRPTW
+Un algoritmo distribuído de Ruin & Recreate para VRPTW
 \end_layout
 
 \begin_layout Author
@@ -56,6 +56,852 @@ aquijano@dc.uba.ar
 
 \begin_layout Abstract
 bla bla bla
+\end_layout
+
+\begin_layout Verse
+\begin_inset Newpage pagebreak
+\end_inset
+
+dedicatorias locas
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FloatList algorithm
+
+\end_inset
+
+
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FloatList figure
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Descripción del problema
+\end_layout
+
+\begin_layout Subsection
+Introducción
+\end_layout
+
+\begin_layout Standard
+El ruteo de vehículos consiste en la asignación de clientes a vehículos
+ en un orden y tiempo determinados.
+ En el VRP
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+del inglés 
+\emph on
+Vehicle Routing Problem
+\end_layout
+
+\end_inset
+
+ existe un número fijo de clientes que deben ser visitados por uno o más
+ vehículos a fin de satisfacer sus necesidades.
+ Una solución a una instancia de VRP consiste en un conjunto de rutas que
+ debe recorrer cada vehículo, partiendo y terminando en el 
+\emph on
+depósito,
+\emph default
+ de forma que todos los clientes sean visitados y sus demandas y restricciones
+ sean cumplidas.
+ El objetivo del VRP es encontrar la mejor solución, según diversos parámetros
+ de optimización.
+ El problema se suele modelar como un grafo donde los nodos representan
+ el depósito y los clientes, y los ejes los caminos existentes entre clientes
+ (en general el grafo es completo).
+ Existen diversas variantes al problema original; en esta tesis se trata
+ exclusivamente del VRPTW
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+del inglés 
+\emph on
+Vehicle Routing Problem with Time Windows
+\end_layout
+
+\end_inset
+
+, una variante donde cada cliente tiene asociada una ventana de tiempo que
+ restringe el momento en que puede ser visitada por un vehículo.
+\end_layout
+
+\begin_layout Subsection
+Notación
+\end_layout
+
+\begin_layout Standard
+Sea 
+\begin_inset Formula $G=(V,A)$
+\end_inset
+
+ grafo completo donde 
+\begin_inset Formula $V=\{0,\ldots,n\}$
+\end_inset
+
+ y 
+\begin_inset Formula $A$
+\end_inset
+
+ el conjunto de ejes.
+ El nodo 
+\begin_inset Formula $0$
+\end_inset
+
+ corresponde al depósito de donde parten los vehículos y 
+\begin_inset Formula $i=1\ldots n$
+\end_inset
+
+ los clientes.
+ También se nota al depósito como el nodo 
+\begin_inset Formula $n+1$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Un costo no-negativo 
+\begin_inset Formula $c_{ij}$
+\end_inset
+
+ es asociado a cada eje 
+\begin_inset Formula $(i,j)\in A$
+\end_inset
+
+, representando el costo de viajar desde el nodo 
+\begin_inset Formula $i$
+\end_inset
+
+ hasta el nodo 
+\begin_inset Formula $j$
+\end_inset
+
+.
+ En el caso que plantea esta tesis, se asume que el grafo no es dirigido,
+ o sea 
+\begin_inset Formula $c_{ij}=c_{ji}\forall i,j\in A,i\neq j$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Cada cliente tiene asociado una demanda nonegativa 
+\begin_inset Formula $d_{i}$
+\end_inset
+
+ (siendo 
+\begin_inset Formula $d_{0}=0$
+\end_inset
+
+) y una ventana de tiempo 
+\begin_inset Formula $[a_{i},b_{i}]$
+\end_inset
+
+ con 
+\begin_inset Formula $a_{i}<b_{i}$
+\end_inset
+
+.
+ Los parámetros 
+\begin_inset Formula $E$
+\end_inset
+
+ y 
+\begin_inset Formula $L$
+\end_inset
+
+ indican el comienzo y fin, respectivamente, de la ventana de tiempo del
+ depósito: 
+\begin_inset Formula $[a_{0},b_{0}]=[E,L]$
+\end_inset
+
+, donde 
+\begin_inset Formula $a_{0}\leq a_{i}\forall i\in V$
+\end_inset
+
+ y 
+\begin_inset Formula $b_{0}\geq b_{i}\forall i\in V$
+\end_inset
+
+.
+ También se asocia a cada cliente un valor no-negativo 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+ indicando el tiempo de servicio, esto es, el tiempo mínimo que un vehículo
+ debe permanecer en el cliente cargando o descargando mercadería antes de
+ poder proseguir su ruta.
+\end_layout
+
+\begin_layout Standard
+Se dispone de 
+\begin_inset Formula $K$
+\end_inset
+
+ vehículos idénticos entre sí, cada uno con capacidad de carga 
+\begin_inset Formula $C$
+\end_inset
+
+\SpecialChar \@.
+
+\end_layout
+
+\begin_layout Standard
+Se define además:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $x_{ijk}=\begin{cases}
+1 & \mbox{si \ensuremath{(i,j)\in A\mbox{ es usado por el vehículo \ensuremath{k}}\in K}}\\
+0 & \mbox{si no}\end{cases}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $w_{ik},i\in V,k\in K$
+\end_inset
+
+ el comienzo del servicio en el nodo 
+\begin_inset Formula $i$
+\end_inset
+
+ por el vehículo 
+\begin_inset Formula $k$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\Delta^{+}(i)=\{j/(i,j)\in A\}$
+\end_inset
+
+ los nodos 
+\emph on
+salientes
+\emph default
+ del nodo 
+\begin_inset Formula $i$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\Delta^{-}(i)=\{j/(j,i)\in A\}$
+\end_inset
+
+ los nodos 
+\emph on
+entrantes 
+\emph default
+al nodo 
+\begin_inset Formula $i$
+\end_inset
+
+ 
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+dado que esta tesis considera únicamente grafos completos 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\noun off
+\color none
+\lang english
+
+\begin_inset Formula $\Delta^{+}(i)=\Delta^{-}(i)=V\setminus\{i\}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Formulación
+\end_layout
+
+\begin_layout Standard
+La solución óptima a un problema VRPTW consiste entonces en hallar
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\min\underset{k\in K}{\sum}\underset{(i,j)\in A}{\sum}c_{ij}x_{ijk}\label{eq:1}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+sujeto a
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\underset{k\in K}{\sum}\underset{j\in\Delta^{+}(i)}{\sum}x_{ijk}=1\qquad\forall k\in K\label{eq:2}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\underset{j\in\Delta^{+}(0)}{\sum}x_{0jk}=1\qquad\forall k\in K\label{eq:3}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\underset{i\in\Delta^{-}(j)}{\sum}-\underset{i\in\Delta^{+}(j)}{\sum}x_{ijk}=0\qquad\forall k\in K,j\in N\label{eq:4}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\underset{i\in\Delta^{-}(n+1)}{\sum}x_{i,n+1,k}=1\qquad\forall k\in K\label{eq:5}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+x_{ijk}(w_{ik}+s_{i}+t_{ij}-w_{jk})\leq0\qquad\forall k\in K,(i,j)\in A\label{eq:6}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+a_{i}\underset{j\in\Delta^{+}(i)}{\sum}x_{ijk}\leq w_{ik}\leq b_{i}\underset{j\in\Delta^{+}(i)}{\sum}\qquad\forall k\in K,i\in N\label{eq:7}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+E\leq w_{ik}\leq L\qquad\forall k\in K,i\in\{0,n+1\}\label{eq:8}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\underset{i\in N}{\sum}d_{i}\underset{j\in\Delta^{+}(i)}{\sum}x_{ijk}\leq C\qquad\forall k\in K\label{eq:9}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+x_{ijk}\geq0\qquad\forall k\in K,(i,j)\in A\label{eq:10}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+x_{ijk}\in\{0,1\}\qquad\forall k\in K,(i,j)\in A\label{eq:11}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+donde:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $N=V\setminus\{0\}$
+\end_inset
+
+ el conjunto de clientes
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:2"
+
+\end_inset
+
+ restringe las visitas a sólo un vehículo por cliente
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:3"
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:4"
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:5"
+
+\end_inset
+
+ modelan el tipo de recorridos que un vehículo puede hacer (salir del depósito,
+ visitar clientes y volver al depósito)
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:6"
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:8"
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:9"
+
+\end_inset
+
+ aseguran factibilidad en cuanto a ventanas de tiempo y capacidad de vehículos
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:7"
+
+\end_inset
+
+ fuerza que 
+\begin_inset Formula $w_{ik}=0$
+\end_inset
+
+ si el vehículo 
+\begin_inset Formula $k$
+\end_inset
+
+ no visita al cliente 
+\begin_inset Formula $i$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:10"
+
+\end_inset
+
+ establece el caracter no-negativo de 
+\begin_inset Formula $x_{ijk}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset ref
+LatexCommand eqref
+reference "eq:11"
+
+\end_inset
+
+ limita 
+\begin_inset Formula $x_{ijk}$
+\end_inset
+
+ a valores 
+\begin_inset Formula $0$
+\end_inset
+
+ ó 
+\begin_inset Formula $1$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Dado que 
+\noun on
+VRPTW
+\noun default
+ es un problema 
+\noun on
+NP-HARD
+\noun default
+, resulta impracticable buscar la optimalidad mediante algoritmos exactos,
+ por lo que se acude a heurísticas
+\end_layout
+
+\begin_layout Section
+Heurísticas conocidas
+\end_layout
+
+\begin_layout Section
+Colonia de hormigas
+\end_layout
+
+\begin_layout Section
+Ruin & Recreate
+\end_layout
+
+\begin_layout Standard
+La heurística Ruin & Recreate 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+ consiste en arruinar (
+\emph on
+ruin
+\emph default
+) una solución (generalmente factible) para luego reconstruirla (
+\emph on
+recreate
+\emph default
+) procurando obtener una mejor solución de la que se partió\SpecialChar \@.
+ En 
+\noun on
+VRPTW
+\noun default
+ arruinar la solución consiste en quitar 
+\begin_inset Formula $t$
+\end_inset
+
+ clientes según un criterio de arruine, dejando una solución infactible,
+ donde sólo 
+\begin_inset Formula $n-t$
+\end_inset
+
+ clientes son visitados por los vehículos.
+ Luego el algoritmo intenta reintroducir los 
+\begin_inset Formula $t$
+\end_inset
+
+ clientes a la solución rota, procurando obtener una mejor solución de la
+ cual se partió.
+ El proceso se repite hasta que una condición es satisfecha, sea porque
+ se consiguió una solución suficientemente buena, porque se cumplió un número
+ fijo de iteraciones, porque ocurrieron suficientes iteraciones sin obtener
+ mejoras a la solución o cualquier otra condición de corte.
+\end_layout
+
+\begin_layout Standard
+Los puntos claves del algoritmo son, claramente, la forma en que se arruina
+ y recrea la solución\SpecialChar \@.
+
+\end_layout
+
+\begin_layout Subsection
+Ruin
+\end_layout
+
+\begin_layout Standard
+Arruinar la solución es computacionalmente sencillo, aunque algorítmicamente
+ es tan importante como recrearla.
+ Elegir qué nodos quitar de la solución es crucial a la hora de poder generar
+ una mejora o no.
+ En 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+ se plantean diversas variantes básicas en lo referido a ruteo de vehículos,
+ por ejemplo:
+\end_layout
+
+\begin_layout Itemize
+Espacial: dado un nodo 
+\begin_inset Formula $n$
+\end_inset
+
+ se quitan de la solución 
+\begin_inset Formula $n$
+\end_inset
+
+ y todos los nodos cuya distancia a 
+\begin_inset Formula $n$
+\end_inset
+
+ sea menor a un parámetro dado
+\end_layout
+
+\begin_layout Itemize
+Cadena: se quita una cadena de nodos consecutivos en la solución de largo
+ parametrizable
+\end_layout
+
+\begin_layout Itemize
+Azar: cada nodo de la solución se quita según un parámetro de probabilidad
+\end_layout
+
+\begin_layout Subsection
+Recreate
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Ruin & Recreate para VRPTW
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\series bold
+repetir
+\end_layout
+
+\begin_layout LyX-Code
+
+\emph on
+sol
+\emph default
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+solución inicial
+\end_layout
+
+\begin_layout LyX-Code
+arruinar 
+\emph on
+sol
+\emph default
+ quitando 
+\emph on
+n
+\emph default
+ clientes
+\end_layout
+
+\begin_layout LyX-Code
+
+\emph on
+nueva_sol
+\emph default
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+reconstruir 
+\emph on
+sol
+\end_layout
+
+\begin_layout LyX-Code
+si 
+\emph on
+nueva_sol
+\emph default
+ es mejor que 
+\emph on
+sol
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\emph on
+sol
+\emph default
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
+\emph on
+nueva_sol
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+
+\series bold
+hasta
+\series default
+ que se cumpla un criterio de finalización
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Aplicación al problema
+\end_layout
+
+\begin_layout Section
+Implementación
+\end_layout
+
+\begin_layout Subsection
+Solución Inicial
+\end_layout
+
+\begin_layout Subsection
+Búsqueda local
+\end_layout
+
+\begin_layout Subsection
+Ruin & Recreate
+\end_layout
+
+\begin_layout Standard
+espacial con d/2-2d/3 y delta
+\end_layout
+
+\begin_layout Standard
+aleatorio
+\end_layout
+
+\begin_layout Subsection
+Inserción
+\end_layout
+
+\begin_layout Section
+Resultados
+\end_layout
+
+\begin_layout Section
+Conclusiones
+\end_layout
+
+\begin_layout Section
+Trabajo futuro
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "RR"
+key "key-1"
+
+\end_inset
+
+Record Breaking Optimization Results Using the Ruin and Recreate Principle.
+ Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
+ Dueck.
+ 1999.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "VRP"
+key "key-2"
+
+\end_inset
+
+P.
+ Toth and D.Vigo.
+ The Vehicle Routing Problem.
+ SIAM, 2002.
+\end_layout
+
+\begin_layout Standard
+
 \end_layout
 
 \begin_layout Standard
@@ -137,7 +983,11 @@ tiempo
 \shape italic
 nueva
 \shape default
- := recibir_mejor_solucion()
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+recibir_mejor_solucion()
 \end_layout
 
 \begin_layout LyX-Code
@@ -154,7 +1004,11 @@ mejor
 \shape italic
 mejor
 \shape default
- := 
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
 \shape italic
 nueva
 \end_layout
@@ -248,7 +1102,11 @@ STOP
 \shape italic
 nueva
 \shape default
- := recibir_mejor_solucion()
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+recibir_mejor_solucion()
 \end_layout
 
 \begin_layout LyX-Code
@@ -265,7 +1123,11 @@ mejor
 \shape italic
 mejor
 \shape default
- := 
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
 \shape italic
 nueva
 \end_layout
@@ -288,7 +1150,11 @@ vehicular?
 \shape italic
  r
 \shape default
- := arruinarVehiculo(
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+arruinarVehiculo(
 \shape italic
 mejor
 \shape default
@@ -304,7 +1170,11 @@ si no
 \shape italic
  r
 \shape default
- := arruinar(
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+arruinar(
 \shape italic
 mejor
 \shape default
@@ -320,7 +1190,11 @@ mejor
 \shape italic
 r
 \shape default
- := recrear(
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+recrear(
 \shape italic
 mejor - r
 \shape default
@@ -361,7 +1235,11 @@ mejor
 \shape italic
 mejor
 \shape default
- := 
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+
 \shape italic
 r
 \end_layout
@@ -403,7 +1281,11 @@ solucion
 \shape italic
 s
 \shape default
- := quitar un vehiculo al azar de 
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+quitar un vehiculo al azar de 
 \shape italic
 solucion
 \end_layout
@@ -521,7 +1403,11 @@ clientes
 \shape italic
 ininsertables
 \shape default
- := {}
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+{}
 \end_layout
 
 \begin_deeper
@@ -548,7 +1434,11 @@ solucionRota
 \shape italic
 nuevasSoluciones
 \shape default
- := obtener todas las 
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+obtener todas las 
 \end_layout
 
 \begin_deeper
