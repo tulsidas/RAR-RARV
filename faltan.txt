@@ -1,0 +1,12 @@
+r104
+r109
+r110
+r112
+
+r207
+
+rc105
+rc106
+
+TODO: probar guardar la infactible y romper esa en vez de descartarla
+TODO: distintos PI (uno para RAR y uno parar RARV)

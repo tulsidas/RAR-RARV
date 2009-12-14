@@ -1,0 +1,16 @@
+abstract
+indice
+el problema: ruteo de vehiculos (tw)
+heuristicas
+hormigas
+ryr
+aplicacion al problema
+implementación
+   solucion inicial
+   busqueda local
+   ryr
+   inserción
+resultados
+conclusiones
+trabajo futuro (tabu search)
+bibliografia

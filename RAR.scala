@@ -94,8 +94,6 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 				}
 			}
 			else {
-				rnd.setSeed(System.currentTimeMillis)
-			
 				val rotos = 
 					if (rarVehicular) {
 						ruinRndV(inst.customers.tail, 1) 
@@ -164,17 +162,20 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		val customers = inst.customers.tail
 		val c = customers(rnd.nextInt(customers.length))
 		
+		ruinDist(dist, c, customers)
+	}
+
+	private def ruinDist(dist: Double, c: Customer, customers: List[Customer]): List[Customer] = {
 		// println("ruin("+dist+","+c.num+")")
 
 		customers.filter(inst.distancia(_, c) < dist)
 	}
 
-	/* arruino por distancia espacial a un cliente dado
+	/* arruino por distancia espacial a un cliente dado */
 	private def ruinDistV(dist: Double, c: Customer, n: Int, customers: List[Customer]): List[Customer] = {
 		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
 		vehiculo ++ ruinDist(dist, c, customers -- vehiculo)
 	}
-	*/
 
 	/** arruino por distancia temporal a un cliente dado */
 	private def ruinTime(dist: Double, cust: Customer): List[Customer] = {

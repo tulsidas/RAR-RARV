@@ -724,6 +724,21 @@ Recreate
 \end_layout
 
 \begin_layout Standard
+La recreación de la solución consiste en volver a incluír los nodos quitados
+ en la etapa 
+\begin_inset Quotes eld
+\end_inset
+
+Ruin
+\begin_inset Quotes erd
+\end_inset
+
+ de forma de conseguir una mejor solución a la original.
+ Idealmente, los nodos quitados se agregarían de forma óptima a la instancia
+ rota.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
@@ -829,79 +844,65 @@ hasta
 \end_layout
 
 \begin_layout Section
-Aplicación al problema
-\end_layout
-
-\begin_layout Section
-Implementación
-\end_layout
-
-\begin_layout Subsection
-Solución Inicial
-\end_layout
-
-\begin_layout Subsection
-Búsqueda local
-\end_layout
-
-\begin_layout Subsection
-Ruin & Recreate
+El algoritmo
 \end_layout
 
 \begin_layout Standard
-espacial con d/2-2d/3 y delta
+El algoritmo presentado es paralelo y distribuído, pudiendose escalar fácilmente
+ agregando computadoras a una red.
+ 
 \end_layout
 
 \begin_layout Standard
-aleatorio
+El algoritmo apunta a disminuír tanto la longitud total recorrida por los
+ vehículos como la cantidad de vehículos necesaria para visitar todos los
+ clientes.
 \end_layout
 
-\begin_layout Subsection
-Inserción
-\end_layout
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
 
-\begin_layout Section
-Resultados
-\end_layout
-
-\begin_layout Section
-Conclusiones
-\end_layout
-
-\begin_layout Section
-Trabajo futuro
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-label "RR"
-key "key-1"
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename arquitectura.png
+	scale 25
+	clip
 
 \end_inset
 
-Record Breaking Optimization Results Using the Ruin and Recreate Principle.
- Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
- Dueck.
- 1999.
+
 \end_layout
 
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-label "VRP"
-key "key-2"
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Arquitectura de la solución
+\end_layout
 
 \end_inset
 
-P.
- Toth and D.Vigo.
- The Vehicle Routing Problem.
- SIAM, 2002.
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-
+Cada instancia de RAR o RARV pueden estar en diferentes computadoras o en
+ una misma computadora con procesador multinúcleo.
+ Dado un árbitro ejecutandose, un número indefinido de instancias de tipo
+ RAR o RARV pueden conectarse al árbitro, recibir información sobre el problema
+ a resolver y comenzar a trabajar sobre el mismo.
 \end_layout
 
 \begin_layout Standard
@@ -1051,6 +1052,65 @@ STOP
 
 \end_layout
 
+\begin_layout Subsection
+Objetivo Múltiple
+\end_layout
+
+\begin_layout Standard
+Para lograr mayor efectividad al resolver el problema, se ejecutan en paralelo
+ dos tipos de rutinas.
+ 
+\noun on
+RAR
+\noun default
+ (Ruin And Recreate) intentará optimizar el recorrido total de la solución
+ mientras que 
+\noun on
+RARV
+\noun default
+ (Ruin And Recreate Vehicular) se enfoca exclusivamente en reducir la cantidad
+ de vehículos necesarios.
+\end_layout
+
+\begin_layout Standard
+
+\noun on
+RAR
+\noun default
+ y 
+\noun on
+RARV
+\noun default
+ son prácticamente iguales, la única diferencia consiste en la forma de
+ romper la solución actual.
+ En ambos casos se realizan diferentes formas de roturas (detalladas en
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Ruin"
+
+\end_inset
+
+), pero mientras RAR realiza 
+\emph on
+sólo
+\emph default
+ esas roturas, RARV siempre quita todos los nodos visitados por un vehículo
+ (al azar) 
+\emph on
+más
+\emph default
+ las roturas que define RAR.
+ De esta forma, RARV siempre buscará soluciones factibles con al menos un
+ vehículo menos que la solución actual.
+\end_layout
+
+\begin_layout Standard
+Así, teniendo al menos una instancia de RAR y una de RARV conectadas al
+ árbitro, se busca en paralelo optimizar tanto distancia como número de
+ vehículos requeridos.
+\end_layout
+
 \begin_layout Standard
 \begin_inset Float algorithm
 wide false
@@ -1058,14 +1118,10 @@ sideways false
 status open
 
 \begin_layout Plain Layout
-
-\end_layout
-
-\begin_layout Plain Layout
 \begin_inset Caption
 
 \begin_layout Plain Layout
-RAR
+RAR/RARV
 \end_layout
 
 \end_inset
@@ -1364,15 +1420,259 @@ solucion
 
 \end_layout
 
+\begin_layout Subsection
+Solución inicial
+\end_layout
+
+\begin_layout Standard
+Para poder arruinar y recrear una solución, se necesita generar una solución
+ factible sobre la cual iterar.
+ La solución inicial se construye utilizando la heurística del vecino más
+ próximo 
+\begin_inset CommandInset citation
+LatexCommand citet
+key "key-4"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Ruin
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Ruin"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En esta tesis se utilizaron dos funciones de arruine: aleatoria y espacial
+\end_layout
+
+\begin_layout LyX-Code
+aleatorio(
+\shape italic
+solucion
+\shape default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada 
+\shape italic
+cliente
+\shape default
+ en 
+\shape italic
+solucion {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+quitar 
+\shape italic
+cliente
+\shape default
+ de 
+\shape italic
+solucion
+\shape default
+ con probabilidad π
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucion
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+espacial(solucion, distancia) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+elegir un nodo 
+\emph on
+n
+\emph default
+ al azar
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+quitar de 
+\emph on
+solucion
+\emph default
+ todos los nodos cuya distancia a 
+\emph on
+n
+\emph default
+ sea menor a 
+\emph on
+distancia
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucion
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout Standard
+En el caso de RARV, la función de arruine siempre es aleatoria.
+ En el caso de RAR, se elige entre aleatoria y espacial con probabilidad
+ δ, donde δ es un parámetro.
+ La distancia de arruine que utiliza RAR se elige también de forma aleatoria
+ entre 
+\begin_inset Formula $\frac{d}{2}$
+\end_inset
+
+ y 
+\begin_inset Formula $\frac{2d}{3}$
+\end_inset
+
+ donde 
+\begin_inset Formula $d$
+\end_inset
+
+ es la distancia promedio entre todos los nodos del problema.
+\end_layout
+
+\begin_layout Subsection
+Recreate
+\end_layout
+
+\begin_layout Standard
+Recrear consiste en reinsertar los nodos que fueron quitados (destruídos)
+ de la solución intentando mejorar la solución existente.
+ Se decidió por usar un algoritmo de 
+\emph on
+mejor inserción
+\emph default
+, donde cada nodo roto se intenta insertar en todas las posibles posiciones
+ de todos los vehículos.
+ De existir soluciones factibles tras la inserción, se elige la de menor
+ largo y se procede al siguiente nodo hasta que no queden nodos por insertar.
+ En el caso en que uno o más nodos sean ininsertables, es decir, no exista
+ posición alguna en algún vehículo tal que la solución sea factible, se
+ reintenta el procedimiento, con la solución rota original, pero reordenando
+ los nodos rotos de forma que se intente primero agregar los ininsertables.
+\end_layout
+
+\begin_layout Standard
+La idea detrás de este razonamiento es que, dados 
+\begin_inset Formula $R=v_{1},v_{2},\ldots,v_{k}\subseteq V$
+\end_inset
+
+ nodos que hay que insertar en la solución, y 
+\begin_inset Formula $I=v_{i_{1}},v_{i_{2}},\ldots,v_{i_{t}}\subseteq R$
+\end_inset
+
+ los nodos que no se pudieron insertar, es posible que un nodo 
+\begin_inset Formula $v_{i_{j}}$
+\end_inset
+
+ no sea posible insertar porque exista 
+\begin_inset Formula $v_{p}\in R\setminus I$
+\end_inset
+
+ que anule las posibilidades de inserción de 
+\begin_inset Formula $v_{i_{j}}$
+\end_inset
+
+ (por capacidad de vehículos o ventana de tiempo).
+ Al reordenar los nodos, se da lugar a la posibilidad que todos los nodos
+ de 
+\begin_inset Formula $I$
+\end_inset
+
+ sean insertables y también los de 
+\begin_inset Formula $R\setminus I$
+\end_inset
+
+, que tenían otras opciones de inserción que no bloqueaban los nodos de
+ 
+\begin_inset Formula $I$
+\end_inset
+
+ pero no fueron elegidas porque fue priorizada la solución de menor largo.
+ Este procedimiento se reintenta 
+\emph on
+φ
+\emph default
+ veces, donde 
+\emph on
+φ
+\emph default
+ es un parámetro.
+ 
+\end_layout
+
+\begin_layout Standard
+Si en alguna iteración resulta que 
+\begin_inset Formula $v_{1}$
+\end_inset
+
+ es ininsertable (o sea el primer nodo es ininsertable) entonces se descarta
+ esta solución rota como infactible, ya que no existe posición posible donde
+ 
+\begin_inset Formula $v_{1}$
+\end_inset
+
+pueda ser insertado.
+\end_layout
+
+\begin_layout Standard
+Este procedimiento es computacionalmente costoso ya ...
+ (calcular el orden de complejidad)
+\end_layout
+
 \begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
 status open
-
-\begin_layout Plain Layout
-
-\end_layout
 
 \begin_layout Plain Layout
 \begin_inset Caption
@@ -1537,7 +1837,11 @@ si no {
 \end_layout
 
 \begin_layout LyX-Code
-reintentar T veces:
+reintentar 
+\emph on
+φ
+\emph default
+ veces:
 \end_layout
 
 \begin_deeper
@@ -1581,6 +1885,86 @@ ininsertables
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection
+Búsqueda local
+\end_layout
+
+\begin_layout Subsection
+Implementación
+\end_layout
+
+\begin_layout Section
+Resultados
+\end_layout
+
+\begin_layout Section
+Conclusiones
+\end_layout
+
+\begin_layout Section
+Trabajo futuro
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "RR"
+key "key-1"
+
+\end_inset
+
+Record Breaking Optimization Results Using the Ruin and Recreate Principle.
+ Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
+ Dueck.
+ 1999.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "VRP"
+key "key-2"
+
+\end_inset
+
+P.
+ Toth and D.Vigo.
+ The Vehicle Routing Problem.
+ SIAM, 2002.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "MACS"
+key "key-3"
+
+\end_inset
+
+L.
+ M.
+ Gambardella, É.
+ Taillard and G.
+ Agazzi.
+ MACS-VRPTW: A Multiple Ant Colony System For Vehicle Routing Problems With
+ Time Windows.
+ New Ideas in Optimization McGraw-Hill, London, UK, pp.
+ 63-76, 1999
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "Flood"
+key "key-4"
+
+\end_inset
+
+M.
+ M.
+ Flood, The Traveling Salesman Problem, Operations Research 4, 1956, 61-75.
 \end_layout
 
 \end_body
