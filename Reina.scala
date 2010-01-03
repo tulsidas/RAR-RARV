@@ -23,8 +23,8 @@ object ReinaMain {
 		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
-				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
-//				new RAR("localhost", 9010, 'ACS, false).start()
+				//new RAR("localhost", 9010, 'ACS, i%2!=0).start()
+				new RAR("localhost", 9010, 'ACS, true).start()
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
@@ -38,6 +38,8 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val hormigas = Map.empty[String, OutputChannel[Any]]
+
+	val counter = Map.empty[String, Int]
 
 	val inst = Solomon.load(file)
 	val solver = new NearestNeighbour(inst)
@@ -65,7 +67,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	println("NN: " + mejorLargo + " | " + mejorVehiculos + " | prom/vehiculo: " + 
 		mejor.foldLeft(0)(_ + _.size - 1).toFloat / mejorVehiculos.toFloat)
 
-	Debug.level = 1
+   println("δ = " + δ + ", π = " + π + ", πv = " + πv)
 
 	val queenActress = select(Node("localhost", 9010), 'ACS)
 
@@ -104,6 +106,8 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 
 						// actualizo a las hormigas largueras
 						hormigas.filterKeys(uid => uid != id).foreach(p => p._2 ! Mejor(mejor, ""))
+						
+						counter + ((id, counter.getOrElse(id, 0)+1))
                   
                   val t = System.currentTimeMillis - startTime
                   println("["+t+"] " + id + " --> Mejor: " + newLargo + " | " + newVehiculos)
@@ -114,14 +118,16 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 				}
 				case TIMEOUT => {
 					println("TIMEOUT")
-					// fue, mando Stop al resto
-					hormigas.foreach(p => p._2 ! Stop)
 
 					running = false
 
 					println("mejor solucion = " + mejor.map(_.map(_.num)))
 					println("largo = " + inst.solLength(mejor))
 					println("vehiculos = " + mejor.length)
+					println(counter)
+
+					// fue, mando Stop al resto
+					hormigas.foreach(p => p._2 ! Stop)
 				}
 			}
 		}
