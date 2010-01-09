@@ -95,6 +95,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 				}
 			}
 			else {
+//            println("mejor = " + mejor.map(_.map(_.num)))
 				val rotos = 
 					if (rarVehicular) {
 						if (rnd.nextDouble > δ) {
@@ -102,7 +103,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 							ruinDistV(dp/3 + rnd.nextDouble*(dp/3))
 						}
 						else {
-   						ruinRndV(1) 
+   						ruinRndV(mejor) 
 						}
 					}
 					else {
@@ -113,11 +114,11 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 						else {
 							ruinRnd(mejor)
 						}
-
-						// ruinTime(dist, inst.customers.tail(rnd.nextInt(inst.customers.length-1)))
 					}
-						
+
+//            println("rotos = " + rotos.map(_.num))
 				val ryr = recreate(mejor, rotos)
+//            println("recreate = " + ryr.map(_.map(_.num)))
 				val factible = inst.factible(ryr)
 				val vehiculos = ryr.length
 
@@ -126,16 +127,23 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 				promVehiculos = updateProm(promVehiculos, vehiculos)
 
 				if (factible) {
-					//println("recreate("+rotos.length+") | factible | " + ryr.length + " | " + inst.solLength(ryr))
-					val optimizado = new LocalSearch(inst, ryr).search()
-					
-					//println("recreate(optimizado) | factible | " + optimizado.length + " | " + inst.solLength(optimizado))
+//					println("recreate("+rotos.length+") | factible | " + ryr.length + " | " + inst.solLength(ryr))
+
+//					val optimizado = new LocalSearch(inst, ryr).search()
+               val optimizado = ryr
+
+//					println("recreate(optimizado) | factible | " + optimizado.length + " | " + inst.solLength(optimizado))
 					
 					if (optimizado.length < mejor.length || 
 						inst.solLength(optimizado) < inst.solLength(mejor)) {
+						
+//						println("nuevo mejor: " + optimizado.length + " | " + inst.solLength(optimizado))
 
 						// un nuevo mejor
-						mejor = optimizado
+//						mejor = new LocalSearch(inst, optimizado).search()
+                  mejor = optimizado
+						
+//						println("c/LS: " + mejor.length + " | " + inst.solLength(mejor))
 						
 						reina ! Mejor(mejor, id)
 					}
@@ -148,8 +156,11 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	}
 
 	private def recreate(solucion: List[List[Customer]], rotos: List[Customer]): List[List[Customer]] = {
+//	   println("recreate | rotos = " + rotos.map(_.num))
+
 		val arruinado = solucion.map(_ -- rotos).filter(_.length > 1)
-		new LocalInsert(inst, arruinado).insert(rotos, false)
+
+		new LocalInsert(inst, arruinado).insert(rotos)
 	}
 	
 	/** arruino random */
@@ -158,23 +169,34 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 
       sol.foldLeft(List[Customer]()) { (acc, it) =>
          // .tail para que no saque el deposito
-         def veh = it.tail
+         val veh = it.tail
+//         println("veh = " + veh.map(_.num))
 
          var rotos = veh.filter(c => rnd.nextDouble > p)
+//         println("rotos = " + rotos.map(_.num))
          
          if (rotos.length == veh.length ) {
             // saco de los rotos uno al azar cosa que el vehiculo no desaparezca
-            rotos = rotos - rotos(rnd.nextInt(rotos.length))
+            
+            rotos -= rotos(rnd.nextInt(rotos.length))
+
+//            println("r.fix = " + rotos.map(_.num))
          }
+         
+//         println("acc = " + (acc ::: rotos).map(_.num))
          
          acc ::: rotos
       }
 	}
 	
 	/** arruino n vehiculos al azar y después random del resto */
-	private def ruinRndV(n: Int): List[Customer] = {
-		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
-		vehiculo ++ ruinRnd(mejor - vehiculo)
+	private def ruinRndV(sol: List[List[Customer]]): List[Customer] = {
+//	   println("ruinRndV sol = " + sol.map(_.map(_.num)))
+	   
+		val vehiculo:List[Customer] = sol(rnd.nextInt(sol.length))// - inst.source
+//	   println("ruinRndV veh = " + vehiculo.map(_.num))
+	   
+		vehiculo ++ ruinRnd(sol - vehiculo) - inst.source
 	}
 	
 	/** arruino por distancia espacial a un cliente dado */
