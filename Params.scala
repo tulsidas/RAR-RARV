@@ -23,5 +23,5 @@ object Params {
 	val δ:Double = 1
 	// prob de arruine de cada cliente
 	val π:Double = 0
-	val πv:Double = 0.4
+//	val πv:Double = 0.9
 }

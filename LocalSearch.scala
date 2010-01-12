@@ -80,18 +80,10 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	}
 	
 	private def multisearch(gen: (Ruta, Ruta) => List[(Ruta, Ruta)]): Unit = {
-		def producto(l: List[Ruta]): List[(Ruta, Ruta)] = {
-			val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
-			for (i <- 0 to l.length-1; j <- i+1 to l.length-1) {
-				ret += ((l(i), l(j)))
-			}
-			ret.toList
-		}
-		
 		// agarro cada par de rutas y pruebo hacer cambios
-		producto(mejorSolucion).foreach { par =>
-			val l1 = par._1
-			val l2 = par._2
+		for (i <- 0 to mejorSolucion.length-1; j <- i+1 to mejorSolucion.length-1) {
+			val l1 = mejorSolucion(i)
+			val l2 = mejorSolucion(j)
 
 			gen(l1, l2).foreach { np =>
 				// por cada par, me fijo que las nuevas sean factibles y de menor largo

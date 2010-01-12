@@ -41,7 +41,7 @@ class Formica(host: String, port: Int, name: Symbol) extends Actor {
 
 		// espero Start
 		receive {
-			case Start(_inst, _mejor) => {
+			case Start(_inst, _mejor, _, _, _) => {
 				inst = _inst
 				ant = new Ant(inst)
 				mejor = _mejor

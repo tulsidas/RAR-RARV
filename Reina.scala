@@ -5,6 +5,8 @@ import scala.actors.remote.RemoteActor._
 import scala.actors.Debug
 import scala.collection.mutable.Map
 import Params._
+import java.util.Properties
+import java.io.FileInputStream
 
 object ReinaMain {
 	def main(args: Array[String]) {
@@ -12,7 +14,7 @@ object ReinaMain {
 			println("Reina input minutos")
 			exit
 		}
-		
+
 		// arranco la reina
 		val reina = new Reina(args(0), args(1).toInt, 9010, 'ACS)
 		reina.start()
@@ -23,8 +25,8 @@ object ReinaMain {
 		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
-//				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
-				new RAR("localhost", 9010, 'ACS, true).start()
+				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
+//				new RAR("localhost", 9010, 'ACS, true).start()
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
@@ -40,6 +42,15 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	val hormigas = Map.empty[String, OutputChannel[Any]]
 
 	val counter = Map.empty[String, Int]
+
+   val properties = new Properties()
+   try {
+      properties.load(new FileInputStream("params.properties"));
+   }
+
+   val rotura:Double = java.lang.Double.parseDouble(properties.getProperty("rotura", "50"))
+   val roturaV:Double = java.lang.Double.parseDouble(properties.getProperty("roturaV", "50"))
+   val lsRARV:Boolean = java.lang.Boolean.parseBoolean(properties.getProperty("lsRARV", "false"))
 
 	val inst = Solomon.load(file)
 	val solver = new NearestNeighbour(inst)
@@ -63,11 +74,10 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 		exit
 	}
 	
-	// println("NN = " + mejor.map(_.map(_.num)))
 	println("NN: " + mejorLargo + " | " + mejorVehiculos + " | prom/vehiculo: " + 
 		mejor.foldLeft(0)(_ + _.size - 1).toFloat / mejorVehiculos.toFloat)
 
-   println("δ = " + δ + ", π = " + π + ", πv = " + πv)
+//   println("δ = " + δ + ", π = " + π + ", πv = " + πv)
 
 	val queenActress = select(Node("localhost", 9010), 'ACS)
 
@@ -90,7 +100,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 				case Hello(id) => { 
 					// una hormiga comun
 					hormigas + ((id, sender))
-					sender ! Start(inst, mejor)
+					sender ! Start(inst, mejor, rotura, roturaV, lsRARV)
 				}
 				case Mejor(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
