@@ -69,7 +69,7 @@ dedicatorias locas
 
 \end_layout
 
-\begin_layout Abstract
+\begin_layout Standard
 \begin_inset CommandInset toc
 LatexCommand tableofcontents
 
@@ -111,9 +111,12 @@ Introducción
 \end_layout
 
 \begin_layout Standard
-El ruteo de vehículos consiste en la asignación de clientes a vehículos
- en un orden y tiempo determinados.
- En el VRP
+El ruteo de vehículos es un problema logístico muy presente en la cotidianeidad.
+ Consiste en la optimización de asignación de rutas a vehículos en un orden
+ y tiempo determinados, de forma de minimizar la distancia total recorrida,
+ la cantidad de vehículos necesarios para cumplir los requisitos, o, en
+ general, ambas cosas.
+ En su instancia más simple, el VRP
 \begin_inset Foot
 status open
 
@@ -125,22 +128,25 @@ Vehicle Routing Problem
 
 \end_inset
 
- existe un número fijo de clientes que deben ser visitados por uno o más
- vehículos a fin de satisfacer sus necesidades.
- Una solución a una instancia de VRP consiste en un conjunto de rutas que
+, existe un número fijo de clientes con demandas de mercadería que debe
+ ser satisfecha con la visita de un vehículo (o camión).
+ Dado que los camiones tienen capacidad limitada, en general no es viable
+ que un sólo camión pueda recorrer todos los clientes, por lo que se agregan
+ camiones a la solución.
+\end_layout
+
+\begin_layout Standard
+Una solución a una instancia de VRP consiste en un conjunto de rutas que
  debe recorrer cada vehículo, partiendo y terminando en el 
 \emph on
 depósito,
 \emph default
  de forma que todos los clientes sean visitados y sus demandas y restricciones
  sean cumplidas.
- El objetivo del VRP es encontrar la mejor solución, según diversos parámetros
- de optimización.
- El problema se suele modelar como un grafo donde los nodos representan
- el depósito y los clientes, y los ejes los caminos existentes entre clientes
- (en general el grafo es completo).
+ El objetivo del VRP es encontrar la mejor solución, según el parámetro
+ de optimización deseado (vehículos, distancia, tiempos de espera, etc.).
  Existen diversas variantes al problema original; en esta tesis se trata
- exclusivamente del VRPTW
+ exclusivamente el VRPTW
 \begin_inset Foot
 status open
 
@@ -153,7 +159,17 @@ Vehicle Routing Problem with Time Windows
 \end_inset
 
 , una variante donde cada cliente tiene asociada una ventana de tiempo que
- restringe el momento en que puede ser visitada por un vehículo.
+ restringe el momento en que puede ser visitada por un vehículo y un tiempo
+ necesario de servicio.
+ Si bien un camión puede arribar a un cliente antes de tiempo, deberá esperar
+ que abra su ventana de tiempo antes de poder iniciar la descarga, pero
+ nunca podrá arribar luego de cerrada la ventana.
+ El tiempo de servicio de cada cliente se impone como el tiempo que toma
+ la descarga de mercadería.
+ En general, la ventana de tiempo aplica solamente a la llegada del camión
+ y no al tiempo de servicio, o sea que, por ejemplo, se acepta que un camión
+ llegue a una hora a un cliente de forma que el servicio termine después
+ de la ventana de tiempo haya cerrado.
 \end_layout
 
 \begin_layout Subsection
@@ -169,7 +185,7 @@ Sea
 \begin_inset Formula $V=\{0,\ldots,n\}$
 \end_inset
 
- y 
+ es el conjunto de vértices y 
 \begin_inset Formula $A$
 \end_inset
 
@@ -183,15 +199,19 @@ Sea
 \end_inset
 
  los clientes.
- También se nota al depósito como el nodo 
+ También se suele notar al depósito como el nodo 
 \begin_inset Formula $n+1$
+\end_inset
+
+, aunque en esta tesis siempre se notará como el nodo 
+\begin_inset Formula $0$
 \end_inset
 
 .
 \end_layout
 
 \begin_layout Standard
-Un costo no-negativo 
+Un costo no negativo 
 \begin_inset Formula $c_{ij}$
 \end_inset
 
@@ -218,7 +238,7 @@ Un costo no-negativo
 \end_layout
 
 \begin_layout Standard
-Cada cliente tiene asociado una demanda nonegativa 
+Cada cliente tiene asociado una demanda no negativa 
 \begin_inset Formula $d_{i}$
 \end_inset
 
@@ -257,7 +277,7 @@ Cada cliente tiene asociado una demanda nonegativa
 \end_inset
 
 .
- También se asocia a cada cliente un valor no-negativo 
+ También se asocia a cada cliente un valor no negativo 
 \begin_inset Formula $s_{i}$
 \end_inset
 
@@ -339,7 +359,7 @@ al nodo
 status open
 
 \begin_layout Plain Layout
-dado que esta tesis considera únicamente grafos completos 
+dado que esta tesis considera únicamente grafos completos, 
 \family roman
 \series medium
 \shape up
@@ -366,12 +386,13 @@ Formulación
 \end_layout
 
 \begin_layout Standard
-La solución óptima a un problema VRPTW consiste entonces en hallar
+Planteado como un problema de programación lineal, la solución óptima a
+ un problema VRPTW consiste en hallar:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-\min\underset{k\in K}{\sum}\underset{(i,j)\in A}{\sum}c_{ij}x_{ijk}\label{eq:1}\end{equation}
+\min\underset{k\in K}{\sum}\underset{(i,j)\in A}{\sum c_{ij}x_{ijk}}\label{eq:1}\end{equation}
 
 \end_inset
 
@@ -379,21 +400,12 @@ La solución óptima a un problema VRPTW consiste entonces en hallar
 \end_layout
 
 \begin_layout Standard
-sujeto a
+sujeto a:
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-\underset{k\in K}{\sum}\underset{j\in\Delta^{+}(i)}{\sum}x_{ijk}=1\qquad\forall k\in K\label{eq:2}\end{equation}
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula \begin{equation}
-\underset{j\in\Delta^{+}(0)}{\sum}x_{0jk}=1\qquad\forall k\in K\label{eq:3}\end{equation}
+\underset{k\in K}{\sum}\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}=1\qquad\forall k\in K\label{eq:2}\end{equation}
 
 \end_inset
 
@@ -402,7 +414,7 @@ sujeto a
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-\underset{i\in\Delta^{-}(j)}{\sum}-\underset{i\in\Delta^{+}(j)}{\sum}x_{ijk}=0\qquad\forall k\in K,j\in N\label{eq:4}\end{equation}
+\underset{j\in\Delta^{+}(0)}{\sum x_{0jk}}=1\qquad\forall k\in K\label{eq:3}\end{equation}
 
 \end_inset
 
@@ -411,7 +423,16 @@ sujeto a
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-\underset{i\in\Delta^{-}(n+1)}{\sum}x_{i,n+1,k}=1\qquad\forall k\in K\label{eq:5}\end{equation}
+\underset{i\in\Delta^{-}(j)}{\sum x_{ijk}}-\underset{i\in\Delta^{+}(j)}{\sum x_{ijk}}=0\qquad\forall k\in K,j\in N\label{eq:4}\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \begin{equation}
+\underset{i\in\Delta^{-}(n+1)}{\sum x_{i,n+1,k}}=1\qquad\forall k\in K\label{eq:5}\end{equation}
 
 \end_inset
 
@@ -429,7 +450,7 @@ x_{ijk}(w_{ik}+s_{i}+t_{ij}-w_{jk})\leq0\qquad\forall k\in K,(i,j)\in A\label{eq
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-a_{i}\underset{j\in\Delta^{+}(i)}{\sum}x_{ijk}\leq w_{ik}\leq b_{i}\underset{j\in\Delta^{+}(i)}{\sum}\qquad\forall k\in K,i\in N\label{eq:7}\end{equation}
+a_{i}\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\leq w_{ik}\leq b_{i}\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\qquad\forall k\in K,i\in N\label{eq:7}\end{equation}
 
 \end_inset
 
@@ -447,7 +468,7 @@ E\leq w_{ik}\leq L\qquad\forall k\in K,i\in\{0,n+1\}\label{eq:8}\end{equation}
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-\underset{i\in N}{\sum}d_{i}\underset{j\in\Delta^{+}(i)}{\sum}x_{ijk}\leq C\qquad\forall k\in K\label{eq:9}\end{equation}
+\underset{i\in N}{\sum}d_{i}\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\leq C\qquad\forall k\in K\label{eq:9}\end{equation}
 
 \end_inset
 
@@ -609,12 +630,13 @@ VRPTW
 \noun on
 NP-HARD
 \noun default
-, resulta impracticable buscar la optimalidad mediante algoritmos exactos,
- por lo que se acude a heurísticas
+, resulta impracticable buscar la optimalidad mediante algoritmos exactos
+ en instancias grandes, por lo que se acude a heurísticas para obtener solucione
+s factibles de los problemas.
 \end_layout
 
 \begin_layout Section
-Heurísticas conocidas
+Metaheurísticas
 \end_layout
 
 \begin_layout Section
@@ -660,7 +682,7 @@ VRPTW
 \begin_inset Formula $t$
 \end_inset
 
- clientes a la solución rota, procurando obtener una mejor solución de la
+ clientes a la solución rota, intentando obtener una mejor solución de la
  cual se partió.
  El proceso se repite hasta que una condición es satisfecha, sea porque
  se consiguió una solución suficientemente buena, porque se cumplió un número
@@ -743,10 +765,6 @@ Ruin
 wide false
 sideways false
 status open
-
-\begin_layout Plain Layout
-
-\end_layout
 
 \begin_layout Plain Layout
 \begin_inset Caption
@@ -860,6 +878,14 @@ El algoritmo apunta a disminuír tanto la longitud total recorrida por los
 \end_layout
 
 \begin_layout Standard
+Cada instancia de RAR o RARV pueden estar en diferentes computadoras o en
+ una misma computadora con procesador multinúcleo.
+ Dado un árbitro ejecutandose, un número indefinido de instancias de tipo
+ RAR o RARV pueden conectarse al árbitro, recibir información sobre el problema
+ a resolver y comenzar a trabajar sobre el mismo.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
@@ -895,14 +921,6 @@ Arquitectura de la solución
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
-Cada instancia de RAR o RARV pueden estar en diferentes computadoras o en
- una misma computadora con procesador multinúcleo.
- Dado un árbitro ejecutandose, un número indefinido de instancias de tipo
- RAR o RARV pueden conectarse al árbitro, recibir información sobre el problema
- a resolver y comenzar a trabajar sobre el mismo.
 \end_layout
 
 \begin_layout Standard
@@ -1915,9 +1933,9 @@ key "key-1"
 
 \end_inset
 
-Record Breaking Optimization Results Using the Ruin and Recreate Principle.
- Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
- Dueck.
+Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
+ Dueck, Record Breaking Optimization Results Using the Ruin and Recreate
+ Principle.
  1999.
 \end_layout
 
@@ -1962,9 +1980,7 @@ key "key-4"
 
 \end_inset
 
-M.
- M.
- Flood, The Traveling Salesman Problem, Operations Research 4, 1956, 61-75.
+
 \end_layout
 
 \end_body
