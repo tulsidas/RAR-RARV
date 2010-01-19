@@ -621,6 +621,10 @@ reference "eq:11"
 
 \end_layout
 
+\begin_layout Section
+Metaheurísticas
+\end_layout
+
 \begin_layout Standard
 Dado que 
 \noun on
@@ -631,12 +635,65 @@ VRPTW
 NP-HARD
 \noun default
 , resulta impracticable buscar la optimalidad mediante algoritmos exactos
- en instancias grandes, por lo que se acude a heurísticas para obtener solucione
-s factibles de los problemas.
+ en instancias grandes, por lo que se acude a heurísticas o metaheurísticas
+ para obtener buenas soluciones factibles de los problemas en tiempos acotados.
+ 
 \end_layout
 
-\begin_layout Section
-Metaheurísticas
+\begin_layout Standard
+Algunas de las metaheurísticas más utilizadas en los últimos tiempos:
+\end_layout
+
+\begin_layout Enumerate
+
+\emph on
+Simulated Annealing
+\emph default
+: basada en un proceso metalurgico que consiste en calentar y dejar enfriar
+ controladamente un material.
+ Al calentarse los átomos salen de sus posiciones originales y se muevan
+ al azar, al enfriarse lentamente tienen mayores posibilidades de encontrar
+ configuraciones de menor energía que la inicial
+\end_layout
+
+\begin_layout Enumerate
+
+\emph on
+Tabú search
+\emph default
+: una búsqueda local que permite soluciones peores a la actual con cierta
+ probabilidad.
+ De esta forma, se evitan mínimos locales que frenan las mejoras de soluciones.
+ Para evitar un ciclo entre las mejoras encontradas, se utiliza una 
+\emph on
+lista tabú
+\emph default
+ que impide que determinadas soluciones sean aceptadas.
+\end_layout
+
+\begin_layout Enumerate
+
+\emph on
+Algoritmos genéticos
+\emph default
+: basada en la evolución natural.
+ En cada iteración una solución dada provee un conjunto de nuevas soluciones
+ que son evaluadas y las 
+\emph on
+más aptas
+\emph default
+, es decir, las de mejor función objetivo, tendrán más chances de ser parte
+ de la nueva población, que se formará en base a mutaciones y combinaciones
+ de las actuales.
+\end_layout
+
+\begin_layout Enumerate
+
+\emph on
+Comportamiento colectivo
+\emph default
+: son algoritmos basados en comportamientos colectivos de algunos animales,
+ por ejemplo: colonia de hormigas, colonia de abejas, libélulas, etc.
 \end_layout
 
 \begin_layout Section
@@ -648,7 +705,7 @@ Ruin & Recreate
 \end_layout
 
 \begin_layout Standard
-La heurística Ruin & Recreate 
+La metaheurística Ruin & Recreate 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-1"
@@ -663,12 +720,19 @@ ruin
 \emph on
 recreate
 \emph default
-) procurando obtener una mejor solución de la que se partió\SpecialChar \@.
- En 
-\noun on
-VRPTW
-\noun default
- arruinar la solución consiste en quitar 
+) de forma de obtener una mejor solución de la que se partió (ver Algoritmo
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:RAR"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+En el caso de VRPTW, arruinar la solución consiste en quitar 
 \begin_inset Formula $t$
 \end_inset
 
@@ -682,8 +746,8 @@ VRPTW
 \begin_inset Formula $t$
 \end_inset
 
- clientes a la solución rota, intentando obtener una mejor solución de la
- cual se partió.
+ clientes a la solución rota, tratando de obtener una mejor solución de
+ la cual se partió.
  El proceso se repite hasta que una condición es satisfecha, sea porque
  se consiguió una solución suficientemente buena, porque se cumplió un número
  fijo de iteraciones, porque ocurrieron suficientes iteraciones sin obtener
@@ -691,8 +755,11 @@ VRPTW
 \end_layout
 
 \begin_layout Standard
-Los puntos claves del algoritmo son, claramente, la forma en que se arruina
- y recrea la solución\SpecialChar \@.
+El 
+\emph on
+quid
+\emph default
+ del algoritmo es, claramente, la forma en que se arruina y recrea la solución\SpecialChar \@.
 
 \end_layout
 
@@ -746,18 +813,27 @@ Recreate
 \end_layout
 
 \begin_layout Standard
-La recreación de la solución consiste en volver a incluír los nodos quitados
- en la etapa 
+La reconstrucción de una solución consiste en volver a incluír los nodos
+ quitados en la etapa 
 \begin_inset Quotes eld
 \end_inset
 
-Ruin
+ruin
 \begin_inset Quotes erd
 \end_inset
 
  de forma de conseguir una mejor solución a la original.
  Idealmente, los nodos quitados se agregarían de forma óptima a la instancia
- rota.
+ rota, pero dado que la cantidad de posibles reinserciones crece exponencialment
+e en función de la cantidad de clientes quitados, esto es impracticable.
+ Esta etapa suele ser la computacionalmente más complicada, en términos
+ de recursos utilizados por la computadora, ya que en general se quiere
+ que la solución reconstruída sea factible, por lo que las reinserciones
+ deben satisfacer todos los requerimientos que el problema impone.
+ Otro enfoque es permitir soluciones intermedias no factibles, de forma
+ tal que puedan ser arruinadas nuevamente y en la subisiguiente recreación
+ conseguir una solución factible que quizá no era accesible de no permitir
+ la solución intermedia.
 \end_layout
 
 \begin_layout Standard
@@ -772,6 +848,13 @@ status open
 \begin_layout Plain Layout
 Ruin & Recreate para VRPTW
 \end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:RAR"
 
 \end_inset
 
@@ -866,13 +949,8 @@ El algoritmo
 \end_layout
 
 \begin_layout Standard
-El algoritmo presentado es paralelo y distribuído, pudiendose escalar fácilmente
- agregando computadoras a una red.
- 
-\end_layout
-
-\begin_layout Standard
-El algoritmo apunta a disminuír tanto la longitud total recorrida por los
+Esta tesis presenta un algoritmo paralelo, distribuído, escalable, con objetivo
+ múltiple que apunta a disminuír tanto la longitud total recorrida por los
  vehículos como la cantidad de vehículos necesaria para visitar todos los
  clientes.
 \end_layout
