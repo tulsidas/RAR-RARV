@@ -702,6 +702,13 @@ Colonia de hormigas
 
 \begin_layout Section
 Ruin & Recreate
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Ruin-&-Recreate"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -945,7 +952,7 @@ hasta
 \end_layout
 
 \begin_layout Section
-El algoritmo
+La solución
 \end_layout
 
 \begin_layout Standard
@@ -955,12 +962,193 @@ Esta tesis presenta un algoritmo paralelo, distribuído, escalable, con objetivo
  clientes.
 \end_layout
 
+\begin_layout Subsection
+Objetivo Múltiple
+\end_layout
+
 \begin_layout Standard
-Cada instancia de RAR o RARV pueden estar en diferentes computadoras o en
- una misma computadora con procesador multinúcleo.
- Dado un árbitro ejecutandose, un número indefinido de instancias de tipo
- RAR o RARV pueden conectarse al árbitro, recibir información sobre el problema
- a resolver y comenzar a trabajar sobre el mismo.
+Para lograr mayor efectividad al resolver el problema, se ejecutan en paralelo
+ dos algoritmos similares pero con distintos objetivos.
+ 
+\emph on
+RAR
+\emph default
+ (Ruin & Recreate) intentará optimizar el recorrido total de la solución
+ mientras que 
+\emph on
+RARV
+\emph default
+ (Ruin & Recreate Vehicular) se enfoca exclusivamente en reducir la cantidad
+ de vehículos necesarios.
+ Como es de suponer, ambos algoritmos utilizan la metaheurística Ruin &
+ Recreate, pero con diferente tipo de rotura (como se detalla en 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:RAR-y-RARV"
+
+\end_inset
+
+).
+ Las instancias se comunican entre sí a través de un árbitro (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Arquitectura"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Subsection
+Arquitectura
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Arquitectura"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+La solución planteada en esta tesis está pensada para ser ejecutada concurrentem
+ente en varias computadoras o núcleos conectados en red.
+ Las instancias de los algoritmos RAR y RARV se ejecutan independientemente
+ en cada núcleo o computadora, de esta forma, por ejemplo, una computadora
+ con 4 núcleos podría ejecutar 4 instancias concurrentemente, y 2 computadoras
+ de 4 núcleos 8 instancias.
+ La solución fue diseñada de forma tal que puedan agregarse computadoras
+ (ergo núcleos) a la red trivialmente y sin límites, incluso una vez iniciada
+ la ejecución.
+\end_layout
+
+\begin_layout Standard
+Todas las instancias se conectan a un único árbitro, el cual envía parámetros
+ de los algoritmos, el problema a resolver y la mejor solución hasta el
+ momento a través de la red, para que cada algoritmo pueda empezar a trabajar.
+ Enviar los parámetros de configuración y la instancia del problema facilita
+ la ejecución cuando se cuenta con un gran número de instancias, ya que
+ sólo hace falta modificar los parámetros del árbitro y ejecutarlo, y no
+ hay necesidad de indicar por separado a cada instancia el problema sobre
+ el cual se ha de trabajar o modificar parámetros de configuración de los
+ algoritmos.
+\end_layout
+
+\begin_layout Standard
+Cuando una instancia recibe el problema y la mejor solución, guarda esta
+ última y comienza a buscar una mejor solución.
+ Según el tipo de instancia, 
+\emph on
+RAR
+\emph default
+ buscará mejorar el largo del recorrido y 
+\emph on
+RARV
+\emph default
+ buscará reducir la cantidad de vehículos necesarios.
+ Cuando se encuentre una solución mejor a la mejor actual, se la envía al
+ árbitro asincrónicamente y sigue buscando mejores soluciones.
+ El árbitro se encarga de distribuír a todas las instancias cuando recibe
+ una solución que es mejor a la actual (ver algoritmo 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:AlgoArbitro"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Subsubsection
+Asincronía y latencia
+\end_layout
+
+\begin_layout Standard
+Viendo en detalle el algoritmo
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "Flo:AlgoArbitro"
+
+\end_inset
+
+, el árbitro chequea que la solución recibida sea mejor que la solución
+ actual antes de guardarla como nueva mejor solución.
+ Esto podría parecer redundante ya que todas las instancias tienen siempre
+ la misma mejor solución, dado que el árbitro la envía a las instancias
+ al actualizarla.
+ Sin embargo, las instancias no detienen su procesamiento al recibir un
+ mensaje del árbitro, y además existen latencias en la red que pueden provocar
+ discrepancias, por lo que esa guarda es necesaria.
+ Un ejemplo de por qué es necesaria esa condición es el siguiente:
+\end_layout
+
+\begin_layout Enumerate
+El árbitro calcula la solución inicial en 
+\emph on
+
+\begin_inset Formula $N$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $i_{1}$
+\end_inset
+
+ encuentra una mejora de 
+\begin_inset Formula $N-2$
+\end_inset
+
+ y la envía
+\end_layout
+
+\begin_layout Enumerate
+el árbitro la guarda como nueva mejor y redistribuye
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $i_{2}$
+\end_inset
+
+ encuentra una mejora de 
+\begin_inset Formula $N-1$
+\end_inset
+
+ y la envía
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $i_{2}$
+\end_inset
+
+ recibe la mejora de 
+\begin_inset Formula $N-2$
+\end_inset
+
+ del árbitro
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $i_{2}$
+\end_inset
+
+no cesa su búsqueda de mejor solución al recibir una solución del árbitro,
+ y también puede pasar que por demoras en la red ésta llegue luego de haber
+ encontrado la mejora del punto 4, por lo que sin la guarda mencionada se
+ tomaría 
+\begin_inset Formula $N-1$
+\end_inset
+
+ como mejor solución cuando 
+\begin_inset Formula $i_{1}$
+\end_inset
+
+ había encontrado una de 
+\begin_inset Formula $N-2$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -972,7 +1160,6 @@ status open
 \begin_layout Plain Layout
 \begin_inset Graphics
 	filename arquitectura.png
-	scale 25
 	clip
 
 \end_inset
@@ -984,7 +1171,7 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Arquitectura de la solución
+Diagrama de la arquitectura distribuída
 \end_layout
 
 \end_inset
@@ -1017,13 +1204,20 @@ status open
 \end_inset
 
 
+\begin_inset CommandInset label
+LatexCommand label
+name "Flo:AlgoArbitro"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout LyX-Code
 arbitro(
-\shape italic
-instancia
-\shape default
+\emph on
+problema
+\emph default
 , 
 \shape italic
 tiempo
@@ -1043,27 +1237,9 @@ mejor
 
 vecino_mas_cercano(
 \shape italic
-instancia
+problema
 \shape default
 )
-\end_layout
-
-\begin_layout LyX-Code
-por cada procesador/núcleo {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-iniciar RAR(
-\shape italic
-mejor
-\shape default
-, ?)
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
 \end_layout
 
 \begin_layout LyX-Code
@@ -1088,7 +1264,11 @@ recibir_mejor_solucion()
 \end_layout
 
 \begin_layout LyX-Code
-si nueva es mejor que 
+si 
+\emph on
+nueva
+\emph default
+ es mejor que 
 \shape italic
 mejor
 \shape default
@@ -1115,7 +1295,7 @@ enviar
 \shape italic
 nueva
 \shape default
- a los nodos
+ a las instancias
 \end_layout
 
 \end_deeper
@@ -1135,7 +1315,7 @@ enviar
 STOP
 \series default
 \shape default
- a los procesos
+ a las instancias
 \end_layout
 
 \end_deeper
@@ -1149,69 +1329,640 @@ STOP
 \end_layout
 
 \begin_layout Subsection
-Objetivo Múltiple
+Solución inicial
 \end_layout
 
 \begin_layout Standard
-Para lograr mayor efectividad al resolver el problema, se ejecutan en paralelo
- dos tipos de rutinas.
- 
-\noun on
-RAR
-\noun default
- (Ruin And Recreate) intentará optimizar el recorrido total de la solución
- mientras que 
-\noun on
-RARV
-\noun default
- (Ruin And Recreate Vehicular) se enfoca exclusivamente en reducir la cantidad
- de vehículos necesarios.
-\end_layout
-
-\begin_layout Standard
-
-\noun on
-RAR
-\noun default
- y 
-\noun on
-RARV
-\noun default
- son prácticamente iguales, la única diferencia consiste en la forma de
- romper la solución actual.
- En ambos casos se realizan diferentes formas de roturas (detalladas en
- 
-\begin_inset CommandInset ref
-LatexCommand ref
-reference "sub:Ruin"
+Para poder arruinar y recrear una solución, se necesita generar una solución
+ factible sobre la cual iterar.
+ La solución inicial la construye el árbitro utilizando la heurística del
+ vecino más próximo
+\begin_inset CommandInset citation
+LatexCommand citet
+key "key-4"
 
 \end_inset
 
-), pero mientras RAR realiza 
-\emph on
-sólo
-\emph default
- esas roturas, RARV siempre quita todos los nodos visitados por un vehículo
- (al azar) 
-\emph on
-más
-\emph default
- las roturas que define RAR.
- De esta forma, RARV siempre buscará soluciones factibles con al menos un
- vehículo menos que la solución actual.
+, a la cual se le aplica un proceso de búsqueda local (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Búsqueda-local"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Subsection
+Recreate
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Recreate"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Así, teniendo al menos una instancia de RAR y una de RARV conectadas al
- árbitro, se busca en paralelo optimizar tanto distancia como número de
- vehículos requeridos.
+Recrear consiste en reinsertar los nodos que fueron quitados (destruídos)
+ de la solución intentando obtener una solución que sea mejor de la que
+ se partió.
+ Se decidió por usar un algoritmo de 
+\emph on
+mejor inserción
+\emph default
+, donde cada cliente quitado se intenta insertar en todas las posibles posicione
+s de todos los vehículos.
+ De existir soluciones factibles tras la inserción, se elige la de menor
+ largo y se procede al siguiente nodo hasta que no queden nodos por insertar.
+ En el caso en que uno o más nodos sean ininsertables, es decir, no exista
+ posición alguna en algún vehículo tal que la solución sea factible, se
+ reintenta el procedimiento, con la solución rota original, pero reordenando
+ los nodos rotos de forma que se intente primero agregar los ininsertables.
+\end_layout
+
+\begin_layout Standard
+La idea detrás de este razonamiento es que, dados 
+\begin_inset Formula $R=v_{1},v_{2},\ldots,v_{k}\subseteq V$
+\end_inset
+
+ nodos que hay que insertar en la solución, y 
+\begin_inset Formula $I=v_{1}^{i},v_{2}^{i},\ldots,v_{t}^{i}\subseteq R$
+\end_inset
+
+ los nodos que no se pudieron insertar, es posible que un nodo 
+\begin_inset Formula $v_{j}^{i}$
+\end_inset
+
+ no sea posible insertar porque exista 
+\begin_inset Formula $v_{p}\in R\setminus I$
+\end_inset
+
+ que anule las posibilidades de inserción de 
+\begin_inset Formula $v_{j}^{i}$
+\end_inset
+
+ (por capacidad de vehículos o ventana de tiempo).
+ Al reordenar los nodos, se da lugar a la posibilidad que todos los nodos
+ de 
+\begin_inset Formula $I$
+\end_inset
+
+ sean insertables y también los de 
+\begin_inset Formula $R\setminus I$
+\end_inset
+
+, que tenían otras opciones de inserción que no bloqueaban los nodos de
+ 
+\begin_inset Formula $I$
+\end_inset
+
+ pero no fueron elegidas porque fue priorizada la solución de menor largo.
+ Este procedimiento se reintenta 
+\emph on
+φ
+\emph default
+ veces, donde 
+\emph on
+φ
+\emph default
+ es un parámetro de configuración.
+\end_layout
+
+\begin_layout Standard
+Si en alguna iteración resulta que 
+\begin_inset Formula $v_{1}^{i}$
+\end_inset
+
+ es ininsertable (o sea el primer nodo es ininsertable) entonces se descarta
+ esta solución rota como infactible, ya que no existe posición posible donde
+ 
+\begin_inset Formula $v_{1}^{i}$
+\end_inset
+
+pueda ser insertado.
 \end_layout
 
 \begin_layout Standard
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+recrear
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+recrear(
+\shape italic
+solucionRota
+\shape default
+, 
+\shape italic
+clientes
+\shape default
+) {
+\end_layout
+
+\begin_layout LyX-Code
+
+\shape italic
+ininsertables
+\shape default
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+{}
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada cliente en 
+\shape italic
+clientes
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada vehiculo en 
+\shape italic
+solucionRota
+\shape default
+ {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\shape italic
+nuevasSoluciones
+\shape default
+
+\begin_inset Formula $\leftarrow$
+\end_inset
+
+obtener todas las 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+soluciones factibles resultantes de 
+\end_layout
+
+\begin_layout LyX-Code
+insertar al cliente en la 
+\shape italic
+solucionRota
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+si 
+\shape italic
+nuevasSoluciones
+\shape default
+ es vacío
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+agregar el cliente a 
+\shape italic
+ininsertables
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+si no
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+actualizar 
+\shape italic
+solucionRota
+\shape default
+ con 
+\end_layout
+
+\begin_layout LyX-Code
+la solución de menor largo 
+\end_layout
+
+\begin_layout LyX-Code
+de 
+\shape italic
+nuevasSoluciones
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+si es vacio {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucionRota
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+si no {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+/* se intenta cambiar el orden de inserción */
+\end_layout
+
+\begin_layout LyX-Code
+reintentar 
+\emph on
+φ
+\emph default
+ veces:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+recrear(
+\shape italic
+solucionRota
+\shape default
+, 
+\shape italic
+ininsertables
+\shape default
+ + 
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+(
+\shape italic
+clientes
+\shape default
+ - 
+\shape italic
+ininsertables
+\shape default
+))
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+RAR y RARV
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:RAR-y-RARV"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+RAR y RARV son los algoritmos que intentan optimizar el largo total del
+ recorrido y la cantidad de vehículos, respectivamente.
+\end_layout
+
+\begin_layout Standard
+Ambos casos utilizan la metaheurística 
+\emph on
+Ruin & Recreate
+\emph default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+
+\end_inset
+
+ y en ambos casos se recrea la solución con el mismo procedimiento, la diferenci
+a radica en cómo se arruina la solución.
+\end_layout
+
+\begin_layout Standard
+Sea 
+\begin_inset Formula $S=v_{1}^{1},v_{2}^{1},\ldots,v_{n_{1}}^{1},v_{1}^{2},v_{2}^{2},\ldots,v_{n_{2}}^{2},\ldots,v_{1}^{k},v_{2}^{k},\ldots,v_{n_{k}}^{k}$
+\end_inset
+
+ una solución factible de un problema.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $S$
+\end_inset
+
+ tiene un total de 
+\begin_inset Formula $k$
+\end_inset
+
+ vehículos donde 
+\begin_inset Formula $v^{i}$
+\end_inset
+
+ visita 
+\begin_inset Formula $n_{i}$
+\end_inset
+
+ clientes.
+ Por simplicidad, se omite en cada vehículo el primer y último cliente que
+ en ambos casos es 
+\begin_inset Formula $v_{0}$
+\end_inset
+
+, el depósito.
+\end_layout
+
+\begin_layout Standard
+Como se detalló en 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Recreate"
+
+\end_inset
+
+, el algoritmo de recreación nunca agrega nuevos vehículos, por lo que,
+ exceptuando la etapa de búsqueda local (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Búsqueda-local"
+
+\end_inset
+
+) que se efectúa en cada iteración, la única forma de reducir el número
+ de vehículos necesarios sería si la rotura incluyera un vehículo completo.
+ Es decir: dado 
+\begin_inset Formula $S\setminus R$
+\end_inset
+
+ la solución rota, donde 
+\begin_inset Formula $R=v_{1},v_{2},\ldots,v_{r}$
+\end_inset
+
+ son los clientes quitados de 
+\begin_inset Formula $S$
+\end_inset
+
+, sólo si 
+\begin_inset Formula $vehiculos(S\setminus R)<vehiculos(S)$
+\end_inset
+
+ se da la posibilidad que la reinserción de los 
+\begin_inset Formula $R$
+\end_inset
+
+ vehículos en 
+\begin_inset Formula $S\setminus R$
+\end_inset
+
+ sea exitosa y se halle una solución todos los clientes puedan satisfechos
+ con menos vehículos que en 
+\begin_inset Formula $S$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Tomando esto en consideración, 
+\emph on
+RAR
+\emph default
+ y 
+\emph on
+RARV
+\emph default
+ se diseñaron teniendo en cuenta específicamente:
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+RAR
+\emph default
+ no debe arruinar vehículos completos
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+RARV
+\emph default
+ debe arruinar uno y sólo un vehículo completo
+\end_layout
+
+\begin_layout Standard
+El objetivo de 
+\emph on
+RAR
+\emph default
+ es minimizar el largo del recorrido.
+ Si 
+\emph on
+RAR
+\emph default
+ quitara un vehículo completo, estaría buscando entonces una solución con,
+ al menos, un vehículo menos, lo cual es altamente probable que sea infactible,
+ desaprovechando entonces la iteración actual.
+ Además, 
+\emph on
+RARV
+\emph default
+ está enfocado justamente a ese menester, con lo cual habrían más iteraciones
+ intentando reducir vehículos y desbalanceando la configuración de la red.
+\end_layout
+
+\begin_layout Standard
+Análogamente, si 
+\emph on
+RARV
+\emph default
+ no arruina un vehículo en cada iteración estaría buscando una solución
+ con el número de vehículos actual, cosa no deseada.
+ Por otro lado, si 
+\emph on
+RARV
+\emph default
+ quitara más de un vehículo estaría intentando buscar una solución que,
+ con alta probabilidad, sería infactible, a excepción de las primeras iteracione
+s, por lo que se limita a un vehículo la rotura de 
+\emph on
+RARV
+\emph default
+.
+\end_layout
+
+\begin_layout Standard
+En esta tesis se utilizaron dos funciones de arruine: aleatoria y espacial
+\end_layout
+
+\begin_layout LyX-Code
+aleatorio(
+\shape italic
+solucion
+\shape default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+por cada 
+\shape italic
+cliente
+\shape default
+ en 
+\shape italic
+solucion {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+quitar 
+\shape italic
+cliente
+\shape default
+ de 
+\shape italic
+solucion
+\shape default
+ con probabilidad π
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucion
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+espacial(
+\emph on
+solucion
+\emph default
+, 
+\emph on
+distancia
+\emph default
+) {
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+elegir un cliente 
+\emph on
+n
+\emph default
+ al azar
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+quitar de 
+\emph on
+solucion
+\emph default
+ todos los clientes cuya distancia a 
+\emph on
+n
+\emph default
+ sea menor a 
+\emph on
+distancia
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+devolver 
+\shape italic
+solucion
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+}
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+wide false
+sideways false
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Caption
@@ -1516,156 +2267,14 @@ solucion
 
 \end_layout
 
-\begin_layout Subsection
-Solución inicial
-\end_layout
-
 \begin_layout Standard
-Para poder arruinar y recrear una solución, se necesita generar una solución
- factible sobre la cual iterar.
- La solución inicial se construye utilizando la heurística del vecino más
- próximo 
-\begin_inset CommandInset citation
-LatexCommand citet
-key "key-4"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection
-Ruin
-\begin_inset CommandInset label
-LatexCommand label
-name "sub:Ruin"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-En esta tesis se utilizaron dos funciones de arruine: aleatoria y espacial
-\end_layout
-
-\begin_layout LyX-Code
-aleatorio(
-\shape italic
-solucion
-\shape default
-) {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-por cada 
-\shape italic
-cliente
-\shape default
- en 
-\shape italic
-solucion {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-quitar 
-\shape italic
-cliente
-\shape default
- de 
-\shape italic
-solucion
-\shape default
- con probabilidad π
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-devolver 
-\shape italic
-solucion
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-espacial(solucion, distancia) {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-elegir un nodo 
-\emph on
-n
-\emph default
- al azar
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-quitar de 
-\emph on
-solucion
-\emph default
- todos los nodos cuya distancia a 
-\emph on
-n
-\emph default
- sea menor a 
-\emph on
-distancia
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-devolver 
-\shape italic
-solucion
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout Standard
-En el caso de RARV, la función de arruine siempre es aleatoria.
- En el caso de RAR, se elige entre aleatoria y espacial con probabilidad
- δ, donde δ es un parámetro.
- La distancia de arruine que utiliza RAR se elige también de forma aleatoria
+La distancia de arruine que utiliza RAR se elige también de forma aleatoria
  entre 
-\begin_inset Formula $\frac{d}{2}$
+\begin_inset Formula $\nicefrac{d}{2}$
 \end_inset
 
  y 
-\begin_inset Formula $\frac{2d}{3}$
+\begin_inset Formula $\nicefrac{2d}{3}$
 \end_inset
 
  donde 
@@ -1676,315 +2285,14 @@ En el caso de RARV, la función de arruine siempre es aleatoria.
 \end_layout
 
 \begin_layout Subsection
-Recreate
-\end_layout
-
-\begin_layout Standard
-Recrear consiste en reinsertar los nodos que fueron quitados (destruídos)
- de la solución intentando mejorar la solución existente.
- Se decidió por usar un algoritmo de 
-\emph on
-mejor inserción
-\emph default
-, donde cada nodo roto se intenta insertar en todas las posibles posiciones
- de todos los vehículos.
- De existir soluciones factibles tras la inserción, se elige la de menor
- largo y se procede al siguiente nodo hasta que no queden nodos por insertar.
- En el caso en que uno o más nodos sean ininsertables, es decir, no exista
- posición alguna en algún vehículo tal que la solución sea factible, se
- reintenta el procedimiento, con la solución rota original, pero reordenando
- los nodos rotos de forma que se intente primero agregar los ininsertables.
-\end_layout
-
-\begin_layout Standard
-La idea detrás de este razonamiento es que, dados 
-\begin_inset Formula $R=v_{1},v_{2},\ldots,v_{k}\subseteq V$
-\end_inset
-
- nodos que hay que insertar en la solución, y 
-\begin_inset Formula $I=v_{i_{1}},v_{i_{2}},\ldots,v_{i_{t}}\subseteq R$
-\end_inset
-
- los nodos que no se pudieron insertar, es posible que un nodo 
-\begin_inset Formula $v_{i_{j}}$
-\end_inset
-
- no sea posible insertar porque exista 
-\begin_inset Formula $v_{p}\in R\setminus I$
-\end_inset
-
- que anule las posibilidades de inserción de 
-\begin_inset Formula $v_{i_{j}}$
-\end_inset
-
- (por capacidad de vehículos o ventana de tiempo).
- Al reordenar los nodos, se da lugar a la posibilidad que todos los nodos
- de 
-\begin_inset Formula $I$
-\end_inset
-
- sean insertables y también los de 
-\begin_inset Formula $R\setminus I$
-\end_inset
-
-, que tenían otras opciones de inserción que no bloqueaban los nodos de
- 
-\begin_inset Formula $I$
-\end_inset
-
- pero no fueron elegidas porque fue priorizada la solución de menor largo.
- Este procedimiento se reintenta 
-\emph on
-φ
-\emph default
- veces, donde 
-\emph on
-φ
-\emph default
- es un parámetro.
- 
-\end_layout
-
-\begin_layout Standard
-Si en alguna iteración resulta que 
-\begin_inset Formula $v_{1}$
-\end_inset
-
- es ininsertable (o sea el primer nodo es ininsertable) entonces se descarta
- esta solución rota como infactible, ya que no existe posición posible donde
- 
-\begin_inset Formula $v_{1}$
-\end_inset
-
-pueda ser insertado.
-\end_layout
-
-\begin_layout Standard
-Este procedimiento es computacionalmente costoso ya ...
- (calcular el orden de complejidad)
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float algorithm
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\begin_inset Caption
-
-\begin_layout Plain Layout
-recrear
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-recrear(
-\shape italic
-solucionRota
-\shape default
-, 
-\shape italic
-clientes
-\shape default
-) {
-\end_layout
-
-\begin_layout LyX-Code
-
-\shape italic
-ininsertables
-\shape default
-
-\begin_inset Formula $\leftarrow$
-\end_inset
-
-{}
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-por cada cliente en 
-\shape italic
-clientes
-\shape default
- {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-por cada vehiculo en 
-\shape italic
-solucionRota
-\shape default
- {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-
-\shape italic
-nuevasSoluciones
-\shape default
-
-\begin_inset Formula $\leftarrow$
-\end_inset
-
-obtener todas las 
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-soluciones factibles resultantes de 
-\end_layout
-
-\begin_layout LyX-Code
-insertar al cliente en la 
-\shape italic
-solucionRota
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-si 
-\shape italic
-nuevasSoluciones
-\shape default
- es vacío
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-agregar el cliente a 
-\shape italic
-ininsertables
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-si no
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-actualizar 
-\shape italic
-solucionRota
-\shape default
- con 
-\end_layout
-
-\begin_layout LyX-Code
-la solución de menor largo 
-\end_layout
-
-\begin_layout LyX-Code
-de 
-\shape italic
-nuevasSoluciones
-\end_layout
-
-\end_deeper
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-si es vacio {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-devolver 
-\shape italic
-solucionRota
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-si no {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-/* se intenta cambiar el orden de inserción */
-\end_layout
-
-\begin_layout LyX-Code
-reintentar 
-\emph on
-φ
-\emph default
- veces:
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-recrear(
-\shape italic
-solucionRota
-\shape default
-, 
-\shape italic
-ininsertables
-\shape default
- + 
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-(
-\shape italic
-clientes
-\shape default
- - 
-\shape italic
-ininsertables
-\shape default
-))
-\end_layout
-
-\end_deeper
-\end_deeper
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Subsection
 Búsqueda local
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Búsqueda-local"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
