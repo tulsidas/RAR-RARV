@@ -223,7 +223,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 
 	/* arruino por distancia espacial a un cliente dado */
 	private def ruinDistV(dist: Double, sol: List[List[Customer]]): List[Customer] = {
-		val vehiculo:List[Customer] = sol(rnd.nextInt(sol.length)) - inst.source
+		val vehiculo:List[Customer] = sol(rnd.nextInt(sol.length))// - inst.source
 		
 		vehiculo ++ ruinDist(dist, sol - vehiculo)
 	}
