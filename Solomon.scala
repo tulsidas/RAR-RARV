@@ -4,7 +4,7 @@ import scala.collection.mutable.Set
 object Solomon {
 	def load(file: String): Instance = {
 		val lines = Source.fromFile(file).getLines.toList
-
+		
 		// linea 4 = vehiculos / capacity
 		val line4 = lines(4).split("\\s+").toList
 		val vehiculos = Integer.parseInt(line4(1))

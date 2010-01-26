@@ -697,10 +697,6 @@ Comportamiento colectivo
 \end_layout
 
 \begin_layout Section
-Colonia de hormigas
-\end_layout
-
-\begin_layout Section
 Ruin & Recreate
 \begin_inset CommandInset label
 LatexCommand label
@@ -1336,7 +1332,7 @@ Solución inicial
 Para poder arruinar y recrear una solución, se necesita generar una solución
  factible sobre la cual iterar.
  La solución inicial la construye el árbitro utilizando la heurística del
- vecino más próximo
+ vecino más próximo 
 \begin_inset CommandInset citation
 LatexCommand citet
 key "key-4"
@@ -1365,7 +1361,7 @@ name "sub:Recreate"
 \end_layout
 
 \begin_layout Standard
-Recrear consiste en reinsertar los nodos que fueron quitados (destruídos)
+Recrear consiste en reinsertar los nodos que fueron quitados (arruinados)
  de la solución intentando obtener una solución que sea mejor de la que
  se partió.
  Se decidió por usar un algoritmo de 
@@ -1675,8 +1671,16 @@ name "sub:RAR-y-RARV"
 \end_layout
 
 \begin_layout Standard
-RAR y RARV son los algoritmos que intentan optimizar el largo total del
- recorrido y la cantidad de vehículos, respectivamente.
+
+\emph on
+RAR
+\emph default
+ y 
+\emph on
+RARV
+\emph default
+ son los algoritmos que intentan optimizar el largo total del recorrido
+ y la cantidad de vehículos, respectivamente.
 \end_layout
 
 \begin_layout Standard
@@ -1733,7 +1737,7 @@ Sea
 Como se detalló en 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sub:Recreate"
+reference "sub:Recreate-1"
 
 \end_inset
 
@@ -1833,129 +1837,47 @@ Análogamente, si
 \emph on
 RARV
 \emph default
- no arruina un vehículo en cada iteración estaría buscando una solución
- con el número de vehículos actual, cosa no deseada.
+ no arruina al menos un vehículo en cada iteración estaría buscando una
+ solución con el número de vehículos actual, cosa no deseada.
  Por otro lado, si 
 \emph on
 RARV
 \emph default
  quitara más de un vehículo estaría intentando buscar una solución que,
  con alta probabilidad, sería infactible, a excepción de las primeras iteracione
-s, por lo que se limita a un vehículo la rotura de 
+s, por lo que se limita a un y sólo un vehículo la rotura de 
 \emph on
 RARV
 \emph default
-.
+, para buscar soluciones factibles con un vehículo menos a la solución actual.
 \end_layout
 
 \begin_layout Standard
-En esta tesis se utilizaron dos funciones de arruine: aleatoria y espacial
-\end_layout
-
-\begin_layout LyX-Code
-aleatorio(
-\shape italic
-solucion
-\shape default
-) {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-por cada 
-\shape italic
-cliente
-\shape default
- en 
-\shape italic
-solucion {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-quitar 
-\shape italic
-cliente
-\shape default
- de 
-\shape italic
-solucion
-\shape default
- con probabilidad π
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-devolver 
-\shape italic
-solucion
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-espacial(
+Para lograr los objetivos de diseño previamente mencionados, 
 \emph on
-solucion
+RAR
 \emph default
-, 
+ aplica, independientemente del algoritmo de rotura utilizado, un procedimiento
+ donde, en caso de haberse roto todo un vehículo, reinserta un cliente al
+ azar de ese vehículo roto, de forma que el vehículo siga siendo parte de
+ la solución.
+ 
+\end_layout
+
+\begin_layout Standard
+Por su lado, 
 \emph on
-distancia
+RARV
 \emph default
-) {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-elegir un cliente 
+ quita siempre un vehículo completo al azar y luego aplica el algoritmo
+ de rotura elegido, con su posterior procedimiento de verificación de que
+ no se haya roto un vehículo entero, como se describió previamente.
+ De esta forma, 
 \emph on
-n
+RARV
 \emph default
- al azar
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-quitar de 
-\emph on
-solucion
-\emph default
- todos los clientes cuya distancia a 
-\emph on
-n
-\emph default
- sea menor a 
-\emph on
-distancia
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-devolver 
-\shape italic
-solucion
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
+ quita un y sólo un vehículo, concretamente el que se elige y quita al azar
+ en primera instancia.
 \end_layout
 
 \begin_layout Standard
@@ -2166,110 +2088,108 @@ mejor
 }
 \end_layout
 
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-arruinarVehiculo(
-\shape italic
-solucion
-\shape default
-) {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-
-\shape italic
-s
-\shape default
-
-\begin_inset Formula $\leftarrow$
-\end_inset
-
-quitar un vehiculo al azar de 
-\shape italic
-solucion
-\end_layout
-
-\begin_layout LyX-Code
-devolver arruinar(
-\shape italic
-s
-\shape default
-)
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-arruinar(
-\shape italic
-solucion
-\shape default
-) {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-por cada 
-\shape italic
-cliente
-\shape default
- en 
-\shape italic
-solucion {
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-quitar 
-\shape italic
-cliente
-\shape default
- de 
-\shape italic
-solucion
-\shape default
- con probabilidad 
-\begin_inset Formula $\Pi$
-\end_inset
-
-
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
-\begin_layout LyX-Code
-devolver 
-\shape italic
-solucion
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-}
-\end_layout
-
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
-La distancia de arruine que utiliza RAR se elige también de forma aleatoria
- entre 
+En esta tesis se utilizaron dos algoritmos de arruine: aleatorio y espacial.
+ La decisión de usar uno u otro es aleatoria según un parámetro 
+\begin_inset Formula $\delta$
+\end_inset
+
+.
+ En cada iteración se elige el algoritmo aleatorio con probabilidad 
+\begin_inset Formula $\delta$
+\end_inset
+
+, y el espacial con probabilidad 
+\begin_inset Formula $1-\delta$
+\end_inset
+
+.
+ En particular, se utilizó 
+\begin_inset Formula $\delta=\nicefrac{3}{4}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Arruine aleatorio
+\end_layout
+
+\begin_layout Standard
+El arruine aleatorio, como su nombre lo indica, quita clientes de la solución
+ aleatoriamente.
+ Indistintamente del vehículo en que se encuentren, cada 
+\begin_inset Formula $v_{j}^{i}\in S$
+\end_inset
+
+ es removido de 
+\begin_inset Formula $S$
+\end_inset
+
+ con probabilidad 
+\begin_inset Formula $\text{π}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Este algoritmo fue el primero en probarse en la etapa de prototipado, y
+ si bien su simplicidad puede parecer excesiva y que los resultados dependan
+ puramente del azar, al combinarlo con la búsqueda local (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Búsqueda-local"
+
+\end_inset
+
+) y el proceso de inserción (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Recreate"
+
+\end_inset
+
+) los resultados obtenidos fueron muy buenos (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Resultados"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Subsubsection
+Arruine espacial
+\end_layout
+
+\begin_layout Standard
+El arruine espacial intenta explotar la cercanía física de los clientes
+ entre sí.
+ La idea es que si se quitan clientes que están cerca entre ellos, será
+ más fácil agregarlos a un vehículo que pueda aprovechar su ubicación y
+ visitar a todos o varios de ellos en su viaje.
+ Si bien esto no siempre es posible debido a capacidades de carga y ventanas
+ de tiempo.
+\end_layout
+
+\begin_layout Standard
+Conceptualmente, se elige un cliente al azar y se lo quita de la solución
+ junto con todos los clientes que estén dentro de un radio dado.
+ La elección del radio es importante: un radio muy chico y se quitarán muy
+ pocos vehículos como para lograr una mejora, y un radio muy grande quitará
+ demasiados vehículos, tendiendo a la infactibilidad de la solución.
+\end_layout
+
+\begin_layout Standard
+La distancia de arruine que se utiliza en este trabajo se elige de forma
+ aleatoria entre 
 \begin_inset Formula $\nicefrac{d}{2}$
 \end_inset
 
@@ -2281,7 +2201,7 @@ La distancia de arruine que utiliza RAR se elige también de forma aleatoria
 \begin_inset Formula $d$
 \end_inset
 
- es la distancia promedio entre todos los nodos del problema.
+ es la distancia promedio entre todos los clientes del problema.
 \end_layout
 
 \begin_layout Subsection
@@ -2301,6 +2221,13 @@ Implementación
 
 \begin_layout Section
 Resultados
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Resultados"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section

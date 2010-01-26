@@ -13,9 +13,19 @@ object RARMain {
 		val host = args(0)
 		val cores = Runtime.getRuntime().availableProcessors()
 
-		for (i <- 1 to 1) {
-			new RAR(host, 9010, 'ACS, i % 2 == 0).start()
-		}
+      for (i <- 1 to cores) {
+         if (args.length > 1) {
+            if (args(1).equals("v")) {
+               new RAR(host, 9010, 'ACS, true).start()
+            }
+            else {
+               new RAR(host, 9010, 'ACS, false).start()
+            }
+         }
+         else {
+            new RAR(host, 9010, 'ACS, i % 2 == 0).start() 
+         }
+      }
 	}
 }
 
@@ -110,7 +120,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 					if (rarVehicular) {
 						if (rnd.nextDouble > δ) {
 							// entre d/3 y 2d/3
-							ruinDistV(dp/3 + rnd.nextDouble*(dp/3))
+							ruinDistV(dp/3 + rnd.nextDouble*(dp/3), mejor)
 						}
 						else {
    						ruinRndV(mejor) 
@@ -119,7 +129,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 					else {
 						if (rnd.nextDouble > δ) {
 							// entre d/3 y 2d/3
-							ruinDist(dp/3 + rnd.nextDouble*(dp/3))
+							ruinDist(dp/3 + rnd.nextDouble*(dp/3), mejor)
 						}
 						else {
 							ruinRnd(mejor)
@@ -170,12 +180,12 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	
 	/** arruino random */
 	private def ruinRnd(sol: List[List[Customer]]): List[Customer] = {
-	   val p = if (rarVehicular) πv else π
+	   val β = if (rarVehicular) πv else π
 
       sol.foldLeft(List[Customer]()) { (acc, it) =>
          // .tail para que no saque el deposito
          val veh = it.tail
-         var rotos = veh.filter(c => rnd.nextDouble > p)
+         var rotos = veh.filter(c => rnd.nextDouble > β)
          
          if (rotos.length == veh.length ) {
             // saco de los rotos uno al azar cosa que el vehiculo no desaparezca
@@ -194,25 +204,28 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		vehiculo ++ ruinRnd(sol - vehiculo) - inst.source
 	}
 	
-	/** arruino por distancia espacial a un cliente dado */
-	private def ruinDist(dist: Double): List[Customer] = {
-		val customers = inst.customers.tail
-		val c = customers(rnd.nextInt(customers.length))
-		
-		ruinDist(dist, c, customers)
-	}
-
-	private def ruinDist(dist: Double, c: Customer, customers: List[Customer]): List[Customer] = {
-		customers.filter(inst.distancia(_, c) < dist)
+	private def ruinDist(dist: Double, sol: List[List[Customer]]): List[Customer] = {
+      val c = inst.customers.tail(rnd.nextInt(inst.customers.length - 1))
+      
+      sol.foldLeft(List[Customer]()) { (acc, it) =>
+         // .tail para que no saque el deposito
+         val veh = it.tail
+         var rotos = veh.filter(inst.distancia(_, c) < dist)
+         
+         if (rotos.length == veh.length ) {
+            // saco de los rotos uno al azar cosa que el vehiculo no desaparezca
+            rotos -= rotos(rnd.nextInt(rotos.length))
+         }
+         
+         acc ::: rotos
+      }
 	}
 
 	/* arruino por distancia espacial a un cliente dado */
-	private def ruinDistV(dist: Double): List[Customer] = {
-		val customers = inst.customers.tail
-		val c = customers(rnd.nextInt(customers.length))
-		val vehiculo:List[Customer] = mejor(rnd.nextInt(mejor.length)) - inst.source
+	private def ruinDistV(dist: Double, sol: List[List[Customer]]): List[Customer] = {
+		val vehiculo:List[Customer] = sol(rnd.nextInt(sol.length)) - inst.source
 		
-		vehiculo ++ ruinDist(dist, c, customers -- vehiculo)
+		vehiculo ++ ruinDist(dist, sol - vehiculo)
 	}
 
 	private def ruinK(cust: List[Customer], k:Int): List[Customer] = k match {
