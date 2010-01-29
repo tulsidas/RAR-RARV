@@ -45,6 +45,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	var π: Double = 0
    var rotura:Double = 50
    var roturaV:Double = 50
+   var lsRAR:Boolean = false
    var lsRARV:Boolean = false
 	
 	Debug.level = 1
@@ -61,17 +62,18 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 
 		// espero Start
 		receive {
-			case Start(_inst, _mejor, _rotura, _roturaV, _lsRARV) => {
+			case Start(_inst, _mejor, _rotura, _roturaV, _lsRAR, _lsRARV) => {
 				inst = _inst
 				mejor = _mejor
 				rotura = _rotura
 				roturaV = _roturaV
+				lsRAR = _lsRAR
 				lsRARV = _lsRARV
 				
 				updatePi()
 				
 				if (rarVehicular) println(id + " RARV Start, πv: " + roturaV + ", LocalSearch: " + lsRARV)
-				else println(id + " RAR Start, π: " + rotura)
+				else println(id + " RAR Start, π: " + rotura + ", LocalSearch: " + lsRAR)
 			}
 		}
 
@@ -147,7 +149,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 
 				if (factible) {
                val optimizado = 
-                  if (rarVehicular && !lsRARV) { ryr }
+                  if ((rarVehicular && !lsRARV) || !lsRAR) { ryr }
                   else { new LocalSearch(inst, ryr).search() }
 
 					if (optimizado.length < mejor.length || 

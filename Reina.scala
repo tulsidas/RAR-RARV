@@ -49,6 +49,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 
    val rotura:Double = java.lang.Double.parseDouble(properties.getProperty("rotura", "50"))
    val roturaV:Double = java.lang.Double.parseDouble(properties.getProperty("roturaV", "50"))
+   val lsRAR:Boolean = java.lang.Boolean.parseBoolean(properties.getProperty("lsRAR", "false"))
    val lsRARV:Boolean = java.lang.Boolean.parseBoolean(properties.getProperty("lsRARV", "false"))
 
 	val inst = Solomon.load(file)
@@ -76,8 +77,6 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	println("NN: " + mejorLargo + " | " + mejorVehiculos + " | prom/vehiculo: " + 
 		mejor.foldLeft(0)(_ + _.size - 1).toFloat / mejorVehiculos.toFloat)
 
-//   println("δ = " + δ + ", π = " + π + ", πv = " + πv)
-
 	val queenActress = select(Node("localhost", 9010), 'ACS)
 
 	// helper para cortar el main loop
@@ -99,7 +98,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 				case Hello(id) => { 
 					// una hormiga comun
 					hormigas + ((id, sender))
-					sender ! Start(inst, mejor, rotura, roturaV, lsRARV)
+					sender ! Start(inst, mejor, rotura, roturaV, lsRAR, lsRARV)
 				}
 				case Mejor(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
