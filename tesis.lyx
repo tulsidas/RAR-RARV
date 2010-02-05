@@ -1154,6 +1154,7 @@ sideways false
 status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
 	filename arquitectura.png
 	clip
@@ -1188,7 +1189,7 @@ Diagrama de la arquitectura distribuída
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Caption
@@ -1737,7 +1738,7 @@ Sea
 Como se detalló en 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sub:Recreate-1"
+reference "sub:Recreate"
 
 \end_inset
 
@@ -2123,7 +2124,7 @@ Arruine aleatorio
 \begin_layout Standard
 El arruine aleatorio, como su nombre lo indica, quita clientes de la solución
  aleatoriamente.
- Indistintamente del vehículo en que se encuentren, cada 
+ Indistintamente del vehículo en que se encuentre, cada 
 \begin_inset Formula $v_{j}^{i}\in S$
 \end_inset
 
@@ -2162,7 +2163,31 @@ reference "sec:Resultados"
 
 \end_inset
 
-)
+).
+ 
+\end_layout
+
+\begin_layout Standard
+La elección de 
+\begin_inset Formula $\text{π}$
+\end_inset
+
+ influye directamente en al factibilidad de las soluciones a obtener.
+ Si 
+\begin_inset Formula $\text{π}$
+\end_inset
+
+ fuese muy pequeña, se quitarían pocos vehículos de la solución, con lo
+ cual sería difícil o improbable poder obtener nuevas soluciones distintas
+ a la inicial, dado que los pocos clientes quitados tendrían, en general,
+ pocas alternativas de reinserción.
+ Por otro lado, si 
+\begin_inset Formula $\text{π}$
+\end_inset
+
+ fuese muy grande, se estarían quitando de la solución muchos clientes,
+ lo cual dificultaría la obtención de soluciones factibles en el proceso
+ de reinserción.
 \end_layout
 
 \begin_layout Subsubsection
@@ -2176,7 +2201,15 @@ El arruine espacial intenta explotar la cercanía física de los clientes
  más fácil agregarlos a un vehículo que pueda aprovechar su ubicación y
  visitar a todos o varios de ellos en su viaje.
  Si bien esto no siempre es posible debido a capacidades de carga y ventanas
- de tiempo.
+ de tiempo, en ocasiones es preferible arruinar a clientes que están cerca
+ a hacer un arruine aleatorio.
+ Por otro lado, el arruine espacial no tiene en cuenta ventanas de tiempo,
+ sólo posiciones geográficas, por lo que usar 
+\emph on
+sólo
+\emph default
+ arruine espacial no da tan buenos resultados, por lo que se lo combina
+ con otras formas de arruine.
 \end_layout
 
 \begin_layout Standard
@@ -2188,13 +2221,13 @@ Conceptualmente, se elige un cliente al azar y se lo quita de la solución
 \end_layout
 
 \begin_layout Standard
-La distancia de arruine que se utiliza en este trabajo se elige de forma
+La distancia de arruine que se utiliza en este trabajo se elije de forma
  aleatoria entre 
 \begin_inset Formula $\nicefrac{d}{2}$
 \end_inset
 
  y 
-\begin_inset Formula $\nicefrac{2d}{3}$
+\begin_inset Formula $\nicefrac{2}{3}\cdot d$
 \end_inset
 
  donde 
@@ -2213,6 +2246,427 @@ name "sub:Búsqueda-local"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+La búsqueda local es un proceso mediante el cual se intenta, partiendo de
+ una solución, variaciones y combinaciones de clientes y rutas dentro de
+ un vecindario en pos de obtener una mejor solución.
+ Cuanto mayor sea el entorno donde se realiza la búsqueda, más tiempo tomará
+ el procedimiento de búsqueda local.
+ En un extremo, la búsqueda local buscaría en todas las posibles combinaciones
+ de clientes y vehículos, obteniendo fehacientemente la mejor solución posible,
+ pero dado que esto toma tiempo exponencial según el tamaño del problema,
+ se limita la búsqueda a entornos reducidos.
+\end_layout
+
+\begin_layout Standard
+Para realizar la búsqueda local se aplican distintos
+\emph on
+ operadores
+\emph default
+ que alteran la solución actual, si la solución alterna es mejor a la actual
+ se guarda y se repite el proceso hasta que no se obtenga mejora, de ahí
+ el nombre 
+\begin_inset Quotes eld
+\end_inset
+
+búsqueda local
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Los operadores se dividen en dos grandes grupos:
+\end_layout
+
+\begin_layout Itemize
+uniruta: realizan cambios en un sólo vehículo
+\end_layout
+
+\begin_layout Itemize
+multiruta: realizan cambios entre dos o más vehículos
+\end_layout
+
+\begin_layout Standard
+Dentro de estos grupos se utilizaron los siguientes operadores:
+\end_layout
+
+\begin_layout Itemize
+Uniruta
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+reverse(n)
+\end_layout
+
+\begin_layout Itemize
+relocate(n)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Multiruta
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+tailExchange
+\end_layout
+
+\begin_layout Itemize
+relocate(n, m)
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+reverse(n)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename reverse1.png
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+operador reverse(n)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:operador-reverse(n)"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+El operador reverse toma un vehículo (una ruta) e invierte el sentido de
+ una cadena de clientes, como se ilustra en la Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:operador-reverse(n)"
+
+\end_inset
+
+.
+ El valor 
+\emph on
+n
+\emph default
+ indica el tamaño de la cadena de clientes a invertir.
+ 
+\end_layout
+
+\begin_layout Standard
+Dado 
+\emph on
+n,
+\emph default
+ por cada vehículo de la solución, se toman todas las cadenas de clientes
+ de largo 
+\emph on
+n
+\emph default
+ y se comprueba si la solución consistente en invertir esa cadena es factible
+ y de menor largo que la original.
+\end_layout
+
+\begin_layout Standard
+En general, debido a las ventanas de tiempo, este operador no suele ser
+ útil con valores grandes de 
+\emph on
+n
+\emph default
+, pero al ser computacionalmente poco costoso (es O(n) sobre la cantidad
+ de clientes), se aplicó este operador para 
+\begin_inset Formula $n=2,3,4$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+relocate(n)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename relocate1.png
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+operador relocate(n)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:operador-relocate(n)"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+El operador relocate(n) toma una cadena consecutiva de clientes de largo
+ 
+\emph on
+n
+\emph default
+ dentro de un vehículo, e intenta reubicarla en otra posición dentro del
+ mismo vehículo, como ilustra la Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:operador-relocate(n)"
+
+\end_inset
+
+.
+ Se aplicó este operador con 
+\begin_inset Formula $n=1,2,3,4$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+tailExchange
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename tailExchange.png
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+operador tailExchange
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:operador-tailExchange"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+tailExchange
+\emph default
+ intercambia las colas de las rutas entre un par de vehículos, como muestra
+ la Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:operador-tailExchange"
+
+\end_inset
+
+.
+ Este operador es computacionalmente costoso ya que se aplica para todo
+ par de rutas posible.
+ Sea 
+\begin_inset Formula $n$
+\end_inset
+
+ el número total de vehículos, cada par de rutas implica 
+\begin_inset Formula $\left({n\atop 2}\right)=\frac{n(n-1)}{2}=O(n^{2})$
+\end_inset
+
+.
+ Por cada par de rutas 
+\begin_inset Formula $v_{i}=\{v_{1}^{i},v_{2}^{i},\ldots,v_{k}^{i}\},v_{j}=\{v_{1}^{j},v_{2}^{j},\ldots,v_{q}^{j}\}$
+\end_inset
+
+ se calculan todos los posibles cambios de colas de todos los tamaños, incluyend
+o 0.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\forall x\in\{0\ldots k\},y\in\{0\ldots q\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\noun off
+\color none
+\lang english
+\begin_inset Formula $v_{i}=\{v_{1}^{i},v_{2}^{i},\ldots,v_{k-x}^{i},v_{q-y+1}^{j},v_{q-y+2}^{j},\ldots,v_{q}^{j}\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\lang english
+\begin_inset Formula $v_{j}=\{v_{1}^{j},v_{2}^{j},\ldots,v_{q-y}^{j},v_{k-x+1}^{i},v_{k-x+2}^{j},\ldots,v_{q}^{j}\}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En el caso particular donde se haga un intercambio de una cola de tamaño
+ 0 contra una cola del tamaño total del vehículo y el resultado sea factible,
+ se estaría reduciendo un vehículo, ya que el vehículo cuya cola de clientes
+ era de hecho toda la lista de clientes y fue adosada exitosamente en el
+ otro vehículo, sería ahora un vehículo vacío, sin clientes que visitar,
+ y todos sus clientes serían visitados por el otro vehículo, como lo ilustra
+ la Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Reducción-de-un"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename tailExchange2.png
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Reducción de un vehículo utilizando 
+\emph on
+tailExchange
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Reducción-de-un"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+relocate(n, m)
 \end_layout
 
 \begin_layout Subsection
@@ -2294,6 +2748,20 @@ key "key-4"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "Lin"
+key "key-5"
+
+\end_inset
+
+S.
+ Lin.
+ Computer solutions of the traveling salesman problem.
+ Bell System Technical Journal, 44:2245-2269, 1965.
 \end_layout
 
 \end_body
