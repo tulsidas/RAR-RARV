@@ -2622,7 +2622,7 @@ reference "fig:Reducción-de-un"
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2667,6 +2667,134 @@ name "fig:Reducción-de-un"
 
 \begin_layout Subsubsection
 relocate(n, m)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename relocatenm.png
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+relocate(2,3)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:relocate(n,m)"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+relocate(n, m)
+\emph default
+ es el análogo multiruta de la versión 
+\emph on
+relocate(n)
+\emph default
+ uniruta.
+ Al aplicar este operador, se intenta intercambios de cadenas de 
+\emph on
+n
+\emph default
+ clientes desde una ruta por cadenas de 
+\emph on
+m
+\emph default
+ clientes de la otra ruta, como se ilustra en la Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:relocate(n,m)"
+
+\end_inset
+
+.
+ El operador intercambia las cadenas de clientes desde y hacia todas las
+ posibles ubicaciones en la ruta, por lo que tiene 
+\begin_inset Formula $O(n^{4})$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+relocate(n, m)
+\emph default
+ podría aplicarse, dado un par de rutas de tamaños 
+\begin_inset Formula $k$
+\end_inset
+
+ y 
+\begin_inset Formula $q$
+\end_inset
+
+, en todo par de valores 
+\begin_inset Formula $\{0\ldots k\},\{0\ldots q\}$
+\end_inset
+
+, pero en la práctica, dadas las limitaciones de carga y sobre todo las
+ ventanas de tiempo, intercambiar rutas de muchos vehículos sería en general
+ infactible, por lo que se sacrificaría importante tiempo de procesamiento.
+ Este operador se aplicó para 
+\begin_inset Formula $n,m=0,1,2,3$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Elección de mejoras y orden de búsqueda
+\end_layout
+
+\begin_layout Standard
+Independientemente del orden de aplicación de los operadores, un punto important
+e a determinar es cómo elegir las mejoras a aplicar a la solución.
+ Aplicar una mejora provista por un operador puede que descarte un posible
+ cambio dado por otro operador que mejoraría aún más que si no se aplicaba
+ la mejora inicial.
+ 
+\end_layout
+
+\begin_layout Standard
+En un entorno ideal, la mejor opción sería armar un árbol con todas las
+ posibles aplicaciones de mejoras de los distintos operadores, luego ubicar
+ la hoja con la mejor solución y aplicar los operadores y elegir mejoras
+ según el camino desde la raíz hasta la mejor solución.
+ Este método es claramente impracticable.
+ Otro opción más práctica es realizar esta misma operación pero limitar
+ la profundidad del árbol.
+ En esta tesis se omitió esta alternativa y directamente las mejoras se
+ aplican en forma golosa: al encontrar un operador una solución mejor a
+ la actual, inmediatemente se la guarda como nueva mejor.
 \end_layout
 
 \begin_layout Subsection

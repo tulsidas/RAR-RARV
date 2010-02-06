@@ -71,9 +71,8 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	private def tailExchange(l1: Ruta, l2: Ruta): List[(Ruta, Ruta)] = {
 		val ret = new scala.collection.mutable.ListBuffer[(Ruta, Ruta)]
 		for (i <- 1 to l1.length; j <- 1 to l2.length 
-		//for (i <- 1 to l2.length; j <- 1 to l1.length 
-				if (!(i == 1 && j == 1) && !(i == l2.length && j == l1.length))) {
-			ret += ((l1.take(j) ++ l2.drop(i), l2.take(i) ++ l1.drop(j)))
+			if (!(i == 1 && j == 1) && !(i == l2.length && j == l1.length))) {
+   			ret += ((l1.take(j) ++ l2.drop(i), l2.take(i) ++ l1.drop(j)))
 		}
 
 		ret.toList
@@ -93,17 +92,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 				// cambio factible
 				if (inst.camionFactible(n1) && inst.camionFactible(n2)) {
 					// cambio mejorable (largo o vehiculos)				
-					if (inst.camionLength(n1) + inst.camionLength(n2) < 
-							inst.camionLength(l1) + inst.camionLength(l2)) {
-						// mejora del largo
-						
-						// actualizo mejor solucion
-						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
-
-						// llamada recursiva con la mejora
-						return multisearch(gen)
-					}
-					else if (n1.length < 2) {
+					if (n1.length < 2) {
 						// reduzco un vehiculo
 						mejorSolucion = List(n2) ::: (mejorSolucion -- List(l1, l2))
 						return multisearch(gen)
@@ -111,6 +100,16 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 					else if (n2.length < 2){
 						// reduzco un vehiculo
 						mejorSolucion = List(n1) ::: (mejorSolucion -- List(l1, l2))
+						return multisearch(gen)
+					}
+					else if (inst.camionLength(n1) + inst.camionLength(n2) < 
+							inst.camionLength(l1) + inst.camionLength(l2)) {
+						// mejora del largo
+						
+						// actualizo mejor solucion
+						mejorSolucion = List(n1, n2) ::: (mejorSolucion -- List(l1, l2))
+
+						// llamada recursiva con la mejora
 						return multisearch(gen)
 					}
 				}
@@ -126,35 +125,35 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		//println("search")
 		val largo = inst.solLength(mejorSolucion)
 		
-		var t = System.currentTimeMillis
-		//println("dosOpt")
+//		var t = System.currentTimeMillis
+//		println("dosOpt")
 		dosOpt()
-		//println("dosOpt = " + (System.currentTimeMillis-t))
+//		println("dosOpt = " + (System.currentTimeMillis-t))
 
 		for (n <- 0 to 3; m <- 0 to 3 if (n > 0 || m > 0)) {
-			t = System.currentTimeMillis
-			//println("relocate("+n+","+m+")")
+//			t = System.currentTimeMillis
+//			println("relocate("+n+","+m+")")
 			relocate(n, m)
-			//println("relocate("+n+","+m+")= " + (System.currentTimeMillis-t))
+//			println("relocate("+n+","+m+")= " + (System.currentTimeMillis-t))
 		}
 		
 		for (n <- 2 to 4 reverse) {
-			t = System.currentTimeMillis
-			//println("reverse("+n+")")
+//			t = System.currentTimeMillis
+//			println("reverse("+n+")")
 			reverse(n)
-			//println("reverse("+n+")= " + (System.currentTimeMillis-t))
+//			println("reverse("+n+")= " + (System.currentTimeMillis-t))
 		}
 
 		for (n <- 1 to 4 reverse) {
-			t = System.currentTimeMillis
-			//println("relocate("+n+")")
+//			t = System.currentTimeMillis
+//			println("relocate("+n+")")
 			relocate(n)
-			//println("relocate("+n+")= " + (System.currentTimeMillis-t))
+//			println("relocate("+n+")= " + (System.currentTimeMillis-t))
 		}
 		
 		val newLargo = inst.solLength(mejorSolucion)
 		if (newLargo < largo) {
-			// sigo
+//		   println("largo: " + largo + " -> newLargo: " + newLargo)
 			return search()
 		}
 		else {
@@ -166,7 +165,7 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 	def reverse(n: Int) = unisearch(reverseOpt(n))
 	def relocate(n: Int) = unisearch(relocateOpt(n))
 	
-	// def interruta
+	// interruta
 	def dosOpt() = multisearch(tailExchange)
 	def relocate(n: Int, m: Int) = multisearch(crossExchange(n, m))
 }

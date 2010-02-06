@@ -137,6 +137,8 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 							ruinRnd(mejor)
 						}
 					}
+					
+//			   println("rotos = " + rotos.length)
 
 				val ryr = recreate(mejor, rotos)
 				val factible = inst.factible(ryr)
@@ -238,9 +240,6 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		}
 	}
 	
-	/** arruino por distancia al source */
-	//private def ruin(dist: Int): List[Customer] = ruin(dist, inst.source)
-		
 	private def distancias: List[Double] = {
 		def pares(clientes: List[Customer]): List[(Customer, Customer)] = {
 			def zzip(cliente: Customer, resto: List[Customer]): List[(Customer, Customer)] = resto match {
@@ -264,7 +263,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
       
       val ratioV = (clientes-ppv) / roturaV
       val ratio = clientes / rotura
-      
+
       πv = 1 - 1 / ratioV
       π = 1 - 1 / ratio
 

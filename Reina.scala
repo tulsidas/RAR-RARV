@@ -25,7 +25,8 @@ object ReinaMain {
 		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
-				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
+//				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
+				new RAR("localhost", 9010, 'ACS, true).start()
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
