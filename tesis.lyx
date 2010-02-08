@@ -2772,15 +2772,15 @@ relocate(n, m)
 \end_layout
 
 \begin_layout Subsubsection
-Elección de mejoras y orden de búsqueda
+Elección de mejoras
 \end_layout
 
 \begin_layout Standard
 Independientemente del orden de aplicación de los operadores, un punto important
 e a determinar es cómo elegir las mejoras a aplicar a la solución.
- Aplicar una mejora provista por un operador puede que descarte un posible
- cambio dado por otro operador que mejoraría aún más que si no se aplicaba
- la mejora inicial.
+ Aplicar una mejora provista por un operador podría impedir otra posible
+ mejora a posteriori dada por otro operador que mejoraría aún más que si
+ no se aplicaba la mejora inicial.
  
 \end_layout
 
@@ -2791,7 +2791,9 @@ En un entorno ideal, la mejor opción sería armar un árbol con todas las
  según el camino desde la raíz hasta la mejor solución.
  Este método es claramente impracticable.
  Otro opción más práctica es realizar esta misma operación pero limitar
- la profundidad del árbol.
+ la profundidad del árbol, de forma de tener una visión de determinada cantidad
+ de aplicaciones previsibles, lo cual no garantiza en absoluto que el mejor
+ camino en este arbol acotado sea el camino óptimo a tomar.
  En esta tesis se omitió esta alternativa y directamente las mejoras se
  aplican en forma golosa: al encontrar un operador una solución mejor a
  la actual, inmediatemente se la guarda como nueva mejor.
@@ -2818,6 +2820,15 @@ Conclusiones
 
 \begin_layout Section
 Trabajo futuro
+\end_layout
+
+\begin_layout Itemize
+optimizar busqueda local: no repetir busqueda en un par de rutas que no
+ dio mejoras si las rutas no fueron modificadas
+\end_layout
+
+\begin_layout Itemize
+mezclar con tabu search
 \end_layout
 
 \begin_layout Bibliography
