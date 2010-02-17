@@ -2133,7 +2133,7 @@ El arruine aleatorio, como su nombre lo indica, quita clientes de la solución
 \end_inset
 
  con probabilidad 
-\begin_inset Formula $\text{π}$
+\begin_inset Formula $\pi$
 \end_inset
 
 .
@@ -2569,7 +2569,9 @@ o 0.
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\forall x\in\{0\ldots k\},y\in\{0\ldots q\}$
+\begin_inset Formula \[
+\forall x\in\{0\ldots k\},y\in\{0\ldots q\}\]
+
 \end_inset
 
 
@@ -2586,7 +2588,9 @@ o 0.
 \noun off
 \color none
 \lang english
-\begin_inset Formula $v_{i}=\{v_{1}^{i},v_{2}^{i},\ldots,v_{k-x}^{i},v_{q-y+1}^{j},v_{q-y+2}^{j},\ldots,v_{q}^{j}\}$
+\begin_inset Formula \[
+v_{i}=\{v_{1}^{i},v_{2}^{i},\ldots,v_{k-x}^{i},v_{q-y+1}^{j},v_{q-y+2}^{j},\ldots,v_{q}^{j}\}\]
+
 \end_inset
 
 
@@ -2595,7 +2599,9 @@ o 0.
 \begin_layout Standard
 
 \lang english
-\begin_inset Formula $v_{j}=\{v_{1}^{j},v_{2}^{j},\ldots,v_{q-y}^{j},v_{k-x+1}^{i},v_{k-x+2}^{j},\ldots,v_{q}^{j}\}$
+\begin_inset Formula \[
+v_{j}=\{v_{1}^{j},v_{2}^{j},\ldots,v_{q-y}^{j},v_{k-x+1}^{i},v_{k-x+2}^{j},\ldots,v_{q}^{j}\}\]
+
 \end_inset
 
 
@@ -2803,6 +2809,41 @@ En un entorno ideal, la mejor opción sería armar un árbol con todas las
 Implementación
 \end_layout
 
+\begin_layout Standard
+La implementación de la solución se realizó usando el lenguaje 
+\noun on
+Scala
+\noun default
+
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-6"
+
+\end_inset
+
+, un lenguaje de programación relativamente nuevo (fue creado en 2001).
+ La elección de este lenguaje se basó principalmente en sus cualidades de
+ mezcla de paradigmas orientado a objetos y funcional, lo que permitió una
+ alta expresividad con código conciso, y su librería de 
+\emph on
+actores remotos
+\emph default
+, lo cual fue idóneo para la implementación de las comunicaciones entre
+ los nodos y el árbitro.
+ Esta combinación de factores permitió que todo el código de la tesis sea
+ compacto: poco menos de 1000 líneas de código
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+967 para ser exactos
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
 \begin_layout Section
 Resultados
 \begin_inset CommandInset label
@@ -2814,8 +2855,1240 @@ name "sec:Resultados"
 
 \end_layout
 
+\begin_layout Standard
+En esta sección se presentan los resultados obtenidos al aplicar el algoritmo
+ a distintas instancias de 
+\noun on
+VRPTW
+\noun default
+.
+ Las instancias utilizadas son las introducidas por Solomon (CITA) en 1987.
+ Estas instancias se dividen en diversos grupos, según las ubicaciones de
+ los clientes.
+ En primer lugar se dividen en dos grandes grupos: el primer grupo (tipo
+ 1) tiene ventanas pequeñas que sólo permite unos pocos vehículos por ruta;
+ el segundo grupo (tipo 2) tiene ventanas mucho más amplias que permiten
+ varios vehículos en una misma ruta.
+ Por otro lado, hay 3 tipos de instancias, llamadas R, C y RC.
+ El tipo R (del inglés 
+\emph on
+random
+\emph default
+, aleatorio) posee todos los clientes esparcidos en forma aleatoria, en
+ el tipo C (
+\emph on
+clustered
+\emph default
+, agrupados) los clientes se agrupan en conglomerados y por último el tipo
+ RC mezcla clientes al azar con clientes agrupados.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename c.jpg
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename c201.jpg
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Instancia y solución de tipo C1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename r.jpg
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename r101.jpg
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Instancia y solución de tipo R1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename rc.jpg
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\begin_inset space \qquad{}
+\end_inset
+
+
+\begin_inset Graphics
+	filename rc201.jpg
+	lyxscale 50
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Instancia y solución de tipo RC2
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Parámetros
+\end_layout
+
+\begin_layout Standard
+Los parámetros de configuración del algoritmo, dada una instancia, son los
+ siguientes:
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+cores
+\emph default
+: si bien no es un parámetro 
+\emph on
+per se
+\emph default
+, la cantidad de computadoras (o núcleos, en computadoras multinúcleo) puede
+ pensarse como un parámetro
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+t
+\emph default
+: tiempo de ejecución del algoritmo
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+\begin_inset Formula $\pi$
+\end_inset
+
+
+\emph default
+: rotura de las instancias 
+\emph on
+RAR
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+lsRAR
+\emph default
+: si se ha de realizar búsqueda local luego de ejecutar 
+\emph on
+RAR
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\pi v$
+\end_inset
+
+: rotura de las instancias 
+\emph on
+RARV
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+lsRARv
+\emph default
+: si se ha de realizar búsqueda local luego de ejecutar 
+\emph on
+RARV
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+δ
+\emph default
+: probabilidad de ejecutar 
+\emph on
+RAR
+\emph default
+/
+\emph on
+RARV
+\emph default
+ o rotura espacial en cada iteración
+\end_layout
+
+\begin_layout Standard
+En un principio 
+\emph on
+π y πv
+\emph default
+ eran variables con valores entre 0 y 1, indicando porcentaje de rotura.
+ Así, 
+\begin_inset Formula $\pi=0.5$
+\end_inset
+
+ por ejemplo indicaba que, estadísticamente, se quitarían de la solución
+ la mitad de los clientes.
+ En la etapa de calibración (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Calibración"
+
+\end_inset
+
+) se comprobó que era más efectivo poder indicar un número de clientes a
+ quitar de la solución, pero sin que sea un número exacto sino que pueda
+ fluctuar aleatoriamente, por lo que internamente se mantuvieron 
+\emph on
+π y πv
+\emph default
+ como porcentuales de rotura, pero calculados tomando como parámetro la
+ cantidad de clientes a quitar, según las fórmulas:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\pi=1-\left(\frac{clientes}{rotura}\right)^{-1}\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\text{\emph{\pi v}}=1-\left(\frac{clientes-\frac{clientes}{vehiculos}}{roturaV}\right)^{-1}\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Donde 
+\emph on
+rotura
+\emph default
+ y 
+\emph on
+roturaV
+\emph default
+ indican la cantidad de clientes a quitar, según la instancia, 
+\emph on
+clientes
+\emph default
+ la cantidad de clientes del problema y 
+\emph on
+vehiculos
+\emph default
+ la cantidad de vehículos de la solución actual.
+ En el caso de 
+\begin_inset Formula $\emph{\pi v}$
+\end_inset
+
+, éste es actualizado cada vez que se encuentra una solución que reduzca
+ el número de vehículos, de forma de mantener, probabilísticamente, la cantidad
+ de clientes a quitar en cada iteración.
+\end_layout
+
+\begin_layout Subsection
+Calibración
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Calibración"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Se eligieron 5 problemas sobre los cuales realizar la calibración de los
+ parámetros, sobre los que se basan el resto de las pruebas.
+ Los problemas se eligieron en base a la diferencia en el número de vehículos
+ provisto por la solución inicial (la heurística del vecino más cercano)
+ contra la mejor solución conocida hasta el momento en primera instancia,
+ y la diferencia en el largo total de ambas en segunda instancia (siguiendo
+ el orden jerárquico que propone el algoritmo).
+ La idea de esta elección es ver la capacidad de la solución propuesta de
+ reducir la cantidad de vehículos necesarios, y en segunda medida el largo.
+ De este proceso se tomaron las siguientes instancias para usar de base
+ de calibración (ver detalle en Cuadro 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Instancias-de-calibración"
+
+\end_inset
+
+):
+\end_layout
+
+\begin_layout Itemize
+R104 (100 clientes)
+\end_layout
+
+\begin_layout Itemize
+RC105 (100 clientes)
+\end_layout
+
+\begin_layout Itemize
+R1_2_2 (200 clientes)
+\end_layout
+
+\begin_layout Itemize
+R1_4_1 (400 clientes)
+\end_layout
+
+\begin_layout Itemize
+R1_6_1 (600 clientes)
+\end_layout
+
+\begin_layout Itemize
+R1_10_1 (1000 clientes)
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="7" columns="5">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Largo (NN)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vehículos (NN)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Largo (mejor)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vehículos (mejor)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R104
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1188
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+14
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1007
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+RC105
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1103
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1191
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_2_2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4328
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+23
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4040
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+18
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_4_1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11258
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+43
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11084
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+38
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_6_1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+23373
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+65
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+21131
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+59
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_10_1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+58356
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+103
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+58356
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Instancias de calibración
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Instancias-de-calibración"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Repetibilidad
+\end_layout
+
+\begin_layout Standard
+Como primera medida se evaluó la repetibilidad del algoritmo, esto es, cuán
+ diferentes resultados producen diversas ejecuciones del mismo, manteniendo
+ los parámetros.
+ Si la repetibilidad fuera buena, o sea se obtuvieran resultados similares
+ en distintas ejecuciones, no haría falta repetir ejecuciones en posteriores
+ pruebas, ya que se podría asumir que se obtendrían, con alta probabilidad,
+ resultados similares.
+\end_layout
+
+\begin_layout Standard
+Para realizar esta prueba, se realizaron 10 ejecuciones de cada instancia,
+ con parámetros:
+\begin_inset Formula \[
+\delta=\nicefrac{1}{2}\qquad t=2\, minutos\qquad cores=2\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\pi=\nicefrac{1}{2}\qquad lsRAR=true\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\pi v=\nicefrac{1}{2}\qquad lsRARV=false\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+los resultados pueden verse en el Cuadro 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resultados-de-calibración"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Float table
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="7" columns="5">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Largo promedio
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Veh.
+ promedio
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Desvío est.
+ largo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Desvío est.
+ veh.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R104
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+993.4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9.51 (0.957%)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0 (0%)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+RC105
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1552.31
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+14
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.26 (0.661%)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0 (0%)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_2_2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4468.16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+58.85 (1.317%)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0 (0%)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_4_1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11030.9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+40
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+64.41 (0.584%)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0 (0%)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_6_1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+23335.15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+59
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+210.59 (0.902%)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0 (0%)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+R1_10_1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+69236.42
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+894.54 (1.292%)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0 (0%)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Resultados de calibración
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Resultados-de-calibración"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+δ
+\end_layout
+
+\begin_layout Subsubsection
+π y πv
+\end_layout
+
+\begin_layout Subsection
+25 y 50 clientes
+\end_layout
+
+\begin_layout Subsection
+100 clientes
+\end_layout
+
+\begin_layout Subsection
+200, 400 y 600 clientes
+\end_layout
+
 \begin_layout Section
 Conclusiones
+\end_layout
+
+\begin_layout Subsection
+RAR/RARV
+\end_layout
+
+\begin_layout Standard
+lsRARV no conviene para > 400v
+\end_layout
+
+\begin_layout Standard
+sacar lsRAR no conviene
+\end_layout
+
+\begin_layout Standard
+lsRAR final tampoco
 \end_layout
 
 \begin_layout Section
@@ -2901,6 +4174,17 @@ S.
  Lin.
  Computer solutions of the traveling salesman problem.
  Bell System Technical Journal, 44:2245-2269, 1965.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "Scala"
+key "key-6"
+
+\end_inset
+
+http://www.scala-lang.org/
 \end_layout
 
 \end_body
