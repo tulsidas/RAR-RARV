@@ -20,5 +20,5 @@ object Params {
 	///////////
 	
 	// prob de hacer arruine espacial o aleatorio
-	val δ:Double = 1//0.75
+	val δ:Double = 1
 }

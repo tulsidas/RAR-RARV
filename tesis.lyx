@@ -4052,7 +4052,45 @@ name "tab:Resultados-de-calibración"
 \end_layout
 
 \begin_layout Subsubsection
-δ
+\begin_inset Formula $\delta$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\delta$
+\end_inset
+
+ es el parámetro que indica la probabilidad, en cada iteración, de utilizar
+ rotura aleatoria; caso contrario se utiliza rotura espacial.
+ Esto es:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\delta=0\Rightarrow siempre\, se\, utiliza\, rotura\, espacial\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+\delta=1\Rightarrow siempre\, se\, utiliza\, rotura\, aleatoria\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En las pruebas realizadas, 
+\begin_inset Formula $\delta=0$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsubsection

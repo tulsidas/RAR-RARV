@@ -126,34 +126,29 @@ class LocalSearch(inst: Instance, solucion: List[List[Customer]]) {
 		val largo = inst.solLength(mejorSolucion)
 		
 //		var t = System.currentTimeMillis
-//		println("dosOpt")
+
 		dosOpt()
 //		println("dosOpt = " + (System.currentTimeMillis-t))
 
 		for (n <- 0 to 3; m <- 0 to 3 if (n > 0 || m > 0)) {
-//			t = System.currentTimeMillis
-//			println("relocate("+n+","+m+")")
 			relocate(n, m)
-//			println("relocate("+n+","+m+")= " + (System.currentTimeMillis-t))
 		}
-		
+//		println("relocate(n, m) = " + (System.currentTimeMillis-t))
+
 		for (n <- 2 to 4 reverse) {
-//			t = System.currentTimeMillis
-//			println("reverse("+n+")")
 			reverse(n)
-//			println("reverse("+n+")= " + (System.currentTimeMillis-t))
 		}
+//		println("reverse(n)= " + (System.currentTimeMillis-t))
 
 		for (n <- 1 to 4 reverse) {
-//			t = System.currentTimeMillis
-//			println("relocate("+n+")")
 			relocate(n)
-//			println("relocate("+n+")= " + (System.currentTimeMillis-t))
 		}
+//		println("relocate(n)= " + (System.currentTimeMillis-t))
+
+//		println("t = " + (System.currentTimeMillis-t))
 		
 		val newLargo = inst.solLength(mejorSolucion)
 		if (newLargo < largo) {
-//		   println("largo: " + largo + " -> newLargo: " + newLargo)
 			return search()
 		}
 		else {

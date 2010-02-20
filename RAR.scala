@@ -6,8 +6,6 @@ import scala.util.Random
 
 import java.util.UUID
 
-import Params._
-
 object RARMain {
 	def main(args: Array[String]) {
 		val host = args(0)
@@ -43,12 +41,15 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	
 	var πv: Double = 0
 	var π: Double = 0
+	var delta:Double = 0.5
    var rotura:Double = 50
    var roturaV:Double = 50
    var lsRAR:Boolean = false
    var lsRARV:Boolean = false
 	
 	Debug.level = 1
+	
+	var intentos = 0
 	
 	private[this] def updateProm(par: (Int, Float), nuevo: Float): (Int, Float) = {
 		(par._1 + 1, (par._1 * par._2 + nuevo) / (par._1 + 1))
@@ -62,9 +63,10 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 
 		// espero Start
 		receive {
-			case Start(_inst, _mejor, _rotura, _roturaV, _lsRAR, _lsRARV) => {
+			case Start(_inst, _mejor, _delta, _rotura, _roturaV, _lsRAR, _lsRARV) => {
 				inst = _inst
 				mejor = _mejor
+				delta = _delta
 				rotura = _rotura
 				roturaV = _roturaV
 				lsRAR = _lsRAR
@@ -81,7 +83,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 		var promLargo = (0, 0f)
 		var promFactible = (0, 0f)
 		var promVehiculos = (0, 0f)
-		var intentos = 0
+//		var intentos = 0
 		
 		val d = distancias
 		val dp = d.reduceLeft(_+_) / d.size
@@ -120,7 +122,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 			else {
 				val rotos = 
 					if (rarVehicular) {
-						if (rnd.nextDouble > δ) {
+						if (rnd.nextDouble > delta) {
 							// entre d/3 y 2d/3
 							ruinDistV(dp/3 + rnd.nextDouble*(dp/3), mejor)
 						}
@@ -129,7 +131,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 						}
 					}
 					else {
-						if (rnd.nextDouble > δ) {
+						if (rnd.nextDouble > delta) {
 							// entre d/3 y 2d/3
 							ruinDist(dp/3 + rnd.nextDouble*(dp/3), mejor)
 						}
@@ -137,8 +139,11 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 							ruinRnd(mejor)
 						}
 					}
-					
-//			   println("rotos = " + rotos.length)
+
+//            val df = new java.text.DecimalFormat("000")
+//            val file = df.format(intentos)+".jpg"
+//            Imaginario.writeRARImage(file, inst, rotos, mejor)
+//            println(file)
 
 				val ryr = recreate(mejor, rotos)
 				val factible = inst.factible(ryr)
@@ -168,9 +173,6 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 						
 						reina ! Mejor(mejor, id)
 					}
-				}
-				else {
-					// println("recreate("+rotos.length+") | NO factible | " + vehiculos)
 				}
 			}
 		}
@@ -210,7 +212,10 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 	
 	private def ruinDist(dist: Double, sol: List[List[Customer]]): List[Customer] = {
       val c = inst.customers.tail(rnd.nextInt(inst.customers.length - 1))
+      ruinDist(dist, sol, c)
+   }
       
+	private def ruinDist(dist: Double, sol: List[List[Customer]], c: Customer): List[Customer] = {
       sol.foldLeft(List[Customer]()) { (acc, it) =>
          // .tail para que no saque el deposito
          val veh = it.tail
@@ -223,13 +228,15 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
          
          acc ::: rotos
       }
+//      inst.customers.tail.filter(inst.distancia(_, c) < dist)
 	}
 
 	/* arruino por distancia espacial a un cliente dado */
 	private def ruinDistV(dist: Double, sol: List[List[Customer]]): List[Customer] = {
-		val vehiculo:List[Customer] = sol(rnd.nextInt(sol.length))// - inst.source
+		val vehiculo:List[Customer] = sol(rnd.nextInt(sol.length))
 		
-		vehiculo ++ ruinDist(dist, sol - vehiculo)
+      val c = inst.customers.tail(rnd.nextInt(inst.customers.length - 1))
+		vehiculo ++ ruinDist(dist, sol - vehiculo, c)
 	}
 
 	private def ruinK(cust: List[Customer], k:Int): List[Customer] = k match {

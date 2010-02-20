@@ -16,7 +16,9 @@ object ReinaMain {
 		}
 
 		// arranco la reina
-		val reina = new Reina(args(0), args(1).toInt, 9010, 'ACS)
+		val delta = if (args.length > 2) args(2).toDouble else δ 
+		
+		val reina = new Reina(args(0), args(1).toInt, delta, 9010, 'ACS)
 		reina.start()
 
 		// arranco hormigas en los nucleos
@@ -25,8 +27,7 @@ object ReinaMain {
 		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
-//				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
-				new RAR("localhost", 9010, 'ACS, true).start()
+				new RAR("localhost", 9010, 'ACS, i%2!=0).start()
 			}
 			else {
 				new Formica("localhost", 9010, 'ACS).start()
@@ -36,7 +37,7 @@ object ReinaMain {
 	}
 }
 
-class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
+class Reina(file: String, min: Int, delta: Double, port: Int, name: Symbol) extends Actor {
 	RemoteActor.classLoader = getClass().getClassLoader()
 
 	val hormigas = Map.empty[String, OutputChannel[Any]]
@@ -55,10 +56,10 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 
 	val inst = Solomon.load(file)
 	val solver = new NearestNeighbour(inst)
+	
 
 	// nearest neighbour optimizado
 	var mejor = new LocalSearch(inst, solver.solve).search()
-	//var mejor = Loader.load("sol_r103.txt", inst)
 	
 	var mejorLargo = inst.solLength(mejor)
 	var mejorVehiculos = mejor.length
@@ -77,6 +78,8 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 	
 	println("NN: " + mejorLargo + " | " + mejorVehiculos + " | prom/vehiculo: " + 
 		mejor.foldLeft(0)(_ + _.size - 1).toFloat / mejorVehiculos.toFloat)
+
+	println("δ: " + delta)
 
 	val queenActress = select(Node("localhost", 9010), 'ACS)
 
@@ -99,7 +102,7 @@ class Reina(file: String, min: Int, port: Int, name: Symbol) extends Actor {
 				case Hello(id) => { 
 					// una hormiga comun
 					hormigas + ((id, sender))
-					sender ! Start(inst, mejor, rotura, roturaV, lsRAR, lsRARV)
+					sender ! Start(inst, mejor, delta, rotura, roturaV, lsRAR, lsRARV)
 				}
 				case Mejor(newMejor, id) => {
 					// chequeo que efectivamente sea mejor
