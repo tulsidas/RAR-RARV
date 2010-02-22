@@ -843,7 +843,7 @@ e en función de la cantidad de clientes quitados, esto es impracticable.
 \begin_inset Float algorithm
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Caption
@@ -3023,6 +3023,13 @@ Instancia y solución de tipo RC2
 
 \begin_layout Subsection
 Parámetros
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:Parámetros"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -3112,7 +3119,15 @@ RARV
 \begin_layout Standard
 En un principio 
 \emph on
-π y πv
+
+\begin_inset Formula $\pi$
+\end_inset
+
+ y 
+\begin_inset Formula $\pi$
+\end_inset
+
+v
 \emph default
  eran variables con valores entre 0 y 1, indicando porcentaje de rotura.
  Así, 
@@ -3132,7 +3147,15 @@ reference "sub:Calibración"
  quitar de la solución, pero sin que sea un número exacto sino que pueda
  fluctuar aleatoriamente, por lo que internamente se mantuvieron 
 \emph on
-π y πv
+
+\begin_inset Formula $\pi$
+\end_inset
+
+ y 
+\begin_inset Formula $\pi$
+\end_inset
+
+v
 \emph default
  como porcentuales de rotura, pero calculados tomando como parámetro la
  cantidad de clientes a quitar, según las fórmulas:
@@ -3671,7 +3694,7 @@ reference "tab:Resultados-de-calibración"
 
 \end_inset
 
-
+.
 \end_layout
 
 \begin_layout Standard
@@ -4090,11 +4113,478 @@ En las pruebas realizadas,
 \begin_inset Formula $\delta=0$
 \end_inset
 
+ mostró una muy mala performance, en ninguno de los casos logró reducir
+ vehículos (ver Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:RARV-con-rotura"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+El otro extremo, 
+\begin_inset Formula $\delta=1$
+\end_inset
+
+ dió en general buenos resultados, pero en algunos casos, particularmente
+ instancias de tipo RC, la rotura espacial suele aportar mejoras, por lo
+ que se terminó utilizando 
+\begin_inset Formula $\delta=\nicefrac{3}{4}=0.75$
+\end_inset
+
+, o sea que 1 de cada 4 iteraciones, en promedio, aplica rotura espacial
+ y el resto rotura aleatoria.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rarv-dist.jpg
+	lyxscale 50
+	scale 40
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+
+\emph on
+En verde el trayecto del vehículo arruinado, el disco gris marca la zona
+ arruinada espacialmente, con centro magenta y resto de clientes quitados
+ en rojo
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+RARV con rotura espacial
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:RARV-con-rotura"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
 \begin_layout Subsubsection
-π y πv
+\begin_inset Formula $\pi$
+\end_inset
+
+ y 
+\begin_inset Formula $\pi$
+\end_inset
+
+v
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\pi$
+\end_inset
+
+ y 
+\begin_inset Formula $\pi$
+\end_inset
+
+v determinan cuántos clientes se han de remover de la solución para luego
+ intentar reconstruírla.
+ Como se detalla en 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Parámetros"
+
+\end_inset
+
+, si bien internamente ambos parámetros se utilizan como porcentajes, el
+ programa recibe de parámetros los números de clientes aproximados a quitar,
+ por lo que en esta sección se consideran 
+\begin_inset Formula $\pi$
+\end_inset
+
+ y 
+\begin_inset Formula $\pi$
+\end_inset
+
+v no como porcentajes sino como números enteros de vehículos a quitar, aproximad
+amente, de la solución.
+\end_layout
+
+\begin_layout Standard
+La elección de 
+\begin_inset Formula $\pi$
+\end_inset
+
+ y 
+\begin_inset Formula $\pi$
+\end_inset
+
+v es la más importante de todos los parámetros.
+ Si el valor fuese muy pequeño, se quitarían muy pocos vehículos de la solución,
+ lo cual impediría generar buenas combinaciones para reinsertarlos, tendiendo
+ a reconstruir la misma solución de la que se partió en la mayoría de los
+ casos.
+ Si, por el contrario, el valor fuera muy grande, quitar demasiados vehículos
+ también es contraproducente ya que se utiliza mucho tiempo calculando las
+ posibilidades de reinserción de cada uno de ellos, y dado que el algoritmo
+ de reinserción es goloso (ver 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sub:Recreate"
+
+\end_inset
+
+) no necesariamente quitar más nodos da una mejor solución, independientemente
+ del tiempo tomado en reconstruirse.
+\end_layout
+
+\begin_layout Standard
+Para calibrar 
+\begin_inset Formula $\pi$
+\end_inset
+
+v se realizaron ejecuciones de cada instancia de calibración variando el
+ valor de 
+\begin_inset Formula $\text{\pi}v$
+\end_inset
+
+ entre el 10% y el 90% de la cantidad de vehículos, durante 2 minutos, con
+ 2 núcleos, ambos ejecutando 
+\emph on
+RARV
+\emph default
+, y se tomó el tiempo en que se llegó al menor número de vehículos.
+ Pueden verse gráficos de resultados en las Figuras 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Calibración-de-v"
+
+\end_inset
+
+ y 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Calibración-de-v2"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rarv-r104.png
+	scale 75
+
+\end_inset
+
+
+\lyxline
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rarv-rc105.png
+	scale 75
+
+\end_inset
+
+
+\lyxline
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rarv-r1_2_2.png
+	scale 75
+
+\end_inset
+
+
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Calibración de 
+\begin_inset Formula $\pi$
+\end_inset
+
+v
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Calibración-de-v"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename rarv-r1_4_1.png
+	scale 75
+
+\end_inset
+
+
+\lyxline
+
+\begin_inset Graphics
+	filename rarv-r1_6_1.png
+	scale 75
+
+\end_inset
+
+
+\lyxline
+
+\begin_inset Graphics
+	filename rarv-r1_10_1.png
+	scale 75
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Calibración de 
+\begin_inset Formula $\pi$
+\end_inset
+
+v (continuado)
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Calibración-de-v2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En los casos en que en el tiempo establecido no se haya logrado el mejor
+ número de vehículos (que corresponde al mejor número de vehículos logrado
+ por el algoritmo en estas ejecuciones, no necesariamente es el mejor conocido),
+ no se proveen datos.
+\end_layout
+
+\begin_layout Standard
+Como se puede ver en los gráficos de las figuras 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Calibración-de-v"
+
+\end_inset
+
+ y 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Calibración-de-v2"
+
+\end_inset
+
+, y quizá contrariamente a lo esperado, la cantidad de vehículos correspondiente
+s a 
+\begin_inset Formula $\pi$
+\end_inset
+
+v que obtiene mejores resultados no varía significativamente según la cantidad
+ de clientes de la instancia, sino que es más bien constante.
+ En los casos de las instancias de 100 clientes, donde se trabajó en primera
+ medida, 
+\begin_inset Formula $\pi v=50$
+\end_inset
+
+ era lo que daba mejores resultados.
+ Extrapolando estos datos, se usó 
+\begin_inset Formula $\pi v=100$
+\end_inset
+
+ para las instancias de 200 vehículos, asumiendo que romper la mitad de
+ los clientes daría los mejores resultados, pero la etapa de calibración
+ demostró que 
+\begin_inset Formula $\pi v=50$
+\end_inset
+
+ aproximadamente, fijo, sin importar la cantidad de clientes de la instancia
+ es el valor que mejores resultados arroja.
+\end_layout
+
+\begin_layout Standard
+Análogamente se procedió con 
+\begin_inset Formula $\pi$
+\end_inset
+
+, y se concluyó, experimentalmente, que 
+\begin_inset Formula $\pi=50$
+\end_inset
+
+ arrojaba los mejores resultados.
+\end_layout
+
+\begin_layout Subsection
+Planes de ejecuciones
+\end_layout
+
+\begin_layout Standard
+Como el objetivo de la tesis no es sólo comprobar la viabilidad del algoritmo
+ sino tambien su paralelismo, se realizaron distintas ejecuciones para cada
+ problema de los planteados.
+ La idea es comprobar la escalabilidad de la solución: si al agregar nodos
+ se obtienen mejores resultados.
+ A los hechos, se realizaron 3 tipos de ejecuciones de cada problema
+\end_layout
+
+\begin_layout Itemize
+1 minuto en una computadora 
+\emph on
+dual core
+\emph default
+, ejecutando 
+\emph on
+RAR
+\emph default
+ y 
+\emph on
+RARV
+\emph default
+ concurrentemente
+\end_layout
+
+\begin_layout Itemize
+5 minutos en la misma computadora 
+\emph on
+dual core
+\end_layout
+
+\begin_layout Itemize
+5 minutos en 6 computadoras 
+\emph on
+quad core
+\emph default
+, ejecutando 12 instancias de 
+\emph on
+RAR
+\emph default
+ y 12 de 
+\emph on
+RARV
+\emph default
+ concurrentemente
+\end_layout
+
+\begin_layout Standard
+En ambos casos el árbitro se ejecutó in situ en alguna computadora que a
+ la vez estaba utilizando todos sus núcleos en 
+\emph on
+RAR
+\emph default
+ o 
+\emph on
+RARV
+\emph default
+, pero dado que el árbitro prácticamente no consume recursos del procesador
+ (simplemente controla los valores recibidos y los reenvía), se considera
+ que no afecta el rendimiento de la computadora en la cual se ejecuta.
+\end_layout
+
+\begin_layout Standard
+Técnicamente, la computadora 
+\emph on
+dual core
+\emph default
+ es una 
+\noun on
+AMD Athlon 64 X2 Dual Core Processor 6000+
+\noun default
+ 
+\noun on
+@ 3GHz
+\noun default
+ con 
+\noun on
+2 GB
+\noun default
+ de memoria 
+\noun on
+RAM
+\noun default
+, mientras que las 
+\emph on
+quad core
+\emph default
+ son 
+\noun on
+Intel Core 2 Quad CPU Q9550 @ 2.83GHz
+\noun default
+ con 4 GB de RAM.
 \end_layout
 
 \begin_layout Subsection
