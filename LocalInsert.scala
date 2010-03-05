@@ -23,9 +23,9 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 				i = i + 1
 
 				nnv = ininsertables.toList ++ (nnv -- ininsertables.toList)
-				//println("retry " + i)
-				//println("ininsertables = " + ininsertables.map(_.num).toList) 
-				//println("nueva nonvisit = " + nnv.map(_.num))
+//				println("retry " + i)
+//				println("ininsertables = " + ininsertables.map(_.num).toList) 
+//				println("nueva nonvisit = " + nnv.map(_.num))
 
 				ininsertables.clear
 				mejor = solucion		// intento con la solucion inicial
@@ -55,7 +55,7 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 	private def insert(nv: Customer) = {
 		val factibles = tryInsert(nv)
 		
-		// println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
+//		 println("hay " + factibles.size + " opciones para insertar el cliente [" + nv.num + "]")
 
 		// me quedo con el de menor largo
 		if (factibles.size > 0) {

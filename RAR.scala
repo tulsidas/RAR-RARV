@@ -137,6 +137,7 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
 						}
 						else {
 							ruinRnd(mejor)
+//							ruinTime(mejor)
 						}
 					}
 
@@ -202,6 +203,29 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
          acc ::: rotos
       }
 	}
+
+	private def ruinTime(sol: List[List[Customer]]): List[Customer] = {
+      val c = inst.customers.tail(rnd.nextInt(inst.customers.length - 1))
+      
+      val diff = c.due - c.ready
+      
+      val ventanaReady = Math.max(0, c.ready - diff)
+      val ventanaDue = Math.min(c.due + diff, inst.source.due)
+
+      sol.foldLeft(List[Customer]()) { (acc, it) =>
+         // .tail para que no saque el deposito
+         val veh = it.tail
+         var rotos = veh.filter(v => v.ready >= ventanaReady && v.due <= ventanaDue)
+         
+         if (rotos.length == veh.length ) {
+            // saco de los rotos uno al azar cosa que el vehiculo no desaparezca
+            rotos -= rotos(rnd.nextInt(rotos.length))
+         }
+         
+         acc ::: rotos
+      }
+	}
+
 	
 	/** arruino n vehiculos al azar y después random del resto */
 	private def ruinRndV(sol: List[List[Customer]]): List[Customer] = {

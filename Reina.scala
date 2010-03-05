@@ -56,7 +56,6 @@ class Reina(file: String, min: Int, delta: Double, port: Int, name: Symbol) exte
 
 	val inst = Solomon.load(file)
 	val solver = new NearestNeighbour(inst)
-	
 
 	// nearest neighbour optimizado
 	var mejor = new LocalSearch(inst, solver.solve).search()
