@@ -1,4 +1,4 @@
-#LyX 1.6.4 created this file. For more info see http://www.lyx.org/
+#LyX 1.6.5 created this file. For more info see http://www.lyx.org/
 \lyxformat 345
 \begin_document
 \begin_header
@@ -711,7 +711,7 @@ name "sec:Ruin-&-Recreate"
 La metaheurística Ruin & Recreate 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-1"
+key "key-RR"
 
 \end_inset
 
@@ -778,7 +778,7 @@ Arruinar la solución es computacionalmente sencillo, aunque algorítmicamente
  En 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-1"
+key "key-RR"
 
 \end_inset
 
@@ -1336,7 +1336,7 @@ Para poder arruinar y recrear una solución, se necesita generar una solución
  vecino más próximo 
 \begin_inset CommandInset citation
 LatexCommand citet
-key "key-4"
+key "key-Lin"
 
 \end_inset
 
@@ -1692,7 +1692,7 @@ Ruin & Recreate
  
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-1"
+key "key-RR"
 
 \end_inset
 
@@ -2555,7 +2555,7 @@ reference "fig:operador-tailExchange"
 \end_inset
 
  el número total de vehículos, cada par de rutas implica 
-\begin_inset Formula $\left({n\atop 2}\right)=\frac{n(n-1)}{2}=O(n^{2})$
+\begin_inset Formula $\left({n\atop 2}\right)=\frac{n\,(n-1)}{2}=O\,(n^{2})$
 \end_inset
 
 .
@@ -2744,7 +2744,7 @@ reference "fig:relocate(n,m)"
 .
  El operador intercambia las cadenas de clientes desde y hacia todas las
  posibles ubicaciones en la ruta, por lo que tiene 
-\begin_inset Formula $O(n^{4})$
+\begin_inset Formula $O\,(n^{4})$
 \end_inset
 
 .
@@ -2817,7 +2817,7 @@ Scala
 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-6"
+key "key-Scala"
 
 \end_inset
 
@@ -4628,7 +4628,7 @@ quid
 \begin_inset Float table
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -4649,7 +4649,7 @@ status collapsed
 \begin_layout Plain Layout
 
 \noun on
-25 vehículos
+25 clientes
 \end_layout
 
 \end_inset
@@ -5110,7 +5110,7 @@ largo 1' 2 cores
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Resultados 25 vehículos.
+Resultados 25 clientes.
  
 \begin_inset Formula $\pi=12$
 \end_inset
@@ -5163,7 +5163,7 @@ reference "tab:Resultados-25-vehículos."
 \begin_inset Float table
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -5184,7 +5184,7 @@ status collapsed
 \begin_layout Plain Layout
 
 \noun on
-50 vehículos
+50 clientes
 \end_layout
 
 \end_inset
@@ -5645,7 +5645,7 @@ largo 1' 2 cores
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Resultados 50 vehículos.
+Resultados 50 clientes.
  
 \begin_inset Formula $\pi=25$
 \end_inset
@@ -5852,7 +5852,7 @@ status open
 \begin_layout Plain Layout
 
 \noun on
-100 vehículos
+100 clientes
 \end_layout
 
 \end_inset
@@ -6361,7 +6361,7 @@ vehículos 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+3.25
 \end_layout
 
 \end_inset
@@ -6426,7 +6426,7 @@ largo 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+1149.91
 \end_layout
 
 \end_inset
@@ -6491,7 +6491,7 @@ vehículos 5' 24 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+3.25
 \end_layout
 
 \end_inset
@@ -6556,7 +6556,7 @@ largo 5' 24 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-
+1125.13
 \end_layout
 
 \end_inset
@@ -6573,7 +6573,7 @@ largo 5' 24 cores
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Resultados 100 vehículos.
+Resultados 100 clientes.
  
 \begin_inset Formula $\pi=25$
 \end_inset
