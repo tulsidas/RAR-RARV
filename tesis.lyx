@@ -47,26 +47,95 @@ Un algoritmo distribuído de Ruin & Recreate para VRPTW
 \end_layout
 
 \begin_layout Author
-Andrés Martínez Quijano
-\begin_inset Newline newline
-\end_inset
-
-aquijano@dc.uba.ar
+Martínez Quijano, Andrés \SpecialChar \nobreakdash-
+ LU: 32/98
 \end_layout
 
-\begin_layout Abstract
-bla bla bla
+\begin_layout Standard
+\align center
+Directora: Dra.
+ Irene Loiseau
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename uba.jpg
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+Departamento de Computación
+\end_layout
+
+\begin_layout Standard
+\align center
+Facultad de Ciencias Exactas y Naturales
+\end_layout
+
+\begin_layout Standard
+\align center
+Universidad de Buenos Aires
+\end_layout
+
+\begin_layout Standard
+\align center
+Argentina
 \end_layout
 
 \begin_layout Verse
 \begin_inset Newpage pagebreak
 \end_inset
 
-Quiña
+
+\end_layout
+
+\begin_layout Abstract
+En esta tesis se considera el problema de ruteo de vehículos con ventanas
+ de tiempo (Vehicle Routing Problem with Time Windows, VRPTW) y se presenta
+ un algoritmo distribuído de la metaheurística Ruin and Recreate para el
+ mismo.
+ El problema de VRPTW es una variante del problema de ruteo de vehículos
+ (VRP) donde cada cliente tiene una ventana de tiempo asociada durante la
+ cual puede ser visitado por un vehículo.
+ El algoritmo y la implementación propuestas se ejecutan de forma paralela
+ y transparente en un número ilimitado de nodos computacionales.
 \end_layout
 
 \begin_layout Verse
-Peter Ross
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Right Address
+Agradecimientos
+\end_layout
+
+\begin_layout Verse
+a la Quiña
+\end_layout
+
+\begin_layout Verse
+a Peter Ross, que me recomendó leer sobre Ruin & Recreate
+\end_layout
+
+\begin_layout Verse
+a JCK Consulting Inc.
+\end_layout
+
+\begin_layout Verse
+a Emmita, por dormir esa siesta
+\end_layout
+
+\begin_layout Verse
+a Florencia, por el resto
 \end_layout
 
 \begin_layout Verse
@@ -118,7 +187,8 @@ Introducción
 \end_layout
 
 \begin_layout Standard
-El ruteo de vehículos es un problema logístico muy presente en la cotidianeidad.
+El ruteo de vehículos es un problema de logística muy presente en la vida
+ real.
  Consiste en la optimización de asignación de rutas a vehículos en un orden
  y tiempo determinados, de forma de minimizar la distancia total recorrida,
  la cantidad de vehículos necesarios para cumplir los requisitos, o, en
@@ -135,11 +205,19 @@ Vehicle Routing Problem
 
 \end_inset
 
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-VRP"
+
+\end_inset
+
 , existe un número fijo de clientes con demandas de mercadería que debe
- ser satisfecha con la visita de un vehículo (o camión).
+ ser satisfecha con la visita de uno y sólo un vehículo (o camión).
  Dado que los camiones tienen capacidad limitada, en general no es viable
- que un sólo camión pueda recorrer todos los clientes, por lo que se agregan
- camiones a la solución.
+ que un sólo camión pueda visitar y satisfacer la demanda de todos los clientes,
+ por lo que es necesario que se agreguen camiones a la solución para que
+ ésta sea factible.
 \end_layout
 
 \begin_layout Standard
@@ -151,9 +229,61 @@ depósito,
  de forma que todos los clientes sean visitados y sus demandas y restricciones
  sean cumplidas.
  El objetivo del VRP es encontrar la mejor solución, según el parámetro
- de optimización deseado (vehículos, distancia, tiempos de espera, etc.).
- Existen diversas variantes al problema original; en esta tesis se trata
- exclusivamente el VRPTW
+ de optimización deseado (cantidad de vehículos, distancia total recorrida,
+ tiempos de espera de, etc.).
+ Existen diversas variantes al problema original: en VRPB
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+del inglés 
+\emph on
+Vehicle Routing Problem with Backhauls
+\end_layout
+
+\end_inset
+
+ donde además del conjunto de clientes a quienes se les debe entregar mercadería
+, existe otro conjunto de 
+\emph on
+proveedores
+\emph default
+ a quienes se debe ir en busca de mercadería para llevar de vuelta al depósito.
+ Además, todas las entregas deben hacerse antes que las recogidas, para
+ evitar reacomodar la carga del vehículo.
+ VRPPD
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+del inglés 
+\emph on
+Vehicle Routing Problem with Pickup and Delivery
+\end_layout
+
+\end_inset
+
+ no hay un depósito único de donde obtener la carga a repartir, sino que
+ está distribuída en distintos puntos, por lo que debe ser recogida primero
+ para poder ser entregada.
+ VRPSD
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+del inglés 
+\emph on
+Vehicle Routing Problem with Split Delivery
+\end_layout
+
+\end_inset
+
+ permite que un cliente sea satisfecho por más de un vehículo, dando lugar
+ a entregas parciales.
+\end_layout
+
+\begin_layout Standard
+En esta tesis se trata exclusivamente la variante VRPTW
 \begin_inset Foot
 status open
 
@@ -165,22 +295,47 @@ Vehicle Routing Problem with Time Windows
 
 \end_inset
 
-, una variante donde cada cliente tiene asociada una ventana de tiempo que
- restringe el momento en que puede ser visitada por un vehículo y un tiempo
- necesario de servicio.
+ donde cada cliente tiene asociada una ventana de tiempo que restringe el
+ momento en que puede ser visitada por un vehículo y un tiempo necesario
+ de servicio.
  Si bien un camión puede arribar a un cliente antes de tiempo, deberá esperar
- que abra su ventana de tiempo antes de poder iniciar la descarga, pero
+ al inicio de su ventana de tiempo antes de poder iniciar la descarga, pero
  nunca podrá arribar luego de cerrada la ventana.
  El tiempo de servicio de cada cliente se impone como el tiempo que toma
  la descarga de mercadería.
- En general, la ventana de tiempo aplica solamente a la llegada del camión
- y no al tiempo de servicio, o sea que, por ejemplo, se acepta que un camión
- llegue a una hora a un cliente de forma que el servicio termine después
- de la ventana de tiempo haya cerrado.
+ En el caso que plantea esta tesis, la ventana de tiempo aplica solamente
+ a la llegada del camión y no al tiempo de servicio, por lo que, por ejemplo,
+ se acepta que un camión llegue a una hora tal a un cliente de forma que
+ el servicio termine después de la ventana de tiempo haya cerrado.
+\end_layout
+
+\begin_layout Standard
+Se propone una solución metaheurística de tipo Ruin And Recreate 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-RR"
+
+\end_inset
+
+ multiobjetivo, con implementación distribuída que permita utilizar varias
+ computadoras en red para resolver el problema.
+\end_layout
+
+\begin_layout Standard
+En el resto de la sección 1 se introduce más detalladamente el VRPTW.
+ En la sección 2 se detalla la metaheurística 
+\emph on
+Ruin & Recreate
+\emph default
+.
+ En la sección 3 se presenta en detalle la solución propuesta por esta tesis.
+ La sección 4 expone los resultados obtenidos al aplicar el algoritmo, y
+ finalmente en las secciones 5 y 6 se muestran las conclusiones y posible
+ trabajo futuro, respectivamente.
 \end_layout
 
 \begin_layout Subsection
-Notación
+VRPTW
 \end_layout
 
 \begin_layout Standard
@@ -188,7 +343,7 @@ Sea
 \begin_inset Formula $G=(V,A)$
 \end_inset
 
- grafo completo donde 
+ un grafo completo donde 
 \begin_inset Formula $V=\{0,\ldots,n\}$
 \end_inset
 
@@ -205,133 +360,8 @@ Sea
 \begin_inset Formula $i=1\ldots n$
 \end_inset
 
- los clientes.
- También se suele notar al depósito como el nodo 
-\begin_inset Formula $n+1$
-\end_inset
-
-, aunque en esta tesis siempre se notará como el nodo 
-\begin_inset Formula $0$
-\end_inset
-
-.
-\end_layout
-
-\begin_layout Standard
-Un costo no negativo 
-\begin_inset Formula $c_{ij}$
-\end_inset
-
- es asociado a cada eje 
-\begin_inset Formula $(i,j)\in A$
-\end_inset
-
-, representando el costo de viajar desde el nodo 
-\begin_inset Formula $i$
-\end_inset
-
- hasta el nodo 
-\begin_inset Formula $j$
-\end_inset
-
-.
- En el caso que plantea esta tesis, se asume que el grafo no es dirigido,
- o sea 
-\begin_inset Formula $c_{ij}=c_{ji}\forall i,j\in A,i\neq j$
-\end_inset
-
-.
- 
-\end_layout
-
-\begin_layout Standard
-Cada cliente tiene asociado una demanda no negativa 
-\begin_inset Formula $d_{i}$
-\end_inset
-
- (siendo 
-\begin_inset Formula $d_{0}=0$
-\end_inset
-
-) y una ventana de tiempo 
-\begin_inset Formula $[a_{i},b_{i}]$
-\end_inset
-
- con 
-\begin_inset Formula $a_{i}<b_{i}$
-\end_inset
-
-.
- Los parámetros 
-\begin_inset Formula $E$
-\end_inset
-
- y 
-\begin_inset Formula $L$
-\end_inset
-
- indican el comienzo y fin, respectivamente, de la ventana de tiempo del
- depósito: 
-\begin_inset Formula $[a_{0},b_{0}]=[E,L]$
-\end_inset
-
-, donde 
-\begin_inset Formula $a_{0}\leq a_{i}\forall i\in V$
-\end_inset
-
- y 
-\begin_inset Formula $b_{0}\geq b_{i}\forall i\in V$
-\end_inset
-
-.
- También se asocia a cada cliente un valor no negativo 
-\begin_inset Formula $s_{i}$
-\end_inset
-
- indicando el tiempo de servicio, esto es, el tiempo mínimo que un vehículo
- debe permanecer en el cliente cargando o descargando mercadería antes de
- poder proseguir su ruta.
-\end_layout
-
-\begin_layout Standard
-Se dispone de 
-\begin_inset Formula $K$
-\end_inset
-
- vehículos idénticos entre sí, cada uno con capacidad de carga 
-\begin_inset Formula $C$
-\end_inset
-
-\SpecialChar \@.
-
-\end_layout
-
-\begin_layout Standard
-Se define además:
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $x_{ijk}=\begin{cases}
-1 & \mbox{si \ensuremath{(i,j)\in A\mbox{ es usado por el vehículo \ensuremath{k}}\in K}}\\
-0 & \mbox{si no}\end{cases}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset Formula $w_{ik},i\in V,k\in K$
-\end_inset
-
- el comienzo del servicio en el nodo 
-\begin_inset Formula $i$
-\end_inset
-
- por el vehículo 
-\begin_inset Formula $k$
-\end_inset
-
-
+ son los clientes.
+ Además:
 \end_layout
 
 \begin_layout Standard
@@ -388,13 +418,131 @@ dado que esta tesis considera únicamente grafos completos,
 
 \end_layout
 
+\begin_layout Standard
+Un costo no negativo 
+\begin_inset Formula $c_{ij}$
+\end_inset
+
+ es asociado a cada eje 
+\begin_inset Formula $(i,j)\in A$
+\end_inset
+
+, representando el costo de viajar desde el nodo 
+\begin_inset Formula $i$
+\end_inset
+
+ hasta el nodo 
+\begin_inset Formula $j$
+\end_inset
+
+.
+ En el caso que plantea esta tesis, se asume que el grafo no es dirigido,
+ o sea 
+\begin_inset Formula $c_{ij}=c_{ji\:}\forall i,j\in A,\: i\neq j$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+Cada cliente tiene asociado una demanda no negativa 
+\begin_inset Formula $d_{i}$
+\end_inset
+
+ (siendo 
+\begin_inset Formula $d_{0}=0$
+\end_inset
+
+) y una ventana de tiempo 
+\begin_inset Formula $[a_{i},b_{i}]$
+\end_inset
+
+ con 
+\begin_inset Formula $a_{i}<b_{i}$
+\end_inset
+
+.
+ Los parámetros 
+\begin_inset Formula $E$
+\end_inset
+
+ y 
+\begin_inset Formula $L$
+\end_inset
+
+ indican el comienzo y fin, respectivamente, de la ventana de tiempo del
+ depósito: 
+\begin_inset Formula $[a_{0},b_{0}]=[E,L]$
+\end_inset
+
+, donde 
+\begin_inset Formula $a_{0}\leq a_{i}\:\forall i\in V$
+\end_inset
+
+ y 
+\begin_inset Formula $b_{0}\geq b_{i}\:\forall i\in V$
+\end_inset
+
+.
+ También se asocia a cada cliente un valor no negativo 
+\begin_inset Formula $s_{i}$
+\end_inset
+
+ indicando el tiempo de servicio, esto es, el tiempo mínimo que un vehículo
+ debe permanecer en el cliente cargando o descargando mercadería antes de
+ poder proseguir su ruta.
+\end_layout
+
+\begin_layout Standard
+Se dispone de 
+\begin_inset Formula $K$
+\end_inset
+
+ vehículos idénticos entre sí, cada uno con capacidad de carga 
+\begin_inset Formula $C$
+\end_inset
+
+\SpecialChar \@.
+
+\end_layout
+
+\begin_layout Standard
+Se definen además las siguientes variables:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $x_{ijk}=\begin{cases}
+1 & \mbox{si \ensuremath{(i,j)\in A\mbox{ es usado por el vehículo \ensuremath{k}}\in K}}\\
+0 & \mbox{si no}\end{cases}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $w_{ik},i\in V,k\in K$
+\end_inset
+
+ el comienzo del servicio en el nodo 
+\begin_inset Formula $i$
+\end_inset
+
+ por el vehículo 
+\begin_inset Formula $k$
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Formulación
 \end_layout
 
 \begin_layout Standard
-Planteado como un problema de programación lineal, la solución óptima a
- un problema VRPTW consiste en hallar:
+En el caso en que el objetivo sea minimizar el costo global, el problema
+ se puede plantear como un problema de programación lineal entera, donde
+ la solución óptima consiste en hallar:
 \end_layout
 
 \begin_layout Standard
@@ -457,7 +605,7 @@ x_{ijk}(w_{ik}+s_{i}+t_{ij}-w_{jk})\leq0\qquad\forall k\in K,(i,j)\in A\label{eq
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-a_{i}\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\leq w_{ik}\leq b_{i}\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\qquad\forall k\in K,i\in N\label{eq:7}\end{equation}
+a_{i}\left(\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\right)\leq w_{ik}\leq b_{i}\left(\underset{j\in\Delta^{+}(i)}{\sum x_{ijk}}\right)\qquad\forall k\in K,i\in N\label{eq:7}\end{equation}
 
 \end_inset
 
@@ -556,6 +704,13 @@ reference "eq:6"
 
 \begin_inset CommandInset ref
 LatexCommand eqref
+reference "eq:7"
+
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand eqref
 reference "eq:8"
 
 \end_inset
@@ -577,7 +732,7 @@ reference "eq:7"
 
 \end_inset
 
- fuerza que 
+ además obliga que 
 \begin_inset Formula $w_{ik}=0$
 \end_inset
 
@@ -628,7 +783,13 @@ reference "eq:11"
 
 \end_layout
 
-\begin_layout Section
+\begin_layout Standard
+En esta tesis se trabaja con una formulación del problema multiobjetivo,
+ donde prioriza la reducción de la cantidad de vehículos de la solución,
+ y en segunda instancia la distancia total recorrida.
+\end_layout
+
+\begin_layout Subsection
 Metaheurísticas
 \end_layout
 
@@ -641,9 +802,10 @@ VRPTW
 \noun on
 NP-HARD
 \noun default
-, resulta impracticable buscar la optimalidad mediante algoritmos exactos
- en instancias grandes, por lo que se acude a heurísticas o metaheurísticas
- para obtener buenas soluciones factibles de los problemas en tiempos acotados.
+, desde el punto de vista de las aplicaciones reales resulta impracticable
+ buscar la optimalidad mediante algoritmos exactos en instancias grandes,
+ por lo que se acude a heurísticas o metaheurísticas para obtener buenas
+ soluciones factibles de los problemas en tiempos acotados.
  
 \end_layout
 
@@ -668,14 +830,8 @@ Simulated Annealing
 \emph on
 Tabú search
 \emph default
-: una búsqueda local que permite soluciones peores a la actual con cierta
- probabilidad.
- De esta forma, se evitan mínimos locales que frenan las mejoras de soluciones.
- Para evitar un ciclo entre las mejoras encontradas, se utiliza una 
-\emph on
-lista tabú
-\emph default
- que impide que determinadas soluciones sean aceptadas.
+: una búsqueda local que guarda una lista de soluciones ya visitadas para
+ permitir expander el entorno y no atorarse en un mínimo local
 \end_layout
 
 \begin_layout Enumerate
@@ -684,23 +840,23 @@ lista tabú
 Algoritmos genéticos
 \emph default
 : basada en la evolución natural.
- En cada iteración una solución dada provee un conjunto de nuevas soluciones
- que son evaluadas y las 
+ En cada iteración una población de soluciones dada provee un conjunto de
+ nuevas soluciones que son evaluadas y las 
 \emph on
 más aptas
 \emph default
 , es decir, las de mejor función objetivo, tendrán más chances de ser parte
  de la nueva población, que se formará en base a mutaciones y combinaciones
- de las actuales.
+ de las actuales
 \end_layout
 
 \begin_layout Enumerate
 
 \emph on
-Comportamiento colectivo
+Swarm optimization
 \emph default
 : son algoritmos basados en comportamientos colectivos de algunos animales,
- por ejemplo: colonia de hormigas, colonia de abejas, libélulas, etc.
+ por ejemplo: colonia de hormigas, colonia de abejas, libélulas, etc
 \end_layout
 
 \begin_layout Section
@@ -715,9 +871,9 @@ name "sec:Ruin-&-Recreate"
 \end_layout
 
 \begin_layout Standard
-La metaheurística Ruin & Recreate fue desarrollada en el año 1998 por Gerhard
- Schrimpf et al y en un principio fue aplicada al problema de ruteo de vehículos
-, optimización de redes y el viajante de comercio
+La metaheurística Ruin & Recreate fue desarrollada en el año 1998 por Schrimpf,
+ Schneider, Stamm-Wilbrandt y Dueck y en un principio fue aplicada a VRPTW,
+ problemas de optimización de redes y al viajante de comercio 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-RR"
@@ -973,8 +1129,8 @@ Objetivo Múltiple
 \end_layout
 
 \begin_layout Standard
-Para lograr mayor efectividad al resolver el problema, se ejecutan en paralelo
- dos algoritmos similares pero con distintos objetivos.
+Para lograr mayor efectividad al resolver VRPTW multiobjetivo, se ejecutan
+ en paralelo dos algoritmos similares pero con distintos objetivos.
  
 \emph on
 RAR
@@ -1070,7 +1226,41 @@ Asincronía y latencia
 \end_layout
 
 \begin_layout Standard
-Viendo en detalle el algoritmo
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename arquitectura.png
+	clip
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Diagrama de la arquitectura distribuída
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Viendo en detalle el algoritmo 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "Flo:AlgoArbitro"
@@ -1102,7 +1292,7 @@ El árbitro calcula la solución inicial en
 \begin_inset Formula $i_{1}$
 \end_inset
 
- encuentra una mejora de 
+ encuentra una mejor solución de 
 \begin_inset Formula $N-2$
 \end_inset
 
@@ -1117,7 +1307,7 @@ el árbitro la guarda como nueva mejor y redistribuye
 \begin_inset Formula $i_{2}$
 \end_inset
 
- encuentra una mejora de 
+ encuentra una mejor solución de 
 \begin_inset Formula $N-1$
 \end_inset
 
@@ -1136,10 +1326,11 @@ el árbitro la guarda como nueva mejor y redistribuye
 \end_layout
 
 \begin_layout Standard
+La instancia 
 \begin_inset Formula $i_{2}$
 \end_inset
 
-no cesa su búsqueda de mejor solución al recibir una solución del árbitro,
+ no cesa su búsqueda de mejor solución al recibir una solución del árbitro,
  y también puede pasar que por demoras en la red ésta llegue luego de haber
  encontrado la mejora del punto 4, por lo que sin la guarda mencionada se
  tomaría 
@@ -1154,7 +1345,14 @@ no cesa su búsqueda de mejor solución al recibir una solución del árbitro,
 \begin_inset Formula $N-2$
 \end_inset
 
+, que sería descartada, como se puede ver en la Figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Ejemplo-de-distribución"
 
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -1166,8 +1364,8 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Graphics
-	filename arquitectura.png
-	clip
+	filename cdraw.png
+	scale 50
 
 \end_inset
 
@@ -1178,15 +1376,18 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Diagrama de la arquitectura distribuída
-\end_layout
+Ejemplo de distribución de soluciones
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Ejemplo-de-distribución"
 
 \end_inset
 
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 
@@ -1199,7 +1400,7 @@ Diagrama de la arquitectura distribuída
 \begin_inset Float algorithm
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Caption
@@ -1342,22 +1543,44 @@ Solución inicial
 \begin_layout Standard
 Para poder arruinar y recrear una solución, se necesita generar una solución
  factible sobre la cual iterar.
- La solución inicial la construye el árbitro utilizando la heurística del
- vecino más próximo 
+ La solución inicial la construye el árbitro utilizando una variante de
+ la heurística del vecino más próximo 
 \begin_inset CommandInset citation
 LatexCommand citet
 key "key-Lin"
 
 \end_inset
 
-, a la cual se le aplica un proceso de búsqueda local (ver 
+, la cual, partiendo del depósito, iterativamente se agrega a la solución
+ al cliente más cercano y factible, esto es, cuya demanda sea satisfacible
+ por el vehículo y que la visita se produzca dentro de la ventana de tiempo.
+ En caso de no haber clientes factibles, se agrega otro vehículo a la solución,
+ hasta que todos los clientes hayan sido visitados.
+ Se asume la cantidad de vehículos es ilimitado, por lo que siempre es posible
+ agregar un nuevo vehículo para poder conseguir una solución inicial factible.
+ Luego de la construcción de la solución inicial, se aplica un proceso de
+ búsqueda local (ver 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sub:Búsqueda-local"
 
 \end_inset
 
-)
+).
+ En los ejemplos a los cuales se aplicó el algoritmo (ver la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Resultados"
+
+\end_inset
+
+) se asume que siempre existe una solución inicial factible encontrable
+ de esta forma, caso contrario se cancela la ejecución, dado que VRPTW es
+ 
+\noun on
+NP-HARD
+\noun default
+.
 \end_layout
 
 \begin_layout Subsection
@@ -1375,7 +1598,7 @@ name "sub:Recreate"
 Recrear consiste en reinsertar los nodos que fueron quitados (arruinados)
  de la solución intentando obtener una solución que sea mejor de la que
  se partió.
- Se decidió por usar un algoritmo de 
+ Se usó un algoritmo de 
 \emph on
 mejor inserción
 \emph default
@@ -1745,7 +1968,7 @@ Sea
 \end_layout
 
 \begin_layout Standard
-Como se detalló en 
+Como se detalló en la sección 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sub:Recreate"
@@ -1833,14 +2056,12 @@ RAR
 RAR
 \emph default
  quitara un vehículo completo, estaría buscando entonces una solución con,
- al menos, un vehículo menos, lo cual es altamente probable que sea infactible,
- desaprovechando entonces la iteración actual.
- Además, 
+ al menos, un vehículo menos, lo cual es terreno de 
 \emph on
 RARV
 \emph default
- está enfocado justamente a ese menester, con lo cual habrían más iteraciones
- intentando reducir vehículos y desbalanceando la configuración de la red.
+, que está enfocado justamente a ese menester, con lo qué habrían más iteracione
+s intentando reducir vehículos y desbalanceando la configuración de la red.
 \end_layout
 
 \begin_layout Standard
@@ -1870,9 +2091,8 @@ RAR
 \emph default
  aplica, independientemente del algoritmo de rotura utilizado, un procedimiento
  donde, en caso de haberse roto todo un vehículo, reinserta un cliente al
- azar de ese vehículo roto, de forma que el vehículo siga siendo parte de
- la solución.
- 
+ azar de ese vehículo roto, de forma que dicho vehículo siga siendo parte
+ de la solución y no sea quitado completamente.
 \end_layout
 
 \begin_layout Standard
@@ -1882,7 +2102,8 @@ RARV
 \emph default
  quita siempre un vehículo completo al azar y luego aplica el algoritmo
  de rotura elegido, con su posterior procedimiento de verificación de que
- no se haya roto un vehículo entero, como se describió previamente.
+ no se haya roto otro vehículo entero además del quitado, como se describió
+ previamente.
  De esta forma, 
 \emph on
 RARV
@@ -2111,7 +2332,8 @@ En esta tesis se utilizaron dos algoritmos de arruine: aleatorio y espacial.
 \end_inset
 
 .
- En cada iteración se elige el algoritmo aleatorio con probabilidad 
+ En cada iteración se elige el mecanismo de rotura aleatoria con probabilidad
+ 
 \begin_inset Formula $\delta$
 \end_inset
 
@@ -2218,16 +2440,18 @@ El arruine espacial intenta explotar la cercanía física de los clientes
 \emph on
 sólo
 \emph default
- arruine espacial no da tan buenos resultados, por lo que se lo combina
- con otras formas de arruine.
+ arruine espacial no da tan buenos resultados, motivo por el cual se lo
+ combina con otras formas de arruine.
 \end_layout
 
 \begin_layout Standard
 Conceptualmente, se elige un cliente al azar y se lo quita de la solución
- junto con todos los clientes que estén dentro de un radio dado.
- La elección del radio es importante: un radio muy chico y se quitarán muy
- pocos vehículos como para lograr una mejora, y un radio muy grande quitará
- demasiados vehículos, tendiendo a la infactibilidad de la solución.
+ junto con todos los clientes que estén dentro de un radio determinado de
+ dicho cliente.
+ La elección del radio es importante: un radio muy chico implicaría que
+ se quitarán muy pocos vehículos como para lograr una mejora, y un radio
+ muy grande quitará demasiados vehículos, tendiendo a la infactibilidad
+ de la solución.
 \end_layout
 
 \begin_layout Standard
@@ -2341,7 +2565,7 @@ reverse(n)
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2436,7 +2660,7 @@ relocate(n)
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2507,7 +2731,7 @@ tailExchange
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2872,7 +3096,14 @@ En esta sección se presentan los resultados obtenidos al aplicar el algoritmo
 VRPTW
 \noun default
 .
- Las instancias utilizadas son las introducidas por Solomon (CITA) en 1987.
+ Las instancias utilizadas son las introducidas por Solomon 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-Solomon-1"
+
+\end_inset
+
+ en 1987.
  Estas instancias se dividen en diversos grupos, según las ubicaciones de
  los clientes.
  En primer lugar se dividen en dos grandes grupos: el primer grupo (tipo
@@ -3139,12 +3370,12 @@ En un principio
 
 v
 \emph default
- eran variables con valores entre 0 y 1, indicando porcentaje de rotura.
+ eran variables con valores entre 0 y 1, indicando probabilidad de rotura.
  Así, 
 \begin_inset Formula $\pi=0.5$
 \end_inset
 
- por ejemplo indicaba que, estadísticamente, se quitarían de la solución
+ por ejemplo indicaba que, estadísticamente, se quitaría de la solución
  la mitad de los clientes.
  En la etapa de calibración (ver 
 \begin_inset CommandInset ref
@@ -3167,7 +3398,7 @@ reference "sub:Calibración"
 
 v
 \emph default
- como porcentuales de rotura, pero calculados tomando como parámetro la
+ como probabilidad de rotura, pero calculados tomando como parámetro la
  cantidad de clientes a quitar, según las fórmulas:
 \end_layout
 
@@ -4597,6 +4828,86 @@ Intel Core 2 Quad CPU Q9550 @ 2.83GHz
  con 4 GB de RAM.
 \end_layout
 
+\begin_layout Subsubsection
+Explicación de las tablas
+\end_layout
+
+\begin_layout Standard
+La nomenclatura usada en las tablas de las secciones siguientes es la aquí
+ descripta:
+\end_layout
+
+\begin_layout Itemize
+en las columnas se indica el tipo de instancia (C1, C2, etc.) y los valores
+ en cada fila corresponden al promedio obtenido para todas las instancias
+ del tipo
+\end_layout
+
+\begin_layout Itemize
+VMS y LMS se refiere a número de vehículos y largo total del recorrido,
+ respectivamente, de la mejor solución conocida, tomando los valores de
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-TOP"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+VNN es la cantidad de vehículos de la solución inicial, luego de haber aplicado
+ búsqueda local
+\end_layout
+
+\begin_layout Itemize
+LNN es el largo total del recorrido de la solución inicial, luego de haber
+ aplicado búsqueda local
+\end_layout
+
+\begin_layout Itemize
+V 
+\emph on
+x
+\emph default
+' 
+\emph on
+y
+\emph default
+ cores es la cantidad de vehículos de la solución luego de aplicar el algoritmo
+ durante 
+\emph on
+x
+\emph default
+ minutos, utilizando 
+\emph on
+y
+\emph default
+ núcleos de procesamiento
+\end_layout
+
+\begin_layout Itemize
+L 
+\emph on
+x
+\emph default
+' 
+\emph on
+y
+\emph default
+ cores es el largo total del recorrido de la solución luego de aplicar el
+ algoritmo durante 
+\emph on
+x
+\emph default
+ minutos, utilizando 
+\emph on
+y
+\emph default
+ núcleos de procesamiento
+\end_layout
+
 \begin_layout Subsection
 25 y 50 clientes
 \end_layout
@@ -4638,20 +4949,20 @@ quid
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="7" columns="7">
 <features>
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="middle" width="0">
+<column alignment="center" valignment="middle" width="0">
+<column alignment="center" valignment="middle" width="0">
+<column alignment="center" valignment="middle" width="0">
+<column alignment="center" valignment="middle" width="0">
+<column alignment="center" valignment="middle" width="0">
+<column alignment="center" valignment="middle" width="0">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -4724,7 +5035,7 @@ RC2
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -4789,7 +5100,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -4854,7 +5165,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos NN c/LS
+VNN
 \end_layout
 
 \end_inset
@@ -4919,7 +5230,7 @@ vehículos NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo NN c/LS
+LNN
 \end_layout
 
 \end_inset
@@ -4984,7 +5295,7 @@ largo NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 1' 2 cores
+V 1' 2 cores
 \end_layout
 
 \end_inset
@@ -5049,7 +5360,7 @@ vehículos 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 1' 2 cores
+L 1' 2 cores
 \end_layout
 
 \end_inset
@@ -5173,7 +5484,7 @@ reference "tab:Resultados-25-vehículos."
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -5259,7 +5570,7 @@ RC2
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -5324,7 +5635,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -5389,7 +5700,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos NN c/LS
+VNN
 \end_layout
 
 \end_inset
@@ -5454,7 +5765,7 @@ vehículos NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo NN c/LS
+LNN
 \end_layout
 
 \end_inset
@@ -5519,7 +5830,7 @@ largo NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 1' 2 cores
+V 1' 2 cores
 \end_layout
 
 \end_inset
@@ -5584,7 +5895,7 @@ vehículos 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 1' 2 cores
+L 1' 2 cores
 \end_layout
 
 \end_inset
@@ -5746,7 +6057,7 @@ R106.50
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -5768,7 +6079,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -5790,7 +6101,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 1' 2 cores
+V 1' 2 cores
 \end_layout
 
 \end_inset
@@ -5810,7 +6121,7 @@ vehículos 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 1' 2 cores
+L 1' 2 cores
 \end_layout
 
 \end_inset
@@ -5837,6 +6148,28 @@ largo 1' 2 cores
 \end_layout
 
 \begin_layout Standard
+Los resultados de los problemas de 100 clientes pueden visualizarse en la
+ Tabla 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resultados-100-clientes"
+
+\end_inset
+
+.
+ Se agregan además dos filas: VRR y LRR, que hacen referencia a la cantidad
+ de vehículos y el largo total del recorrido de la mejor solución obtenida
+ por 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-RR"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
 \align center
 \begin_inset Float table
 wide false
@@ -5846,7 +6179,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="11" columns="7">
+<lyxtabular version="3" rows="13" columns="7">
 <features>
 <column alignment="center" valignment="top" width="0">
 <column alignment="center" valignment="top" width="0">
@@ -5927,7 +6260,7 @@ RC2
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -5992,7 +6325,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -6057,7 +6390,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos NN c/LS
+VNN
 \end_layout
 
 \end_inset
@@ -6122,7 +6455,7 @@ vehículos NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo NN c/LS
+LMS
 \end_layout
 
 \end_inset
@@ -6187,7 +6520,137 @@ largo NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 1' 2 cores
+VRR
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+12.08
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.82
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11.88
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.38
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+LRR
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+828.38
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+589.86
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1211.53
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+958.05
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1377.39
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1097.63
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+V 1' 2 cores
 \end_layout
 
 \end_inset
@@ -6252,7 +6715,7 @@ vehículos 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 1' 2 cores
+L 1' 2 cores
 \end_layout
 
 \end_inset
@@ -6317,7 +6780,7 @@ largo 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 2 cores
+V 5' 2 cores
 \end_layout
 
 \end_inset
@@ -6382,7 +6845,7 @@ vehículos 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 2 cores
+L 5' 2 cores
 \end_layout
 
 \end_inset
@@ -6447,7 +6910,7 @@ largo 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 24 cores
+V 5' 24 cores
 \end_layout
 
 \end_inset
@@ -6512,7 +6975,7 @@ vehículos 5' 24 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 24 cores
+L 5' 24 cores
 \end_layout
 
 \end_inset
@@ -6625,7 +7088,7 @@ name "tab:Resultados-100-clientes"
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -6711,7 +7174,7 @@ RC2
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -6776,7 +7239,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -6850,7 +7313,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos NN c/LS
+VNN
 \end_layout
 
 \end_inset
@@ -6915,7 +7378,7 @@ vehículos NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo NN c/LS
+LNN
 \end_layout
 
 \end_inset
@@ -6980,7 +7443,7 @@ largo NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 1' 2 cores
+V 1' 2 cores
 \end_layout
 
 \end_inset
@@ -7045,7 +7508,7 @@ vehículos 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 1' 2 cores
+L 1' 2 cores
 \end_layout
 
 \end_inset
@@ -7110,7 +7573,7 @@ largo 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 2 cores
+V 5' 2 cores
 \end_layout
 
 \end_inset
@@ -7175,7 +7638,7 @@ vehículos 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 2 cores
+L 5' 2 cores
 \end_layout
 
 \end_inset
@@ -7240,7 +7703,7 @@ largo 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 24 cores
+V 5' 24 cores
 \end_layout
 
 \end_inset
@@ -7305,7 +7768,7 @@ vehículos 5' 24 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 24 cores
+L 5' 24 cores
 \end_layout
 
 \end_inset
@@ -7410,7 +7873,7 @@ name "tab:Resultados-200-clientes"
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -7496,7 +7959,7 @@ RC2
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -7597,7 +8060,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -7698,7 +8161,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos NN c/LS
+VNN
 \end_layout
 
 \end_inset
@@ -7790,7 +8253,7 @@ vehículos NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo NN c/LS
+LNN
 \end_layout
 
 \end_inset
@@ -7882,7 +8345,7 @@ largo NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 1' 2 cores
+V 1' 2 cores
 \end_layout
 
 \end_inset
@@ -7983,7 +8446,7 @@ vehículos 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 1' 2 cores
+L 1' 2 cores
 \end_layout
 
 \end_inset
@@ -8084,7 +8547,7 @@ largo 1' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 2 cores
+V 5' 2 cores
 \end_layout
 
 \end_inset
@@ -8185,7 +8648,7 @@ vehículos 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 2 cores
+L 5' 2 cores
 \end_layout
 
 \end_inset
@@ -8286,7 +8749,7 @@ largo 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 24 cores
+V 5' 24 cores
 \end_layout
 
 \end_inset
@@ -8387,7 +8850,7 @@ vehículos 5' 24 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 24 cores
+L 5' 24 cores
 \end_layout
 
 \end_inset
@@ -8528,7 +8991,7 @@ name "tab:Resultados-400-clientes"
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -8614,7 +9077,7 @@ RC2
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos mejor conocido
+VMS
 \end_layout
 
 \end_inset
@@ -8679,7 +9142,7 @@ vehículos mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo mejor conocido
+LMS
 \end_layout
 
 \end_inset
@@ -8744,7 +9207,7 @@ largo mejor conocido
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos NN c/LS
+VNN
 \end_layout
 
 \end_inset
@@ -8809,7 +9272,7 @@ vehículos NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo NN c/LS
+LNN
 \end_layout
 
 \end_inset
@@ -8874,7 +9337,7 @@ largo NN c/LS
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 2 cores
+V 5' 2 cores
 \end_layout
 
 \end_inset
@@ -8939,7 +9402,7 @@ vehículos 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 2 cores
+L 5' 2 cores
 \end_layout
 
 \end_inset
@@ -9004,7 +9467,7 @@ largo 5' 2 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-vehículos 5' 24 cores
+V 5' 24 cores
 \end_layout
 
 \end_inset
@@ -9069,7 +9532,7 @@ vehículos 5' 24 cores
 \begin_inset Text
 
 \begin_layout Plain Layout
-largo 5' 24 cores
+L 5' 24 cores
 \end_layout
 
 \end_inset
@@ -9303,7 +9766,7 @@ Mezclar con tabú search: el algoritmo siempre busca mejorar soluciones y
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "Lin"
+label "LIN/65"
 key "key-Lin"
 
 \end_inset
@@ -9318,7 +9781,7 @@ S.
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "MACS"
+label "MACS/99"
 key "key-MACS"
 
 \end_inset
@@ -9331,13 +9794,13 @@ L.
  MACS-VRPTW: A Multiple Ant Colony System For Vehicle Routing Problems With
  Time Windows.
  New Ideas in Optimization McGraw-Hill, London, UK, pp.
- 63-76, 1999
+ 63-76, 1999.
 \end_layout
 
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "RR"
+label "RAR/99"
 key "key-RR"
 
 \end_inset
@@ -9351,7 +9814,7 @@ Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "Scala"
+label "SCALA"
 key "key-Scala"
 
 \end_inset
@@ -9362,12 +9825,27 @@ http://www.scala-lang.org/
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "Solomon"
+label "SP"
 key "key-Solomon"
 
 \end_inset
 
 http://w.cba.neu.edu/~msolomon/problems.htm
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "SOL/87"
+key "key-Solomon-1"
+
+\end_inset
+
+Solomon MM.
+ Algorithms for the vehicle routing and scheduling problem with time window
+ constraints.
+ Operations Research.
+ 1987.
 \end_layout
 
 \begin_layout Bibliography
@@ -9384,7 +9862,7 @@ http://www.sintef.no/projectweb/top
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "VRP"
+label "TOTH/02"
 key "key-VRP"
 
 \end_inset
