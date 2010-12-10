@@ -24,7 +24,7 @@
 \use_amsmath 1
 \use_esint 1
 \cite_engine basic
-\use_bibtopic false
+\use_bibtopic true
 \paperorientation portrait
 \secnumdepth 3
 \tocdepth 3
@@ -43,7 +43,8 @@
 \begin_body
 
 \begin_layout Title
-Un algoritmo distribuído de Ruin & Recreate para VRPTW
+Un algoritmo distribuído de Ruin & Recreate para el problema de ruteo de
+ vehículos con ventanas de tiempo
 \end_layout
 
 \begin_layout Author
@@ -97,7 +98,7 @@ Argentina
 
 \begin_layout Abstract
 En esta tesis se considera el problema de ruteo de vehículos con ventanas
- de tiempo (Vehicle Routing Problem with Time Windows, VRPTW) y se presenta
+ de tiempo (Vehicle Routing Problem with Time Windows, VRPTW) y se propone
  un algoritmo distribuído de la metaheurística Ruin and Recreate para el
  mismo.
  El problema de VRPTW es una variante del problema de ruteo de vehículos
@@ -105,6 +106,12 @@ En esta tesis se considera el problema de ruteo de vehículos con ventanas
  cual puede ser visitado por un vehículo.
  El algoritmo y la implementación propuestas se ejecutan de forma paralela
  y transparente en un número ilimitado de nodos computacionales.
+ Los resultados obtenidos mediante la aplicación paralela del algoritmo
+ son competitivos con las mejores soluciones obtenidas heurísticamente.
+\begin_inset VSpace defskip
+\end_inset
+
+
 \end_layout
 
 \begin_layout Abstract
@@ -127,13 +134,14 @@ begin{abstract}
 
 \begin_layout Plain Layout
 
-This thesis considers the vehicle routing problem with time windows (VRPTW)
- and it introduces a distributed algorithm based on the ruin and recreate
+This thesis deals with the vehicle routing problem with time windows (VRPTW)
+ and it introduces a distributed algorithm based on the Ruin and Recreate
  metaheuristic.
  The VRPTW is a variant of the vehicle routing problem (VRP) where each
  client has a time window of the time when it can be served by a vehicle.
- The algorithm and it's implementation proposed can be transparently executed
- in parallel in many cores across many computers on a network.
+ The algorithm can be transparently executed in parallel in many cores across
+ many computers on a network.
+ The obtained results were found to be competetive with the best-known results.
 \end_layout
 
 \begin_layout Plain Layout
@@ -153,33 +161,6 @@ selectlanguage{spanish}
 \end_inset
 
 
-\end_layout
-
-\begin_layout Verse
-\begin_inset Newpage pagebreak
-\end_inset
-
-
-\end_layout
-
-\begin_layout Right Address
-Agradecimientos
-\end_layout
-
-\begin_layout Verse
-a Peter Ross, que me recomendó leer sobre Ruin & Recreate
-\end_layout
-
-\begin_layout Verse
-a la Quiña
-\end_layout
-
-\begin_layout Verse
-a Emmita, por dormir esa siesta
-\end_layout
-
-\begin_layout Verse
-a Florencia, por el resto
 \end_layout
 
 \begin_layout Verse
@@ -220,6 +201,10 @@ LatexCommand tableofcontents
 \end_inset
 
 
+\begin_inset Newpage pagebreak
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -246,13 +231,6 @@ del inglés
 \emph on
 Vehicle Routing Problem
 \end_layout
-
-\end_inset
-
- 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "key-VRP"
 
 \end_inset
 
@@ -351,10 +329,20 @@ Vehicle Routing Problem with Time Windows
  a la llegada del camión y no al tiempo de servicio, por lo que, por ejemplo,
  se acepta que un camión llegue a una hora tal a un cliente de forma que
  el servicio termine después de la ventana de tiempo haya cerrado.
+ Para una revisión más completa del problema de ruteo de vehículos, modelos,
+ algoritmos, variantes y formulaciones ver 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-VRP"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
-Se propone una solución metaheurística de tipo Ruin And Recreate 
+En este trabajo se propone una solución metaheurística de tipo Ruin And
+ Recreate 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-RR"
@@ -379,7 +367,7 @@ Ruin & Recreate
 \end_layout
 
 \begin_layout Subsection
-VRPTW
+Formulación de VRPTW
 \end_layout
 
 \begin_layout Standard
@@ -440,7 +428,7 @@ al nodo
 status open
 
 \begin_layout Plain Layout
-dado que esta tesis considera únicamente grafos completos, 
+dado que en esta tesis se trabaja únicamente con grafos completos, 
 \family roman
 \series medium
 \shape up
@@ -579,14 +567,10 @@ Se definen además las siguientes variables:
 
 \end_layout
 
-\begin_layout Subsection
-Formulación
-\end_layout
-
 \begin_layout Standard
-En el caso en que el objetivo sea minimizar el costo global, el problema
- se puede plantear como un problema de programación lineal entera, donde
- la solución óptima consiste en hallar:
+En el caso en que el objetivo sea minimizar el costo, el problema se puede
+ plantear como un problema de programación lineal entera, donde la solución
+ óptima consiste en hallar:
 \end_layout
 
 \begin_layout Standard
@@ -792,45 +776,9 @@ reference "eq:7"
 \end_layout
 
 \begin_layout Standard
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:10"
-
-\end_inset
-
- establece el caracter no-negativo de 
-\begin_inset Formula $x_{ijk}$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-\begin_inset CommandInset ref
-LatexCommand eqref
-reference "eq:11"
-
-\end_inset
-
- limita 
-\begin_inset Formula $x_{ijk}$
-\end_inset
-
- a valores 
-\begin_inset Formula $0$
-\end_inset
-
- ó 
-\begin_inset Formula $1$
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-En esta tesis se trabaja con una formulación del problema multiobjetivo,
- donde prioriza la reducción de la cantidad de vehículos de la solución,
- y en segunda instancia la distancia total recorrida.
+En esta tesis se trabaja con un problema multiobjetivo, donde prioriza la
+ reducción de la cantidad de vehículos de la solución, y en segunda instancia
+ la distancia total recorrida.
 \end_layout
 
 \begin_layout Subsection
@@ -846,7 +794,14 @@ VRPTW
 \noun on
 NP-HARD
 \noun default
-, desde el punto de vista de las aplicaciones reales resulta impracticable
+ (ver 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-VRP"
+
+\end_inset
+
+), desde el punto de vista de las aplicaciones reales resulta impracticable
  buscar la optimalidad mediante algoritmos exactos en instancias grandes,
  por lo que se acude a heurísticas o metaheurísticas para obtener buenas
  soluciones factibles de los problemas en tiempos acotados.
@@ -854,7 +809,7 @@ NP-HARD
 \end_layout
 
 \begin_layout Standard
-Algunas de las metaheurísticas más utilizadas en los últimos tiempos:
+Algunas de las metaheurísticas más utilizadas son:
 \end_layout
 
 \begin_layout Enumerate
@@ -900,7 +855,7 @@ más aptas
 Swarm optimization
 \emph default
 : son algoritmos basados en comportamientos colectivos de algunos animales,
- por ejemplo: colonia de hormigas, colonia de abejas, libélulas, etc
+ por ejemplo: colonia de hormigas, colonia de abejas, de libélulas, etc
 \end_layout
 
 \begin_layout Section
@@ -917,7 +872,7 @@ name "sec:Ruin-&-Recreate"
 \begin_layout Standard
 La metaheurística Ruin & Recreate fue desarrollada en el año 1998 por Schrimpf,
  Schneider, Stamm-Wilbrandt y Dueck y en un principio fue aplicada a VRPTW,
- problemas de optimización de redes y al viajante de comercio 
+ a problemas de optimización de redes y al viajante de comercio 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-RR"
@@ -1013,7 +968,8 @@ Espacial: dado un nodo
 \end_layout
 
 \begin_layout Itemize
-Cadena: se quita una cadena de nodos consecutivos en la solución de largo
+Cadena: se quita una cadena consecutiva de nodos (correspondientes a un
+ recorrido de un vehículo) de la solución, donde el largo de la cadena es
  parametrizable
 \end_layout
 
@@ -1179,15 +1135,15 @@ Para lograr mayor efectividad al resolver VRPTW multiobjetivo, se ejecutan
 \emph on
 RAR
 \emph default
- (Ruin & Recreate) intentará optimizar el recorrido total de la solución
- mientras que 
+ (Ruin & Recreate) intentará optimizar el largo total del recorrido de la
+ solución mientras que 
 \emph on
 RARV
 \emph default
  (Ruin & Recreate Vehicular) se enfoca exclusivamente en reducir la cantidad
  de vehículos necesarios.
- Como es de suponer, ambos algoritmos utilizan la metaheurística Ruin &
- Recreate, pero con diferente tipo de rotura (como se detalla en 
+ Ambos algoritmos utilizan la metaheurística Ruin & Recreate, pero con diferente
+ tipo de rotura (como se detalla en 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sub:RAR-y-RARV"
@@ -1585,8 +1541,8 @@ Solución inicial
 \end_layout
 
 \begin_layout Standard
-Para poder arruinar y recrear una solución, se necesita generar una solución
- factible sobre la cual iterar.
+Para poder arruinar y recrear una solución, se necesita en primera instancia
+ una solución, factible, sobre la cual poder iterar.
  La solución inicial la construye el árbitro utilizando una variante de
  la heurística del vecino más próximo 
 \begin_inset CommandInset citation
@@ -1595,13 +1551,16 @@ key "key-Lin"
 
 \end_inset
 
-, la cual, partiendo del depósito, iterativamente se agrega a la solución
- al cliente más cercano y factible, esto es, cuya demanda sea satisfacible
- por el vehículo y que la visita se produzca dentro de la ventana de tiempo.
- En caso de no haber clientes factibles, se agrega otro vehículo a la solución,
- hasta que todos los clientes hayan sido visitados.
- Se asume la cantidad de vehículos es ilimitado, por lo que siempre es posible
- agregar un nuevo vehículo para poder conseguir una solución inicial factible.
+, la cual, partiendo del depósito, iterativamente agrega a la solución al
+ cliente más cercano y factible (cuya demanda sea satisfacible por el vehículo
+ y que la visita se produzca dentro de su ventana de tiempo) que aún no
+ haya sido visitado por ningún vehículo.
+ En caso de no haber clientes factibles para el vehículo actual, se agrega
+ otro vehículo a la solución, agregando clientes de la misma manera, hasta
+ que todos los clientes del problema hayan sido visitados.
+ Se asume que la cantidad de vehículos es ilimitado, por lo que siempre
+ es posible agregar un nuevo vehículo para poder conseguir una solución
+ inicial factible.
  Luego de la construcción de la solución inicial, se aplica un proceso de
  búsqueda local (ver 
 \begin_inset CommandInset ref
@@ -1618,9 +1577,8 @@ reference "sec:Resultados"
 
 \end_inset
 
-) se asume que siempre existe una solución inicial factible encontrable
- de esta forma, caso contrario se cancela la ejecución, dado que VRPTW es
- 
+) siempre existe una solución inicial factible encontrable de esta forma,
+ caso contrario se cancela la ejecución, dado que VRPTW es 
 \noun on
 NP-HARD
 \noun default
@@ -1710,12 +1668,26 @@ Si en alguna iteración resulta que
 \end_inset
 
  es ininsertable (o sea el primer nodo es ininsertable) entonces se descarta
- esta solución rota como infactible, ya que no existe posición posible donde
- 
+ esta solución rota como infactible, ya que no existe reordenamiento posible
+ para que 
 \begin_inset Formula $v_{1}^{i}$
 \end_inset
 
 pueda ser insertado.
+\end_layout
+
+\begin_layout Standard
+Si la solución recreada no mejora el largo o la cantidad de vehículos (según
+ el caso de 
+\emph on
+RAR
+\emph default
+ o 
+\emph on
+RARV
+\emph default
+), entonces simplemente se descarta y se procede con la siguiente iteración
+ de arruine.
 \end_layout
 
 \begin_layout Standard
@@ -1949,9 +1921,9 @@ name "sub:RAR-y-RARV"
 \end_layout
 
 \begin_layout Standard
-
+Como ya se mencionó,
 \emph on
-RAR
+ RAR
 \emph default
  y 
 \emph on
@@ -3123,7 +3095,7 @@ status open
 \end_layout
 
 \begin_layout Section
-Resultados
+Resultados computacionales 
 \begin_inset CommandInset label
 LatexCommand label
 name "sec:Resultados"
@@ -3325,22 +3297,25 @@ Los parámetros de configuración del algoritmo, dada una instancia, son los
 \begin_layout Itemize
 
 \emph on
-cores
+\begin_inset Formula $núcleos$
+\end_inset
+
+
 \emph default
 : si bien no es un parámetro 
 \emph on
 per se
 \emph default
-, la cantidad de computadoras (o núcleos, en computadoras multinúcleo) puede
- pensarse como un parámetro
+ que el algoritmo tome para su funcionamiento, la cantidad de computadoras
+ (o núcleos, en computadoras multinúcleo) que resuelven el problema en paralelo
+ es un parámetro a contemplar en la observación y análisis de los resultados
 \end_layout
 
 \begin_layout Itemize
+\begin_inset Formula $t$
+\end_inset
 
-\emph on
-t
-\emph default
-: tiempo de ejecución del algoritmo
+: tiempo de ejecución del algoritmo, en minutos
 \end_layout
 
 \begin_layout Itemize
@@ -3357,10 +3332,9 @@ RAR
 \end_layout
 
 \begin_layout Itemize
+\begin_inset Formula $lsRAR$
+\end_inset
 
-\emph on
-lsRAR
-\emph default
 : si se ha de realizar búsqueda local luego de ejecutar 
 \emph on
 RAR
@@ -3376,29 +3350,19 @@ RARV
 \end_layout
 
 \begin_layout Itemize
+\begin_inset Formula $lsRARv$
+\end_inset
 
-\emph on
-lsRARv
-\emph default
 : si se ha de realizar búsqueda local luego de ejecutar 
 \emph on
 RARV
 \end_layout
 
 \begin_layout Itemize
+\begin_inset Formula $δ$
+\end_inset
 
-\emph on
-δ
-\emph default
-: probabilidad de ejecutar 
-\emph on
-RAR
-\emph default
-/
-\emph on
-RARV
-\emph default
- o rotura espacial en cada iteración
+: probabilidad de ejecutar rotura aleatoria o espacial en cada iteración
 \end_layout
 
 \begin_layout Standard
@@ -4826,8 +4790,18 @@ RARV
 \end_layout
 
 \begin_layout Standard
-En ambos casos el árbitro se ejecutó in situ en alguna computadora que a
- la vez estaba utilizando todos sus núcleos en 
+Se eligieron estos valores de tiempos para poder analizar la mejora obtenida
+ en cada caso entre 1 y 5 minutos, ya que luego de 5 minutos de ejecución
+ la cantidad de mejoras obtenidas disminuye drásticamente.
+\end_layout
+
+\begin_layout Standard
+En ambos casos el árbitro se ejecutó 
+\emph on
+in situ
+\emph default
+ en alguna computadora que a la vez estaba utilizando todos sus núcleos
+ en 
 \emph on
 RAR
 \emph default
@@ -4870,10 +4844,6 @@ quad core
 Intel Core 2 Quad CPU Q9550 @ 2.83GHz
 \noun default
  con 4 GB de RAM.
-\end_layout
-
-\begin_layout Subsubsection
-Explicación de las tablas
 \end_layout
 
 \begin_layout Standard
@@ -4957,18 +4927,24 @@ y
 \end_layout
 
 \begin_layout Standard
-Las instancias de 25 y 50 clientes de Solomon corresponden a tomar 25 y
- 50, respectivamente, de los problemas de 100 clientes.
+Las instancias de 25 y 50 clientes de Solomon corresponden a tomar los primeros
+ 25 y 50, respectivamente, de los problemas de 100 clientes.
  El problema al comparar los resultados obtenidos en estos problemas reside
- a que no hay información sobre los mejores resultados conocidos calculados
- por heurísticas, quizá porque sean muy fáciles de resolver.
+ a que no se encontró información sobre los mejores resultados conocidos
+ calculados por heurísticas, quizá porque sean muy fáciles de resolver.
  
 \end_layout
 
 \begin_layout Standard
-Todos estos problemas fueron resueltos óptimamente, por lo que no tiene
- mayor sentido utilizar heurísticas más allá de comparación o calibración
- de la misma.
+Todos estos problemas fueron resueltos óptimamente 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-Solomon"
+
+\end_inset
+
+, por lo que no tiene mayor sentido utilizar heurísticas más allá de comparación
+ o calibración de la misma.
  
 \end_layout
 
@@ -4977,14 +4953,22 @@ El
 \emph on
 quid
 \emph default
- del asunto es que la resolución exacta no usa un esquema jerárquico como
- el de esta tesis, donde la cantidad de vehículos tiene mayor prioridad
- al largo total, sino que optimizan únicamente el largo total del recorrido.
- Por otro lado, la resolución óptima usa precisión aritmética limitada a
- un decimal, por lo que los casos donde el número de vehículos es igual
- tanto en el óptimo como en la solución heurística, se nota una pequeña
- diferencia en el largo total, que presumiblemente sea producto de esta
- diferencia de precisiones.
+ del asunto es que la resolución exacta obtenida por 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-Solomon"
+
+\end_inset
+
+, contra las cuales se comparan los resultados, no usa un esquema jerárquico
+ donde la cantidad de vehículos tiene mayor prioridad al largo total, sino
+ que optimiza únicamente el largo total del recorrido, sin importar la cantidad
+ de vehículos necesarios.
+ Por otro lado, dichos resultados utilizan precisión aritmética limitada
+ a un decimal, por lo que los casos donde el número de vehículos es igual
+ tanto en el óptimo como en la solución producida por este trabajo, se nota
+ una pequeña diferencia en el largo total, que presumiblemente sea producto
+ de esta diferencia de precisiones.
  
 \end_layout
 
@@ -6499,7 +6483,7 @@ VNN
 \begin_inset Text
 
 \begin_layout Plain Layout
-LMS
+LNN
 \end_layout
 
 \end_inset
@@ -8887,7 +8871,7 @@ name "tab:Comp-R2"
 \begin_inset Float table
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -10226,9 +10210,31 @@ key "key-RR"
 \end_inset
 
  para las instancias de Solomon de tipo R1, R2, RC1 y RC2, respectivamente.
+ Se resaltan en negrita los resultados que fueron mejorados.
  Se omitieron las comparaciones para las instancias de tipo C1 y C2 dado
- que los resultados obtenidos por ambos algoritmos ellas fueron idénticos
- en todos los casos.
+ que los resultados obtenidos por ambos algoritmos fueron idénticos en todos
+ los casos.
+ Como referencia, Schrimpf obtuvo sus resultados tras aproximadamente 30
+ minutos de iteraciones en una computadora 
+\noun on
+RS 6000
+\noun default
+ modelo 
+\noun on
+43P
+\noun default
+, 
+\noun on
+233 MHz
+\noun default
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-RR"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -12789,6 +12795,48 @@ name "tab:Resultados-600-clientes"
 \end_layout
 
 \begin_layout Standard
+Los resultados para las instancias de 200, 400 y 600 clientes pueden verse
+ en las tablas 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resultados-200-clientes"
+
+\end_inset
+
+, 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resultados-400-clientes"
+
+\end_inset
+
+ y 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Resultados-600-clientes"
+
+\end_inset
+
+ respectivamente.
+ Al no haber resultados en 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-RR"
+
+\end_inset
+
+ para esta cantidad de vehículos, se compara directamente contra los mejores
+ resultados conocidos, obtenidos de 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-TOP"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
 En el caso de 600 clientes no se utilizó búsqueda local para 
 \noun on
 RARV
@@ -12892,8 +12940,9 @@ Posibles mejoras al algoritmo:
 \end_layout
 
 \begin_layout Itemize
-Cuando un nodo recibe una mejor solución del árbitro, primero debe terminar
- la iteración actual antes de proceder a reemplazar su solución por la nueva.
+En la solución actual, cuando un nodo recibe una mejor solución del árbitro,
+ primero debe terminar la iteración actual antes de proceder a reemplazar
+ su solución por la nueva.
  En las instancias pequeñas este tiempo es despreciable, pero en instancias
  de 600 vehículos, por ejemplo, la búsqueda local toma varios minutos, por
  lo que sería conveniente cortar con la iteración para empezar a trabajar
@@ -12946,22 +12995,7 @@ Mezclar con tabú search o aceptar peores soluciones: el algoritmo siempre
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "LIN/65"
-key "key-Lin"
-
-\end_inset
-
-S.
- Lin.
- Computer solutions of the traveling salesman problem.
- Bell System Technical Journal, 44:2245-2269, 1965.
- 
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-label "MACS/99"
+label "GAM/99"
 key "key-MACS"
 
 \end_inset
@@ -12971,8 +13005,12 @@ L.
  Gambardella, É.
  Taillard and G.
  Agazzi.
- MACS-VRPTW: A Multiple Ant Colony System For Vehicle Routing Problems With
- Time Windows.
+ 
+\series bold
+MACS-VRPTW: A Multiple Ant Colony System For Vehicle Routing Problems With
+ Time Windows
+\series default
+.
  New Ideas in Optimization McGraw-Hill, London, UK, pp.
  63-76, 1999.
 \end_layout
@@ -12980,37 +13018,44 @@ L.
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-label "RAR/99"
+label "LIN/65"
+key "key-Lin"
+
+\end_inset
+
+S.
+ Lin.
+ 
+\series bold
+Computer solutions of the traveling salesman problem
+\series default
+.
+ Bell System Technical Journal No.
+ 44, pp.
+ 2245-2269, 1965.
+ 
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "SCH/99"
 key "key-RR"
 
 \end_inset
 
-Gerhard Schrimpf, Johannes Schneider, Hermann Stamm-Wilbrandt, and Gunter
- Dueck, Record Breaking Optimization Results Using the Ruin and Recreate
- Principle.
- 1999.
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-label "SCALA"
-key "key-Scala"
-
-\end_inset
-
-http://www.scala-lang.org/
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-label "SP"
-key "key-Solomon"
-
-\end_inset
-
-http://w.cba.neu.edu/~msolomon/problems.htm
+G.
+ Schrimpf, J.
+ Schneider, H.
+ Stamm-Wilbrandt, and G.
+ Dueck.
+ 
+\series bold
+Record Breaking Optimization Results Using the Ruin and Recreate Principle
+\series default
+.
+ Journal of Computational Physics 159, pp.
+ 139–171, 1999.
 \end_layout
 
 \begin_layout Bibliography
@@ -13021,11 +13066,58 @@ key "key-Solomon-1"
 
 \end_inset
 
-Solomon MM.
- Algorithms for the vehicle routing and scheduling problem with time window
- constraints.
- Operations Research.
- 1987.
+M.
+ Solomon.
+ 
+\series bold
+Algorithms for the vehicle routing and scheduling problem with time window
+ constraints
+\series default
+.
+ Operations Research Vol.
+ 35, No.
+ 2, pp.
+ 254-265, 1987.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "TOT/02"
+key "key-VRP"
+
+\end_inset
+
+P.
+ Toth and D.Vigo.
+ 
+\series bold
+The Vehicle Routing Problem
+\series default
+.
+ SIAM, 2002.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "SPR"
+key "key-Solomon"
+
+\end_inset
+
+http://w.cba.neu.edu/~msolomon/problems.htm
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label "SCA"
+key "key-Scala"
+
+\end_inset
+
+http://www.scala-lang.org/
 \end_layout
 
 \begin_layout Bibliography
@@ -13037,20 +13129,6 @@ key "key-TOP"
 \end_inset
 
 http://www.sintef.no/projectweb/top
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-label "TOTH/02"
-key "key-VRP"
-
-\end_inset
-
-P.
- Toth and D.Vigo.
- The Vehicle Routing Problem.
- SIAM, 2002.
 \end_layout
 
 \end_body
