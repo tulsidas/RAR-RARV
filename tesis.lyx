@@ -252,7 +252,7 @@ depósito,
  sean cumplidas.
  El objetivo del VRP es encontrar la mejor solución, según el parámetro
  de optimización deseado (cantidad de vehículos, distancia total recorrida,
- tiempos de espera de, etc.).
+ tiempos de espera, etc.).
  Existen diversas variantes al problema original: en VRPB
 \begin_inset Foot
 status open
@@ -285,9 +285,9 @@ Vehicle Routing Problem with Pickup and Delivery
 
 \end_inset
 
- no hay un depósito único de donde obtener la carga a repartir, sino que
- está distribuída en distintos puntos, por lo que debe ser recogida primero
- para poder ser entregada.
+, donde no hay un depósito único de donde obtener la carga a repartir, sino
+ que está distribuída en distintos puntos, por lo que debe ser recogida
+ primero para poder ser entregada.
  VRPSD
 \begin_inset Foot
 status open
@@ -388,11 +388,20 @@ Sea
 \begin_inset Formula $0$
 \end_inset
 
- corresponde al depósito de donde parten los vehículos y 
+ (también notado como nodo 
+\begin_inset Formula $n+1$
+\end_inset
+
+) corresponde al depósito de donde parten los vehículos y 
 \begin_inset Formula $i=1\ldots n$
 \end_inset
 
  son los clientes.
+ 
+\begin_inset Formula $N=V\setminus\{0\}$
+\end_inset
+
+ es el conjunto de clientes.
  Además:
 \end_layout
 
@@ -478,7 +487,7 @@ Un costo no negativo
 \end_layout
 
 \begin_layout Standard
-Cada cliente tiene asociado una demanda no negativa 
+Cada cliente tiene asociada una demanda no negativa 
 \begin_inset Formula $d_{i}$
 \end_inset
 
@@ -606,7 +615,7 @@ sujeto a:
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-\underset{i\in\Delta^{-}(j)}{\sum x_{ijk}}-\underset{i\in\Delta^{+}(j)}{\sum x_{ijk}}=0\qquad\forall k\in K,j\in N\label{eq:4}\end{equation}
+\underset{i\in\Delta^{-}(j)}{\sum x_{ijk}}-\underset{i\in\Delta^{+}(j)}{\sum x_{jik}}=0\qquad\forall k\in K,j\in N\label{eq:4}\end{equation}
 
 \end_inset
 
@@ -624,7 +633,7 @@ sujeto a:
 
 \begin_layout Standard
 \begin_inset Formula \begin{equation}
-x_{ijk}(w_{ik}+s_{i}+t_{ij}-w_{jk})\leq0\qquad\forall k\in K,(i,j)\in A\label{eq:6}\end{equation}
+x_{ijk}(w_{ik}+s_{i}+c_{ij}-w_{jk})\leq0\qquad\forall k\in K,(i,j)\in A\label{eq:6}\end{equation}
 
 \end_inset
 
@@ -677,14 +686,39 @@ x_{ijk}\in\{0,1\}\qquad\forall k\in K,(i,j)\in A\label{eq:11}\end{equation}
 \end_layout
 
 \begin_layout Standard
-donde:
+la condición 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:11"
+
+\end_inset
+
+ permite que la restricción 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "eq:6"
+
+\end_inset
+
+ sea linealizable como
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $N=V\setminus\{0\}$
+\align center
+\begin_inset Formula \begin{equation}
+w_{ik}+s_{i}+c_{ij}-w_{jk}\leq(1-x_{ijk})M_{ij}\qquad\forall k\in K,(i,j)\in A\label{eq:7a}\end{equation}
+
 \end_inset
 
- el conjunto de clientes
+
+\end_layout
+
+\begin_layout Standard
+donde 
+\begin_inset Formula $M_{ij}$
+\end_inset
+
+ son constantes grandes
 \end_layout
 
 \begin_layout Standard
@@ -776,8 +810,8 @@ reference "eq:7"
 \end_layout
 
 \begin_layout Standard
-En esta tesis se trabaja con un problema multiobjetivo, donde prioriza la
- reducción de la cantidad de vehículos de la solución, y en segunda instancia
+En esta tesis se trabaja con un problema multiobjetivo, donde se prioriza
+ la reducción de la cantidad de vehículos de la solución, y en segunda instancia
  la distancia total recorrida.
 \end_layout
 
@@ -1554,12 +1588,12 @@ key "key-Lin"
 , la cual, partiendo del depósito, iterativamente agrega a la solución al
  cliente más cercano y factible (cuya demanda sea satisfacible por el vehículo
  y que la visita se produzca dentro de su ventana de tiempo) que aún no
- haya sido visitado por ningún vehículo.
+ haya sido visitado.
  En caso de no haber clientes factibles para el vehículo actual, se agrega
  otro vehículo a la solución, agregando clientes de la misma manera, hasta
  que todos los clientes del problema hayan sido visitados.
- Se asume que la cantidad de vehículos es ilimitado, por lo que siempre
- es posible agregar un nuevo vehículo para poder conseguir una solución
+ Se asume que la cantidad de vehículos disponible es ilimitado, por lo que
+ siempre es posible agregar un nuevo vehículo para poder conseguir una solución
  inicial factible.
  Luego de la construcción de la solución inicial, se aplica un proceso de
  búsqueda local (ver 
@@ -1570,19 +1604,24 @@ reference "sub:Búsqueda-local"
 \end_inset
 
 ).
- En los ejemplos a los cuales se aplicó el algoritmo (ver la sección 
+ 
+\end_layout
+
+\begin_layout Standard
+En los ejemplos a los cuales se aplicó el algoritmo (ver la sección 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sec:Resultados"
 
 \end_inset
 
-) siempre existe una solución inicial factible encontrable de esta forma,
- caso contrario se cancela la ejecución, dado que VRPTW es 
+) siempre existe una solución inicial factible encontrable de esta forma.
+ Si no se encuentra una solución inicial usando este algoritmo, se cancela
+ la ejecución, dado que VRPTW es 
 \noun on
 NP-HARD
 \noun default
-.
+ y hallar una solución (inicial) factible podría ser muy costoso.
 \end_layout
 
 \begin_layout Subsection
@@ -2465,9 +2504,8 @@ Conceptualmente, se elige un cliente al azar y se lo quita de la solución
  junto con todos los clientes que estén dentro de un radio determinado de
  dicho cliente.
  La elección del radio es importante: un radio muy chico implicaría que
- se quitarán muy pocos vehículos como para lograr una mejora, y un radio
- muy grande quitará demasiados vehículos, tendiendo a la infactibilidad
- de la solución.
+ se quitarán muy pocos clientes como para lograr una mejora, y un radio
+ muy grande quitará demasiados, tendiendo a la infactibilidad de la solución.
 \end_layout
 
 \begin_layout Standard
@@ -12951,7 +12989,7 @@ En la solución actual, cuando un nodo recibe una mejor solución del árbitro,
 
 \begin_layout Itemize
 La búsqueda local podría optimizarse de forma de no repetir la búsqueda
- en un par de rutas que no dio mejoras si las rutas no fueron modificadas,
+ en un par de rutas que no haya dado mejoras si las rutas no fueron modificadas,
  aunque en instancias grandes esto quizá requiera mucho espacio de memoria
  y no sea eficiente
 \end_layout

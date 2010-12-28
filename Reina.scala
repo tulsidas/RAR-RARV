@@ -23,7 +23,7 @@ object ReinaMain {
 
 		// arranco hormigas en los nucleos
 		val cores = Runtime.getRuntime().availableProcessors()
-
+		
 		var v = true
 		for (i <- 1 to cores) {
 			if (v) {
@@ -98,7 +98,7 @@ class Reina(file: String, min: Int, delta: Double, port: Int, name: Symbol) exte
 
 		while(running) {
 			receive {
-				case Hello(id) => { 
+				case Hello(id) => {
 					// una hormiga comun
 					hormigas + ((id, sender))
 					sender ! Start(inst, mejor, delta, rotura, roturaV, lsRAR, lsRARV)

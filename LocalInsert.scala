@@ -23,17 +23,24 @@ class LocalInsert(inst: Instance, solucion: List[List[Customer]]) {
 				i = i + 1
 
 				nnv = ininsertables.toList ++ (nnv -- ininsertables.toList)
-//				println("retry " + i)
-//				println("ininsertables = " + ininsertables.map(_.num).toList) 
-//				println("nueva nonvisit = " + nnv.map(_.num))
+				println("retry " + i)
+				println("ininsertables = " + ininsertables.map(_.num).toList) 
+				println("nueva nonvisit = " + nnv.map(_.num))
 
 				ininsertables.clear
 				mejor = solucion		// intento con la solucion inicial
 
 				nnv.foreach(insert)
 			}
+
+//		   if (ininsertables.size == 0) {
+//			   println("try " + i + " es factible")
+//		   }
+//		   else {
+//			   println("infactible...")
+//		   }
 			
-			mejor // mal, guardar el mejor no el último
+			mejor
 		}
 	}
 	

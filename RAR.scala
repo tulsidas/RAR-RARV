@@ -298,6 +298,6 @@ class RAR(host: String, port: Int, name: Symbol, rarVehicular: Boolean) extends 
       πv = 1 - 1 / ratioV
       π = 1 - 1 / ratio
 
-//      println(id + "--> π = " + π + ", πv = " + πv)
+      println(id + "--> π = " + π + ", πv = " + πv)
 	}
 }	
